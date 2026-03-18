@@ -157,3 +157,115 @@ Connected to MySQL database!
   * `DB_PORT` → MySQL default for XAMPP is 3306.
 * Keep `.env` **out of Git** for security.
 * Use **nodemon** in development to auto-restart the backend on file changes.
+
+## Step 7: Create Database Connection File
+
+1. Navigate to the backend configuration folder:
+
+   ```
+   QuickBite/server/src/config/
+   ```
+2. Create a new file named `db.js`.
+3. Paste the following code into `db.js`:
+
+   ```javascript
+   // Load environment variables
+   require('dotenv').config();
+
+   // Import mysql2 library
+   const mysql = require('mysql2');
+
+   // Create a connection to MySQL
+   const db = mysql.createConnection({
+       host: process.env.DB_HOST,
+       user: process.env.DB_USER,
+       password: process.env.DB_PASSWORD,
+       database: process.env.DB_NAME,
+       port: process.env.DB_PORT
+   });
+
+   // Connect to the database
+   db.connect((err) => {
+       if (err) {
+           console.error('❌ Database connection failed:', err);
+       } else {
+           console.log('✅ Connected to MySQL database!');
+       }
+   });
+
+   // Export the connection
+   module.exports = db;
+   ```
+
+**Explanation:**
+
+* Loads `.env` variables for database configuration.
+* Connects to MySQL using `mysql2`.
+* Exports the connection to use in other parts of the backend.
+
+---
+
+## Step 8: Test Database Connection and Run Server
+
+1. Ensure `server.js` exists in the `server/` folder. If not, create a simple test server:
+
+   ```javascript
+   // Load environment variables
+   require('dotenv').config();
+
+   const express = require('express');
+   const app = express();
+
+   // Import database connection
+   const db = require('./src/config/db');
+
+   // Test route
+   app.get('/', (req, res) => {
+       res.send('QuickBite Backend Running!');
+   });
+
+   // Start server
+   const PORT = process.env.PORT || 5000;
+   app.listen(PORT, () => {
+       console.log(`🚀 Server running on port ${PORT}`);
+   });
+   ```
+
+2. Open terminal and navigate to the backend folder:
+
+   ```bash
+   cd QuickBite/server
+   ```
+
+3. Run the server:
+
+   ```bash
+   npm run dev   # Using nodemon for auto-reload
+   # OR
+   npm start     # Using Node.js directly
+   ```
+
+4. Check the terminal. You should see:
+
+   ```
+   ✅ Connected to MySQL database!
+   🚀 Server running on port 5000
+   ```
+
+5. Open browser and visit:
+
+   ```
+   http://localhost:5000
+   ```
+
+   You should see:
+
+   ```
+   QuickBite Backend Running!
+   ```
+
+**Notes:**
+
+* Make sure XAMPP MySQL is running.
+* Ensure `.env` file contains correct database credentials.
+* Run commands from the `server/` folder where `package.json` is located.
