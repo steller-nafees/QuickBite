@@ -31,7 +31,7 @@
 
 ### Push Changes Safely
 
-1. Always **pull latest changes** before pushing:
+1. Always **pull latest changes** before working. You don't need to clone again and again. Also Before pushing always pull first so if any one updated the files , your's one will be updated as well:
 
    ```bash
    git pull origin main
