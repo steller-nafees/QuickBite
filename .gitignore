@@ -7,6 +7,9 @@ node_modules/
 # OS files
 .DS_Store
 
-#.env file
+#confidential files
 .env
 .env.*
+*.key
+*.pem
+*.secret
