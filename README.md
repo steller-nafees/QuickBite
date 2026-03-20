@@ -11,7 +11,9 @@ QuickBite/
 │   │   ├── css/                # Stylesheets
 │   │   ├── js/                 # JavaScript files
 │   │       ├── components/         # Reusable UI components (buttons, cards, navbars)
-│   │       └── pages/              # Page-level components (Home, Menu, Cart)
+│   │       └── pages/              # Page-level components (Home, 
+│   │   ├── components/         # Reusable UI components(React) (buttons, cards, navbars)
+│   │   └── pages/              # Page-level components(React) (Home, Menu, Cart)
 │   │
 │   └── package.json            # Frontend dependencies and scripts
 │
