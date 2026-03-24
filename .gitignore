@@ -9,7 +9,6 @@ node_modules/
 
 #confidential files
 .env
-.env.*
 *.key
 *.pem
 *.secret

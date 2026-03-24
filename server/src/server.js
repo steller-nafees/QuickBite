@@ -6,7 +6,7 @@ const express = require('express');
 const app = express();
 
 // Import database connection
-const db = require('./src/config/db');
+// const db = require('./config/db');
 
 // Test route
 app.get('/', (req, res) => {
@@ -16,5 +16,5 @@ app.get('/', (req, res) => {
 // Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`🚀 Derver running on port ${PORT}`);
 });
