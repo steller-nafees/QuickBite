@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vendor Details - QuickBite</title>
+
+    <!-- Fonts (same as landing page) -->
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Reuse SAME CSS -->
+    <link rel="stylesheet" href="../src/css/landing.css">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="page-shell">
+
+        <!-- ✅ Navbar (same as landing page) -->
+        <nav class="navbar">
+            <div class="nav-container">
+                <a href="index.html" class="nav-brand">
+                    <span class="brand-mark"><i class="fas fa-burger"></i></span>
+                    <span class="brand-copy">
+                        <strong>QuickBite</strong>
+                        <small>Order, Reach, Bite</small>
+                    </span>
+                </a>
+
+                <div class="nav-menu">
+                    <a href="index.html" class="nav-link">Home</a>
+                </div>
+            </div>
+        </nav>
+
+        <!-- ✅ Vendor Header Section -->
+        <section class="hero" style="padding-top: 1.5rem;">
+            <div class="container">
+
+                <a href="index.html" class="btn btn-secondary" style="margin-bottom: 1rem;">
+                    ← Back to Home
+                </a>
+
+                <div class="hero-grid">
+
+                    <!-- Left: Vendor Info -->
+                    <div class="hero-copy">
+
+                        <span class="hero-badge">
+                            <i class="fas fa-store"></i> Vendor Details
+                        </span>
+
+                        <h1 class="hero-title" id="vendorName">
+                            Loading...
+                        </h1>
+
+                        <p class="hero-description" id="vendorCuisine">
+                            Please wait while we load vendor information.
+                        </p>
+
+                        <div class="hero-highlights">
+                            <div class="highlight-pill">
+                                <strong id="vendorRating">--</strong>
+                                Rating
+                            </div>
+                            <div class="highlight-pill">
+                                <strong id="vendorOrders">--</strong>
+                                Orders
+                            </div>
+                            <div class="highlight-pill">
+                                <strong id="vendorETA">--</strong>
+                                Pickup
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Right: Vendor Image -->
+                    <div class="hero-showcase">
+                        <div class="phone-card">
+                            <img id="vendorImage" src="" alt="Vendor Image" style="width:100%; border-radius: 20px;">
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- ✅ Menu Section -->
+        <section class="trending trending-bestsellers">
+            <div class="container">
+
+                <div class="section-header section-header-centered">
+                    <div>
+                        <span class="best-seller-kicker">Menu</span>
+                        <h2 class="best-seller-title">Available Items</h2>
+                        <p class="best-seller-subtitle">Fresh meals prepared by this vendor</p>
+                    </div>
+                </div>
+
+                <!-- Dynamic Menu -->
+                <div class="trending-grid" id="vendorMenuGrid">
+                    <!-- JS will insert items here -->
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ✅ Footer (same style) -->
+        <footer class="footer">
+            <div class="container">
+                <div class="footer-bottom">
+                    © 2026 QuickBite. Crafted for faster campus food ordering.
+                </div>
+            </div>
+        </footer>
+
+    </div>
+
+    <!-- Vendor Page Script -->
+    <script src="../src/js/pages/vendor.js"></script>
+
+</body>
+</html>
+
+<link rel="stylesheet" href="../src/css/vendor.css">

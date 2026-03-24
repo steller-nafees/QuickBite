@@ -1,0 +1,37 @@
+/* Vendor Page Specific Styles */
+
+/* Slight spacing adjustment for vendor hero */
+.vendor-hero {
+    padding-top: 1.5rem;
+}
+
+/* Improve vendor image look */
+#vendorImage {
+    width: 100%;
+    border-radius: 20px;
+    object-fit: cover;
+    max-height: 320px;
+}
+
+/* Menu section tweak */
+#vendorMenuGrid .food-card {
+    cursor: pointer;
+}
+
+/* Empty state (if no items found) */
+.empty-menu {
+    text-align: center;
+    padding: 2rem;
+    color: var(--color-gray);
+    font-family: "Baloo 2", cursive;
+}
+
+/* Back button spacing */
+.back-btn {
+    margin-bottom: 1rem;
+}
+
+/* Small enhancement */
+.vendor-info-loading {
+    opacity: 0.7;
+}

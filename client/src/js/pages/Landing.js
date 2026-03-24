@@ -224,7 +224,8 @@ function renderVendors() {
     vendorsGrid.querySelectorAll(".vendor-card").forEach(function (card, index) {
         card.addEventListener("click", function () {
             const vendor = topVendors[index];
-            showNotification(vendor.name + " menu opened");
+            // showNotification(vendor.name + " menu opened");
+            window.location.href = `vendor.html?vendorId=${vendor.id}`;
             console.log("Clicked vendor:", vendor);
         });
     });
