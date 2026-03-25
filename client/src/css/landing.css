@@ -54,6 +54,11 @@
     /* Shadows */
     --shadow: 0 26px 45px var(--red-25);
     --shadow-soft: 0 16px 30px var(--black-08);
+
+    /* Scrollbar */
+    --scrollbar-track: var(--color-cream-dark);
+    --scrollbar-thumb: var(--color-red);
+    --scrollbar-thumb-hover: var(--color-red-dark);
 }
 
 /* Base Reset */
@@ -65,6 +70,26 @@
 
 html {
     scroll-behavior: smooth;
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+    scrollbar-width: thin;
+}
+
+::-webkit-scrollbar {
+    width: 12px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 999px;
+    border: 3px solid var(--scrollbar-track);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--scrollbar-thumb-hover);
 }
 
 /* Global Page Styles */
@@ -124,23 +149,26 @@ img {
 }
 
 .brand-mark {
-    width: 2.9rem;
-    height: 2.9rem;
+    width: 80px;
+    height: 80px;
     border-radius: 50%;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: var(--color-red);
-    border: 1px solid var(--color-red);
     color: var(--color-white);
 }
 
 .brand-copy,
-.footer-brand {
+.footer-brand,.brand-copy-footer {
     font-family: "Baloo 2", cursive;
 }
 
 .brand-copy {
+    display: flex;
+    flex-direction: column;
+    line-height: 1;
+}
+.brand-copy-footer {
     display: flex;
     flex-direction: column;
     line-height: 1;
@@ -151,9 +179,22 @@ img {
     font-size: 1.35rem;
     color: var(--color-red);
 }
+.brand-copy-footer strong {
+    font-family: "Baloo 2", cursive;
+    font-size: 1.35rem;
+    color: var(--color-cream);
+}
 
 .brand-copy small {
     color: var(--color-red);
+    font-family: "Baloo 2", cursive;
+    font-weight: 800;
+    font-size: 0.74rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+.brand-copy-footer small {
+    color: var(--color-cream);
     font-family: "Baloo 2", cursive;
     font-weight: 800;
     font-size: 0.74rem;
@@ -335,7 +376,7 @@ img {
 .hero-title,
 .section-title,
 .cta-title {
-    font-family: "Baloo 2", cursive;
+    font-family: "Bungee", cursive;
     line-height: 0.92;
 }
 
@@ -348,13 +389,6 @@ img {
 
 .hero-title span {
     display: block;
-}
-
-.hero-description {
-    max-width: 46ch;
-    margin-top: 1rem;
-    color: var(--red-85);
-    font-size: 1.02rem;
 }
 
 .hero-search {
@@ -488,25 +522,20 @@ img {
     border-radius: 999px;
 }
 
-.delivery-mini {
-    font-weight: 700;
-    color: var(--color-gray);
-}
-
-.featured-dish {
+.featured-vendor {
     margin-top: 1rem;
     border-radius: 30px;
     overflow: hidden;
     background: var(--white-50);
 }
 
-.featured-dish-image {
-    width: 100%;
-    aspect-ratio: 0.95 / 1;
+.featured-vendor-image {
+    width: 600px;
+    aspect-ratio: 4 / 2;
     object-fit: cover;
 }
 
-.featured-dish-copy {
+.featured-vendor-copy {
     padding: 1.2rem;
 }
 
@@ -515,15 +544,43 @@ img {
     color: var(--color-red-dark);
 }
 
-.featured-dish-copy h2 {
+.featured-vendor-copy h2 {
     font-family: "Baloo 2", cursive;
     font-size: 2rem;
     line-height: 0.95;
 }
 
-.featured-dish-copy p,
+.stall-details {
+    width: 100%;
+    margin-top: 2rem;
+    padding: 0.875rem 1.75rem; /* make it rem */
+    border-radius: 999px;
+    border: 1px solid var(--color-red);
+    background: var(--gradient-button-primary);
+    color: var(--color-white);
+    font-size: 1.4rem; /* better scaling. rem is suitable for responsive design */
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 14px 26px var(--red-90);
+
+    white-space: nowrap; /* prevents line break */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+.stall-details:hover {
+    transform: translateY(-4px);
+    box-shadow: 
+        0 18px 36px var(--red-90),
+        0 0 0 2px rgba(255, 0, 0, 0.2);
+}
+
+
+
+.featured-vendor-copy p,
 .mini-card p,
-.vendor-cuisine,
+.vendor-cuisine,    
 .food-vendor,
 .section-subtitle,
 .step-description,
@@ -1182,4 +1239,3 @@ section {
     outline: 2px solid var(--color-red-dark);
     outline-offset: 3px;
 }
-

@@ -3,13 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QuickBite - Campus Food, Delivered to Your Next Break</title>
+    <title>QuickBite – Pre-Order. Pick Up. Bite .</title>
     <meta name="description" content="Order the best campus meals in minutes. QuickBite brings trending dishes, fast pickup, and zero queue stress into one polished food ordering experience.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../src/css/landing.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bungee&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="page-shell">
@@ -17,12 +20,15 @@
         <nav class="navbar">
             <div class="nav-container">
                 <a href="#" class="nav-brand" aria-label="QuickBite home">
-                    <span class="brand-mark"><i class="fas fa-burger"></i></span>
+                    <span class="brand-mark"><img src="./assets/icons/app_icon_transparent.png" alt="QuickBite Logo" style="width: auto;"></span>
                     <span class="brand-copy">
                         <strong>QuickBite</strong>
-                        <small>Order, Reach, Bite</small>
+                        <small>Pre-Order. Pick Up. Bite .</small>
                     </span>
                 </a>
+                <div>
+                    <strong class = 'location'> NSU Main Canteen </strong><i class="fas fa-map-marker-alt"></i> 
+                </div>
                 <div class="nav-menu" id="navMenu">
                     <a href="#discover" class="nav-link">Discover</a>
                     <a href="#vendors" class="nav-link">Vendors</a>
@@ -49,15 +55,12 @@
                 <div class="hero-copy animate-fade-in-up">
                     <div class="hero-badge">
                         <i class="fas fa-bolt"></i>
-                        Explore our scrumpteous campus meal creations
+                        Pre Order Your Food On The Go and Skip The Line
                     </div>
                     <h1 class="hero-title">
-                        Explore our
-                        <span>golden-hour food favorites.</span>
+                        What Are
+                        <span>You Craving Today.</span>
                     </h1>
-                    <p class="hero-description">
-                        A brighter, more flavorful QuickBite experience inspired by bold vendor showcase design. Discover bestselling meals, glowing offers, and faster pickup built for campus appetite.
-                    </p>
 
                     <form class="hero-search" id="heroSearch">
                         <div class="search-input-container">
@@ -93,15 +96,14 @@
                 <div class="hero-showcase animate-fade-in-up">
                     <div class="phone-card">
                         <div class="phone-topbar">
-                            <span class="live-pill"><i class="fas fa-circle"></i> Super sale</span>
-                            <span class="delivery-mini">Up to 30% off today</span>
+                            <span class="live-pill"><i class="fas fa-circle"></i> Featured Food Stall</span>
+                            <span class="live-pill">New Dishes</span>
                         </div>
-                        <div class="featured-dish">
-                            <img src="https://images.unsplash.com/photo-1513104890138-7c749659a591?w=900&h=900&fit=crop" alt="Featured food bowl" class="featured-dish-image">
-                            <div class="featured-dish-copy">
-                                <span class="featured-tag">Special offer</span>
-                                <h2>Good food, drinks and great company.</h2>
-                                <p>Freshly stacked sandwiches, warm fries, bright drinks, and all the cheerful food-market energy from your inspiration theme.</p>
+                        <div class="featured-vendor">
+                            <img src="https://images.unsplash.com/photo-1513104890138-7c749659a591?w=900&h=900&fit=crop" alt="Featured food bowl" class="featured-vendor-image">
+                            <div class="featured-vendor-copy">
+                                <h2>Good and Hygenic Food.</h2>
+                                <button class="stall-details" onclick="window.location.href='the-kitchen'">The Kitchen</button>
                             </div>
                         </div>
                         <div class="mini-cards">
@@ -347,8 +349,11 @@
                 <div class="footer-grid">
                     <div class="footer-column">
                         <div class="footer-brand">
-                            <span class="brand-mark"><i class="fas fa-burger"></i></span>
-                            <span>QuickBite</span>
+                                <span class="brand-mark"><img src="./assets/icons/app_icon_transparent_dark.png" alt="QuickBite Logo" style="width: auto;"></span>
+                                <span class="brand-copy-footer">
+                                    <strong>QuickBite</strong>
+                                    <small>Pre-Order. Pick Up. Bite .</small>
+                                </span>
                         </div>
                         <p class="footer-description">
                             A polished food-ordering experience for campus communities that want less waiting and better meals.
