@@ -72,6 +72,10 @@ const menuItems = [
 
 // 🚀 MAIN
 document.addEventListener("DOMContentLoaded", function () {
+    if (window.QuickBiteLayout && typeof window.QuickBiteLayout.updateCartCount === "function") {
+        window.QuickBiteLayout.updateCartCount();
+    }
+
     const vendorId = getVendorId();
     const vendor = getVendor(vendorId);
 
@@ -156,6 +160,10 @@ function addToCart(itemId) {
 
     localStorage.setItem("quickbite-cart", JSON.stringify(cart));
     showNotification(item.name + " added to cart");
+
+    if (window.QuickBiteLayout && typeof window.QuickBiteLayout.updateCartCount === "function") {
+        window.QuickBiteLayout.updateCartCount();
+    }
 }
 
 // ✅ Notification (same style)

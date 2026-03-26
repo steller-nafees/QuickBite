@@ -1,4 +1,14 @@
 :root {
+    /* Typography */
+    --font-primary: "DM Sans", sans-serif;
+    --font-secondary: "Baloo 2", cursive;
+    --font-title: "Bungee", cursive;
+    --font-body: var(--font-primary);
+    --font-description: var(--font-primary);
+    --font-label: var(--font-secondary);
+    --font-accent: var(--font-secondary);
+    --font-display: var(--font-title);
+
     /* Base colors: one variable per color */
     --color-red: #7A0C06;
     --color-red-dark: #5A0502;
@@ -94,7 +104,7 @@ html {
 
 /* Global Page Styles */
 body {
-    font-family: "DM Sans", sans-serif;
+    font-family: var(--font-body);
     color: var(--color-black);
     background: var(--gradient-page);
     line-height: 1.6;
@@ -162,7 +172,7 @@ img {
 .brand-copy,
 .footer-brand,
 .brand-copy-footer {
-    font-family: "Baloo 2", cursive;
+    font-family: var(--font-secondary);
 }
 
 .brand-copy {
@@ -178,20 +188,20 @@ img {
 }
 
 .brand-copy strong {
-    font-family: "Baloo 2", cursive;
+    font-family: var(--font-secondary);
     font-size: 1.35rem;
     color: var(--color-red);
 }
 
 .brand-copy-footer strong {
-    font-family: "Baloo 2", cursive;
+    font-family: var(--font-secondary);
     font-size: 1.35rem;
     color: var(--color-cream);
 }
 
 .brand-copy small {
     color: var(--color-red);
-    font-family: "Baloo 2", cursive;
+    font-family: var(--font-secondary);
     font-weight: 800;
     font-size: 0.74rem;
     letter-spacing: 0.12em;
@@ -200,7 +210,7 @@ img {
 
 .brand-copy-footer small {
     color: var(--color-cream);
-    font-family: "Baloo 2", cursive;
+    font-family: var(--font-secondary);
     font-weight: 800;
     font-size: 0.74rem;
     letter-spacing: 0.12em;
@@ -223,7 +233,7 @@ img {
     /* IMPORTANT because we're using ::after otherwise it won't work */
     display: inline-block;
     color: var(--color-charcoal);
-    font-family: "Baloo 2", cursive;
+    font-family: var(--font-secondary);
     font-weight: 700;
     font-size: 1rem;
     text-decoration: none;
@@ -352,7 +362,7 @@ img {
     max-width: min(calc(100vw - 1.5rem), 42rem);
     background: var(--color-cream-soft);
     color: var(--color-red-soft);
-    font-family: "Baloo 2", cursive;
+    font-family: var(--font-secondary);
     border: 1px solid var(--color-red-dark);
     border-radius: 24px;
     padding: 0.78rem 1rem;
@@ -414,7 +424,7 @@ img {
 }
 
 .summary strong {
-    font-family: "Baloo 2", cursive;
+    font-family: var(--font-secondary);
     font-size: 1.08rem;
     line-height: 1;
     color: var(--color-red-soft);
@@ -428,7 +438,7 @@ img {
     border: 1px solid var(--color-red-soft);
     background: var(--color-cream);
     color: var(--color-red-soft);
-    font-family: "Baloo 2", cursive;
+    font-family: var(--font-secondary);
     font-size: 0.76rem;
     letter-spacing: 0.05em;
     text-transform: uppercase;
@@ -436,7 +446,7 @@ img {
 
 .time {
     color: var(--color-red-soft);
-    font-family: "DM Sans", sans-serif;
+    font-family: var(--font-description);
     font-size: 0.9rem;
     font-weight: 700;
     white-space: nowrap;
@@ -649,7 +659,7 @@ img {
 .hero-title,
 .section-title,
 .cta-title {
-    font-family: "Bungee", cursive;
+    font-family: var(--font-title);
     line-height: 0.92;
 }
 
@@ -755,7 +765,7 @@ img {
 
 .highlight-pill strong {
     display: block;
-    font-family: "Baloo 2", cursive;
+    font-family: var(--font-secondary);
     font-size: 1.35rem;
     line-height: 1;
 }
@@ -818,7 +828,7 @@ img {
 }
 
 .featured-vendor-copy h2 {
-    font-family: "Baloo 2", cursive;
+    font-family: var(--font-secondary);
     font-size: 2rem;
     line-height: 0.95;
 }
@@ -925,7 +935,7 @@ img {
 }
 
 .order-card h3 {
-    font-family: "Baloo 2", cursive;
+    font-family: var(--font-secondary);
     font-size: 1.65rem;
     line-height: 0.95;
     max-width: 10ch;
@@ -993,7 +1003,7 @@ section {
 
 .category-label {
     display: block;
-    font-family: "Baloo 2", cursive;
+    font-family: var(--font-secondary);
     font-size: 1.25rem;
     line-height: 1;
 }
@@ -1012,7 +1022,7 @@ section {
 
 .stat-value {
     margin-top: 0.8rem;
-    font-family: "Baloo 2", cursive;
+    font-family: var(--font-secondary);
     font-size: clamp(2rem, 4vw, 2.8rem);
     line-height: 0.9;
 }
@@ -1047,7 +1057,7 @@ section {
 .experience-card h3,
 .step-title {
     margin-top: 0.9rem;
-    font-family: "Baloo 2", cursive;
+    font-family: var(--font-secondary);
     font-size: 1.8rem;
     line-height: 0.95;
 }
@@ -1062,7 +1072,7 @@ section {
     justify-content: center;
     background: linear-gradient(135deg, var(--color-cream-muted), var(--color-red-soft));
     color: var(--color-white);
-    font-family: "Baloo 2", cursive;
+    font-family: var(--font-secondary);
     font-size: 1.2rem;
 }
 
@@ -1150,7 +1160,7 @@ section {
 .vendor-name,
 .food-name {
     margin-top: 0.6rem;
-    font-family: "Baloo 2", cursive;
+    font-family: var(--font-secondary);
     font-size: 1.6rem;
     line-height: 0.95;
 }
@@ -1163,7 +1173,7 @@ section {
 
 /* Trending Menu Section */
 .best-seller-kicker {
-    font-family: "Baloo 2", cursive;
+    font-family: var(--font-secondary);
     color: var(--color-cream);
     font-weight: 700;
     letter-spacing: 0.12em;
@@ -1171,14 +1181,14 @@ section {
 }
 
 .best-seller-title {
-    font-family: "Baloo 2", cursive;
+    font-family: var(--font-secondary);
     font-size: clamp(2.3rem, 4vw, 3.8rem);
     line-height: 0.92;
     color: var(--color-cream);
 }
 
 .best-seller-subtitle {
-    font-family: "Baloo 2", cursive;
+    font-family: var(--font-secondary);
     color: var(--color-cream);
     font-weight: 700;
     letter-spacing: 0.12em;
@@ -1188,7 +1198,7 @@ section {
 .vendor-rating,
 .food-rating,
 .food-price {
-    font-family: "Baloo 2", cursive;
+    font-family: var(--font-secondary);
 }
 
 .section-header-centered {

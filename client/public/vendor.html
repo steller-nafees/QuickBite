@@ -6,33 +6,21 @@
     <title>Vendor Details - QuickBite</title>
 
     <!-- Fonts (same as landing page) -->
-    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Bungee&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 
     <!-- Reuse SAME CSS -->
     <link rel="stylesheet" href="../src/css/landing.css">
+    <link rel="stylesheet" href="../src/css/vendor.css">
 
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body>
+<body data-page="vendor">
     <div class="page-shell">
-
-        <!-- ✅ Navbar (same as landing page) -->
-        <nav class="navbar">
-            <div class="nav-container">
-                <a href="index.html" class="nav-brand">
-                    <span class="brand-mark"><i class="fas fa-burger"></i></span>
-                    <span class="brand-copy">
-                        <strong>QuickBite</strong>
-                        <small>Order, Reach, Bite</small>
-                    </span>
-                </a>
-
-                <div class="nav-menu">
-                    <a href="index.html" class="nav-link">Home</a>
-                </div>
-            </div>
-        </nav>
+        <div id="globalHeader"></div>
+        <div id="globalOrderPill"></div>
 
         <!-- ✅ Vendor Header Section -->
         <section class="hero" style="padding-top: 1.5rem;">
@@ -107,21 +95,13 @@
             </div>
         </section>
 
-        <!-- ✅ Footer (same style) -->
-        <footer class="footer">
-            <div class="container">
-                <div class="footer-bottom">
-                    © 2026 QuickBite. Crafted for faster campus food ordering.
-                </div>
-            </div>
-        </footer>
+        <div id="globalFooter"></div>
 
     </div>
 
+    <script src="../src/js/shared/layout.js"></script>
     <!-- Vendor Page Script -->
     <script src="../src/js/pages/vendor.js"></script>
 
 </body>
 </html>
-
-<link rel="stylesheet" href="../src/css/vendor.css">
