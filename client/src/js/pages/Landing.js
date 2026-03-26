@@ -183,6 +183,39 @@ function initializeSearch() {
     });
 }
 
+const orderShell = document.getElementById("orderShell");
+const pill = document.getElementById("orderPill");
+const timeEl = document.getElementById("timeLeft");
+
+let minutes = 10;
+
+if (orderShell && pill && timeEl) {
+    syncOrderPillState();
+
+    pill.addEventListener("click", function () {
+        const isExpanded = pill.classList.toggle("expanded");
+        pill.setAttribute("aria-expanded", String(isExpanded));
+    });
+
+    window.addEventListener("scroll", syncOrderPillState, { passive: true });
+
+    setInterval(function () {
+        if (minutes > 0) {
+            minutes--;
+            timeEl.textContent = minutes === 0 ? "Ready now" : minutes + " mins left";
+        }
+    }, 60000);
+}
+
+function syncOrderPillState() {
+    if (!orderShell || !pill) {
+        return;
+    }
+
+    const shouldDock = window.scrollY > 50;
+    orderShell.classList.toggle("is-docked", shouldDock);
+}
+
 function renderVendors() {
     const vendorsGrid = document.getElementById("vendorsGrid");
     if (!vendorsGrid) {

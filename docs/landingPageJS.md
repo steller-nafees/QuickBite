@@ -2,7 +2,7 @@
 
 ## 📌 Overview
 
-This JavaScript file powers the interactive behavior of the **QuickBite landing page**. It handles UI rendering, user interactions, animations, and cart management using browser local storage.
+This JavaScript file powers the interactive behavior of the **QuickBite landing page**. It handles UI rendering, responsive navigation, the active order pill, user interactions, animations, and cart management using browser local storage.
 
 ---
 
@@ -63,6 +63,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 * Navigation menu is activated
 * Search functionality is enabled
+* Order pill scroll state and click behavior are activated
 * Vendors and food items are rendered
 * Animations are initialized
 * Cart count is updated from storage
@@ -76,8 +77,15 @@ document.addEventListener("DOMContentLoaded", function () {
 Handles:
 
 * Mobile menu toggle
+* Tablet hamburger menu toggle
 * Closing menu on outside click
 * Smooth scrolling for anchor links
+
+**Current behavior:**
+
+* The same hamburger navigation is used for mobile and tablet breakpoints
+* Opening the menu adds the `active` class to `#navMenu`
+* CSS handles the dropdown slide/fade animation
 
 ---
 
@@ -89,6 +97,52 @@ Handles:
 * Prevents default reload
 * Displays a notification
 * Logs search term in console
+
+---
+
+## 📦 Order Pill System
+
+The landing page now includes an order status pill that can be expanded by the user and repositioned when the page is scrolled.
+
+### DOM References
+
+The script reads these elements:
+
+* `#orderShell`: outer wrapper used for positioning
+* `#orderPill`: clickable pill container
+* `#timeLeft`: countdown text inside the pill
+
+### `syncOrderPillState()`
+
+Controls the scroll-based positioning of the order pill.
+
+**Current behavior:**
+
+* Checks `window.scrollY`
+* When the scroll passes the configured threshold, toggles the `is-docked` class on `#orderShell`
+* Only changes pill position
+* Does **not** auto-expand or auto-collapse the pill
+
+This keeps the pill interaction logic the same before and after scroll.
+
+### Pill click behavior
+
+Inside the initialization block:
+
+* Clicking the pill toggles the `expanded` class on `#orderPill`
+* Updates the `aria-expanded` attribute for accessibility
+
+### Countdown behavior
+
+The order pill includes a simple front-end countdown:
+
+* Starts from `10` minutes
+* Updates every `60000` ms
+* Shows:
+  * `X mins left` while time remains
+  * `Ready now` when it reaches zero
+
+This countdown is currently demo/UI-only and is not connected to backend order data.
 
 ---
 
@@ -168,6 +222,7 @@ Handles:
 ### Scroll Effect
 
 * Adds shadow to navbar when scrolling
+* Updates order pill position on scroll through `syncOrderPillState()`
 
 ### Category Click
 
@@ -211,14 +266,18 @@ Stores:
 ]
 ```
 
+The current order pill countdown/status is not persisted in storage.
+
 ---
 
 ## ⚠️ Notes & Best Practices
 
 * Uses **vanilla JavaScript** (no frameworks)
 * UI is dynamically generated using template literals
-* Event delegation is used for better performance
+* Uses a mix of direct event listeners and document-level listeners
 * Local storage ensures cart persistence
+* Responsive navigation behavior is shared across mobile and tablet layouts
+* Order pill scroll docking is controlled by CSS classes instead of inline styles
 
 ---
 
@@ -227,7 +286,8 @@ Stores:
 This script:
 
 * Renders vendors and trending food items
-* Handles navigation and search
+* Handles responsive navigation and search
+* Controls the order pill toggle, countdown, and scroll docking
 * Manages cart functionality
 * Provides smooth UI interactions and animations
 
