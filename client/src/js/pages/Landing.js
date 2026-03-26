@@ -185,14 +185,19 @@ function initializeSearch() {
 
 const orderShell = document.getElementById("orderShell");
 const pill = document.getElementById("orderPill");
+const statusText = document.getElementById("statusText");
 const timeEl = document.getElementById("timeLeft");
 
 let minutes = 10;
 
-if (orderShell && pill && timeEl) {
+if (orderShell && pill && timeEl && statusText) {
     syncOrderPillState();
 
     pill.addEventListener("click", function () {
+        if (pill.classList.contains("is-ready")) {
+            return;
+        }
+
         const isExpanded = pill.classList.toggle("expanded");
         pill.setAttribute("aria-expanded", String(isExpanded));
     });
@@ -202,7 +207,16 @@ if (orderShell && pill && timeEl) {
     setInterval(function () {
         if (minutes > 0) {
             minutes--;
-            timeEl.textContent = minutes === 0 ? "Ready now" : minutes + " mins left";
+
+            if (minutes === 0) {
+                statusText.textContent = "Order is ready";
+                timeEl.textContent = "Ready now";
+                pill.classList.remove("expanded");
+                pill.classList.add("is-ready");
+                pill.setAttribute("aria-expanded", "false");
+            } else {
+                timeEl.textContent = minutes + " mins left";
+            }
         }
     }, 60000);
 }
