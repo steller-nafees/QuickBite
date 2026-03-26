@@ -19,63 +19,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Bungee&display=swap" rel="stylesheet">
 </head>
 
-<body>
-    <div class="page-shell">    
-        <!-- Navigation -->
-        <nav class="navbar">
-            <div class="nav-container">
-                <a href="index.html" class="nav-brand" aria-label="QuickBite home">
-                    <span class="brand-mark"><img src="./assets/icons/app_icon_transparent.png" alt="QuickBite Logo"
-                            style="width: auto;"></span>
-                    <span class="brand-copy">
-                        <strong>QuickBite</strong>
-                        <small>Pre-Order. Pick Up. Bite .</small>
-                    </span>
-                </a>
-                <div>
-                    <strong class='location'> NSU Main Canteen </strong><i class="fas fa-map-marker-alt"></i>
-                </div>
-                <div class="nav-menu" id="navMenu">
-                    <a href="#discover" class="nav-link">Discover</a>
-                    <a href="#vendors" class="nav-link">Vendors</a>
-                    <a href="#menu" class="nav-link">Top Picks</a>
-                    <a href="#experience" class="nav-link">Why Us</a>
-                    <a href="#pricing" class="nav-link">Plans</a>
-                    <a href="#auth" class="nav-link nav-link-muted">Sign In</a>
-                    <a href="#auth" class="nav-cta">Start Ordering</a>
-                </div>
-                <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </button>
-            </div>
-        </nav>
-
-        <!-- OrderPill -->
-        <section class="order-shell" id="orderShell">
-            <div class="order-pill" id="orderPill" aria-expanded="false">
-
-                <div class="order-main">
-                    <span class="dot"></span>
-                    <div class="summary">
-                        <strong id="statusText">Preparing</strong>
-                        <span class="token">Token 12</span>
-                        <span class="time" id="timeLeft">10 mins</span>
-                    </div>
-                    <span class="chevron" aria-hidden="true">
-                        <i class="fas fa-chevron-down chevron-open"></i>
-                        <i class="fas fa-xmark chevron-close"></i>
-                    </span>
-                </div>
-
-                <div class="order-details" id="orderDetails">
-                    <div><span>Vendor:</span> Pizza Hub</div>
-                    <div><span>Items:</span> Burger x1, Fries x2</div>
-                </div>
-
-            </div>
-        </section>
+<body data-page="home">
+    <div class="page-shell">
+        <div id="globalHeader"></div>
+        <div id="globalOrderPill"></div>
 
         <!-- Hero Section -->
         <header class="hero" id="discover">
@@ -391,58 +338,10 @@
             </div>
         </section>
 
-        <!-- Footer -->
-        <footer class="footer">
-            <div class="container">
-                <div class="footer-grid">
-                    <div class="footer-column">
-                        <div class="footer-brand">
-                            <span class="brand-mark"><img src="./assets/icons/app_icon_transparent_dark.png"
-                                    alt="QuickBite Logo" style="width: auto;"></span>
-                            <span class="brand-copy-footer">
-                                <strong>QuickBite</strong>
-                                <small>Pre-Order. Pick Up. Bite .</small>
-                            </span>
-                        </div>
-                        <p class="footer-description">
-                            A polished food-ordering experience for campus communities that want less waiting and better
-                            meals.
-                        </p>
-                    </div>
-                    <div class="footer-column">
-                        <h4 class="footer-title">Platform</h4>
-                        <div class="footer-links">
-                            <a href="#discover">Discover</a>
-                            <a href="#vendors">Vendors</a>
-                            <a href="#menu">Top Picks</a>
-                            <a href="#pricing">Launch</a>
-                        </div>
-                    </div>
-                    <div class="footer-column">
-                        <h4 class="footer-title">Support</h4>
-                        <div class="footer-links">
-                            <a href="#help">Help Center</a>
-                            <a href="#contact">Contact Us</a>
-                            <a href="#privacy">Privacy Policy</a>
-                            <a href="#terms">Terms of Service</a>
-                        </div>
-                    </div>
-                    <div class="footer-column">
-                        <h4 class="footer-title">Built For</h4>
-                        <div class="footer-links">
-                            <a href="#experience">Students</a>
-                            <a href="#vendors">Campus Vendors</a>
-                            <a href="#pricing">Universities</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="footer-bottom">
-                    © 2026 QuickBite. Crafted for faster campus food ordering.
-                </div>
-            </div>
-        </footer>
+        <div id="globalFooter"></div>
     </div>
 
+    <script src="../src/js/shared/layout.js"></script>
     <!-- Landing Page Script -->
     <script src="../src/js/pages/Landing.js"></script>
 </body>
