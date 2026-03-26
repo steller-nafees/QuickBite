@@ -50,6 +50,7 @@
     "**/.vscode",
     "**/.vscode/**"
   ],
+  "liveServer.settings.root": "/client",
   "C_Cpp_Runner.useAddressSanitizer": false,
   "C_Cpp_Runner.useUndefinedSanitizer": false,
   "C_Cpp_Runner.useLeakSanitizer": false,

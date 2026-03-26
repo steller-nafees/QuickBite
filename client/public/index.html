@@ -1,33 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QuickBite – Pre-Order. Pick Up. Bite .</title>
-    <meta name="description" content="Order the best campus meals in minutes. QuickBite brings trending dishes, fast pickup, and zero queue stress into one polished food ordering experience.">
+    <meta name="description"
+        content="Order the best campus meals in minutes. QuickBite brings trending dishes, fast pickup, and zero queue stress into one polished food ordering experience.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=DM+Sans:wght@400;500;700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="../src/css/landing.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Bungee&display=swap" rel="stylesheet">
 </head>
+
 <body>
     <div class="page-shell">
         <!-- Navigation -->
         <nav class="navbar">
             <div class="nav-container">
-                <a href="#" class="nav-brand" aria-label="QuickBite home">
-                    <span class="brand-mark"><img src="./assets/icons/app_icon_transparent.png" alt="QuickBite Logo" style="width: auto;"></span>
+                <a href="index.html" class="nav-brand" aria-label="QuickBite home">
+                    <span class="brand-mark"><img src="./assets/icons/app_icon_transparent.png" alt="QuickBite Logo"
+                            style="width: auto;"></span>
                     <span class="brand-copy">
                         <strong>QuickBite</strong>
                         <small>Pre-Order. Pick Up. Bite .</small>
                     </span>
                 </a>
                 <div>
-                    <strong class = 'location'> NSU Main Canteen </strong><i class="fas fa-map-marker-alt"></i> 
+                    <strong class='location'> NSU Main Canteen </strong><i class="fas fa-map-marker-alt"></i>
                 </div>
                 <div class="nav-menu" id="navMenu">
                     <a href="#discover" class="nav-link">Discover</a>
@@ -45,6 +51,31 @@
                 </button>
             </div>
         </nav>
+
+        <!-- OrderPill -->
+        <section class="order-shell" id="orderShell">
+            <div class="order-pill" id="orderPill" aria-expanded="false">
+
+                <div class="order-main">
+                    <span class="dot"></span>
+                    <div class="summary">
+                        <strong id="statusText">Preparing</strong>
+                        <span class="token">Token 12</span>
+                        <span class="time" id="timeLeft">10 mins</span>
+                    </div>
+                    <span class="chevron" aria-hidden="true">
+                        <i class="fas fa-chevron-down chevron-open"></i>
+                        <i class="fas fa-xmark chevron-close"></i>
+                    </span>
+                </div>
+
+                <div class="order-details" id="orderDetails">
+                    <div><span>Vendor:</span> Pizza Hub</div>
+                    <div><span>Items:</span> Burger x1, Fries x2</div>
+                </div>
+
+            </div>
+        </section>
 
         <!-- Hero Section -->
         <header class="hero" id="discover">
@@ -65,7 +96,8 @@
                     <form class="hero-search" id="heroSearch">
                         <div class="search-input-container">
                             <i class="fas fa-magnifying-glass search-icon"></i>
-                            <input type="text" placeholder="Search burgers, pasta, coffee, sushi..." class="search-input" id="searchInput">
+                            <input type="text" placeholder="Search burgers, pasta, coffee, sushi..."
+                                class="search-input" id="searchInput">
                         </div>
                         <button type="submit" class="search-btn">Find Food</button>
                     </form>
@@ -100,10 +132,12 @@
                             <span class="live-pill">New Dishes</span>
                         </div>
                         <div class="featured-vendor">
-                            <img src="https://images.unsplash.com/photo-1513104890138-7c749659a591?w=900&h=900&fit=crop" alt="Featured food bowl" class="featured-vendor-image">
+                            <img src="https://images.unsplash.com/photo-1513104890138-7c749659a591?w=900&h=900&fit=crop"
+                                alt="Featured food bowl" class="featured-vendor-image">
                             <div class="featured-vendor-copy">
                                 <h2>Good and Hygenic Food.</h2>
-                                <button class="stall-details" onclick="window.location.href='the-kitchen'">The Kitchen</button>
+                                <button class="stall-details" onclick="window.location.href='the-kitchen'">The
+                                    Kitchen</button>
                             </div>
                         </div>
                         <div class="mini-cards">
@@ -212,24 +246,29 @@
             <div class="container">
                 <div class="section-heading">
                     <span class="section-kicker">Why students stay with QuickBite</span>
-                    <h2 class="section-title">Built like the best food ordering sites, but tailored for campus rhythm.</h2>
-                    <p class="section-subtitle">Everything is designed to remove friction: faster discovery, better vendor trust, and punchy meal visuals that make ordering feel instant.</p>
+                    <h2 class="section-title">Built like the best food ordering sites, but tailored for campus rhythm.
+                    </h2>
+                    <p class="section-subtitle">Everything is designed to remove friction: faster discovery, better
+                        vendor trust, and punchy meal visuals that make ordering feel instant.</p>
                 </div>
                 <div class="experience-grid">
                     <article class="experience-card">
                         <span class="experience-icon"><i class="fas fa-layer-group"></i></span>
                         <h3>Curated home feed</h3>
-                        <p>Trending vendors, time-aware food suggestions, and categories that surface what students are actually buying right now.</p>
+                        <p>Trending vendors, time-aware food suggestions, and categories that surface what students are
+                            actually buying right now.</p>
                     </article>
                     <article class="experience-card">
                         <span class="experience-icon"><i class="fas fa-bolt-lightning"></i></span>
                         <h3>Lightning ordering</h3>
-                        <p>Search, browse, and reorder in seconds with a landing flow that prioritizes speed without looking boring.</p>
+                        <p>Search, browse, and reorder in seconds with a landing flow that prioritizes speed without
+                            looking boring.</p>
                     </article>
                     <article class="experience-card">
                         <span class="experience-icon"><i class="fas fa-shield-heart"></i></span>
                         <h3>Trust-first design</h3>
-                        <p>Ratings, prep-time cues, active kitchen indicators, and clear pickup timing help users feel confident before tapping buy.</p>
+                        <p>Ratings, prep-time cues, active kitchen indicators, and clear pickup timing help users feel
+                            confident before tapping buy.</p>
                     </article>
                 </div>
             </div>
@@ -246,17 +285,20 @@
                     <article class="step">
                         <div class="step-number">01</div>
                         <h3 class="step-title">Discover cravings fast</h3>
-                        <p class="step-description">Search dishes, browse categories, and spot the most popular meals before your break even starts.</p>
+                        <p class="step-description">Search dishes, browse categories, and spot the most popular meals
+                            before your break even starts.</p>
                     </article>
                     <article class="step">
                         <div class="step-number">02</div>
                         <h3 class="step-title">Lock your pickup slot</h3>
-                        <p class="step-description">Choose your vendor, confirm the order, and reserve a pickup time that fits your class schedule.</p>
+                        <p class="step-description">Choose your vendor, confirm the order, and reserve a pickup time
+                            that fits your class schedule.</p>
                     </article>
                     <article class="step">
                         <div class="step-number">03</div>
                         <h3 class="step-title">Skip the line completely</h3>
-                        <p class="step-description">Walk up, grab your meal, and get back to the part of the day that matters.</p>
+                        <p class="step-description">Walk up, grab your meal, and get back to the part of the day that
+                            matters.</p>
                     </article>
                 </div>
             </div>
@@ -269,7 +311,8 @@
                     <div>
                         <span class="section-kicker">Vendor lineup</span>
                         <h2 class="section-title left">Best-rated campus kitchens</h2>
-                        <p class="section-subtitle left">Real student favorites with high order volume and dependable pickup speed.</p>
+                        <p class="section-subtitle left">Real student favorites with high order volume and dependable
+                            pickup speed.</p>
                     </div>
                     <a href="#vendors" class="view-all-link">
                         Explore all vendors <i class="fas fa-arrow-right"></i>
@@ -286,7 +329,8 @@
                     <div>
                         <span class="best-seller-kicker">Best sellers</span>
                         <h2 class="best-seller-title">Our Menu</h2>
-                        <p class="best-seller-subtitle">A stacked signature lineup inspired by classic burger-board menu cards.</p>
+                        <p class="best-seller-subtitle">A stacked signature lineup inspired by classic burger-board menu
+                            cards.</p>
                     </div>
                 </div>
                 <div class="trending-grid" id="trendingGrid"></div>
@@ -302,21 +346,24 @@
                 </div>
                 <div class="testimonial-grid">
                     <article class="testimonial-card">
-                        <p>"This feels like a real product, not just a canteen list. I order before class ends and my lunch is always ready."</p>
+                        <p>"This feels like a real product, not just a canteen list. I order before class ends and my
+                            lunch is always ready."</p>
                         <div class="testimonial-meta">
                             <strong>Rafid Hasan</strong>
                             <span>CSE, 6th semester</span>
                         </div>
                     </article>
                     <article class="testimonial-card">
-                        <p>"The design makes every dish look premium, and the pickup timing saves me every single day."</p>
+                        <p>"The design makes every dish look premium, and the pickup timing saves me every single day."
+                        </p>
                         <div class="testimonial-meta">
                             <strong>Nusrat Jahan</strong>
                             <span>BBA, 5th semester</span>
                         </div>
                     </article>
                     <article class="testimonial-card">
-                        <p>"QuickBite nails what food apps do well, but it feels built specifically for student life."</p>
+                        <p>"QuickBite nails what food apps do well, but it feels built specifically for student life."
+                        </p>
                         <div class="testimonial-meta">
                             <strong>Adnan Karim</strong>
                             <span>EEE, 7th semester</span>
@@ -332,7 +379,8 @@
                 <div id="auth">
                     <span class="section-kicker section-kicker-light">Ready for launch</span>
                     <h2 class="cta-title">Turn QuickBite into the campus food app everyone opens first.</h2>
-                    <p class="cta-description">From lunchtime rush to late-afternoon snacks, this landing page now sells convenience, speed, and quality like a polished modern food platform.</p>
+                    <p class="cta-description">From lunchtime rush to late-afternoon snacks, this landing page now sells
+                        convenience, speed, and quality like a polished modern food platform.</p>
                 </div>
                 <div class="cta-actions">
                     <a href="#auth" class="btn btn-primary btn-light">
@@ -349,14 +397,16 @@
                 <div class="footer-grid">
                     <div class="footer-column">
                         <div class="footer-brand">
-                                <span class="brand-mark"><img src="./assets/icons/app_icon_transparent_dark.png" alt="QuickBite Logo" style="width: auto;"></span>
-                                <span class="brand-copy-footer">
-                                    <strong>QuickBite</strong>
-                                    <small>Pre-Order. Pick Up. Bite .</small>
-                                </span>
+                            <span class="brand-mark"><img src="./assets/icons/app_icon_transparent_dark.png"
+                                    alt="QuickBite Logo" style="width: auto;"></span>
+                            <span class="brand-copy-footer">
+                                <strong>QuickBite</strong>
+                                <small>Pre-Order. Pick Up. Bite .</small>
+                            </span>
                         </div>
                         <p class="footer-description">
-                            A polished food-ordering experience for campus communities that want less waiting and better meals.
+                            A polished food-ordering experience for campus communities that want less waiting and better
+                            meals.
                         </p>
                     </div>
                     <div class="footer-column">
@@ -396,4 +446,5 @@
     <!-- Landing Page Script -->
     <script src="../src/js/pages/Landing.js"></script>
 </body>
+
 </html>
