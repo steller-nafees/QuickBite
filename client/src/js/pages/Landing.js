@@ -166,10 +166,124 @@ function initializeNavigation() {
 function initializeSearch() {
     const searchForm = document.getElementById("heroSearch");
     const searchInput = document.getElementById("searchInput");
+    const inputContainer = searchInput ? searchInput.closest(".search-input-container") : null;
+    const maxSuggestions = 6;
+    let activeIndex = -1;
+    let currentSuggestions = [];
 
-    if (!searchForm || !searchInput) {
+    if (!searchForm || !searchInput || !inputContainer) {
         return;
     }
+
+    const suggestionBox = document.createElement("div");
+    suggestionBox.className = "search-suggestions";
+    suggestionBox.setAttribute("aria-live", "polite");
+    inputContainer.appendChild(suggestionBox);
+
+    function renderSuggestions() {
+        if (currentSuggestions.length === 0) {
+            suggestionBox.classList.remove("is-visible");
+            suggestionBox.innerHTML = "";
+            activeIndex = -1;
+            return;
+        }
+
+        suggestionBox.classList.add("is-visible");
+        suggestionBox.innerHTML = currentSuggestions
+            .map(function (item, index) {
+                const isActive = index === activeIndex ? " is-active" : "";
+                return `
+                    <button type="button" class="search-suggestion-item${isActive}" data-item-id="${item.id}">
+                        <img src="${item.image}" alt="${item.name}" class="search-suggestion-image">
+                        <div class="search-suggestion-main">
+                            <span class="search-suggestion-name">${item.name}</span>
+                            <span class="search-suggestion-vendor">${item.vendor}</span>
+                        </div>
+                        <span class="search-suggestion-price">${formatCurrency(item.price)}</span>
+                    </button>
+                `;
+            })
+            .join("");
+    }
+
+    function updateSuggestions(query) {
+        const normalizedQuery = query.trim().toLowerCase();
+        if (!normalizedQuery) {
+            currentSuggestions = [];
+            renderSuggestions();
+            return;
+        }
+
+        currentSuggestions = menuItems
+            .filter(function (item) {
+                return item.name.toLowerCase().includes(normalizedQuery) || item.vendor.toLowerCase().includes(normalizedQuery);
+            })
+            .slice(0, maxSuggestions);
+        activeIndex = -1;
+        renderSuggestions();
+    }
+
+    function chooseSuggestion(item) {
+        searchInput.value = item.name;
+        currentSuggestions = [];
+        renderSuggestions();
+        showNotification(item.name + " by " + item.vendor + " selected");
+    }
+
+    searchInput.addEventListener("input", function () {
+        updateSuggestions(searchInput.value);
+    });
+
+    searchInput.addEventListener("focus", function () {
+        if (searchInput.value.trim()) {
+            updateSuggestions(searchInput.value);
+        }
+    });
+
+    searchInput.addEventListener("keydown", function (event) {
+        if (!currentSuggestions.length) {
+            return;
+        }
+
+        if (event.key === "ArrowDown") {
+            event.preventDefault();
+            activeIndex = (activeIndex + 1) % currentSuggestions.length;
+            renderSuggestions();
+        } else if (event.key === "ArrowUp") {
+            event.preventDefault();
+            activeIndex = (activeIndex - 1 + currentSuggestions.length) % currentSuggestions.length;
+            renderSuggestions();
+        } else if (event.key === "Enter" && activeIndex >= 0) {
+            event.preventDefault();
+            chooseSuggestion(currentSuggestions[activeIndex]);
+        } else if (event.key === "Escape") {
+            currentSuggestions = [];
+            renderSuggestions();
+        }
+    });
+
+    suggestionBox.addEventListener("click", function (event) {
+        const itemElement = event.target.closest(".search-suggestion-item");
+        if (!itemElement) {
+            return;
+        }
+
+        const itemId = Number(itemElement.getAttribute("data-item-id"));
+        const selectedItem = menuItems.find(function (item) {
+            return item.id === itemId;
+        });
+
+        if (selectedItem) {
+            chooseSuggestion(selectedItem);
+        }
+    });
+
+    document.addEventListener("click", function (event) {
+        if (!searchForm.contains(event.target)) {
+            currentSuggestions = [];
+            renderSuggestions();
+        }
+    });
 
     searchForm.addEventListener("submit", function (e) {
         e.preventDefault();
