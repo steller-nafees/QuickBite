@@ -2,7 +2,31 @@ function getHomeLink(path) {
     return document.body.dataset.page === "home" ? path : "index.html" + path;
 }
 
+const QUICKBITE_LOCATION_KEY = "quickbite-selected-location";
+const QUICKBITE_LOCATIONS = [
+    "NSU Main Canteen",
+    "NSU Annex Canteen",
+    "NSU Business Canteen"
+];
+
+function getSelectedLocation() {
+    const savedLocation = localStorage.getItem(QUICKBITE_LOCATION_KEY);
+    if (savedLocation && QUICKBITE_LOCATIONS.includes(savedLocation)) {
+        return savedLocation;
+    }
+
+    return QUICKBITE_LOCATIONS[0];
+}
+
 function getGlobalHeaderMarkup() {
+    const selectedLocation = getSelectedLocation();
+    const locationOptions = QUICKBITE_LOCATIONS
+        .map(function (location) {
+            const isActive = location === selectedLocation ? " is-active" : "";
+            return `<button type="button" class="location-option${isActive}" data-location="${location}">${location}</button>`;
+        })
+        .join("");
+
     return `
         <nav class="navbar">
             <div class="nav-container">
@@ -15,8 +39,17 @@ function getGlobalHeaderMarkup() {
                         <small>Pre-Order. Pick Up. Bite .</small>
                     </span>
                 </a>
-                <div>
-                    <strong class="location">NSU Main Canteen</strong><i class="fas fa-map-marker-alt"></i>
+                <div class="location-picker-wrap" id="locationPicker">
+                    <button type="button" id="locationSelector" class="location-selector" aria-label="Select canteen location" aria-expanded="false" aria-controls="locationOptions">
+                        <span class="location-selector-main">
+                            <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
+                            <span id="locationSelectorLabel">${selectedLocation}</span>
+                        </span>
+                        <i class="fas fa-chevron-down location-selector-chevron" aria-hidden="true"></i>
+                    </button>
+                    <div id="locationOptions" class="location-options" role="listbox" aria-label="Available canteen locations">
+                        ${locationOptions}
+                    </div>
                 </div>
                 <div class="nav-menu" id="navMenu">
                     <a href="${getHomeLink("#discover")}" class="nav-link">Discover</a>
@@ -147,6 +180,78 @@ function renderGlobalLayout() {
     updateGlobalCartCount();
 }
 
+function initializeLocationSelector() {
+    const locationPicker = document.getElementById("locationPicker");
+    const locationSelector = document.getElementById("locationSelector");
+    const locationSelectorLabel = document.getElementById("locationSelectorLabel");
+    const locationOptions = document.getElementById("locationOptions");
+
+    if (!locationPicker || !locationSelector || !locationSelectorLabel || !locationOptions) {
+        return;
+    }
+
+    function closeDropdown() {
+        locationPicker.classList.remove("is-open");
+        locationSelector.setAttribute("aria-expanded", "false");
+    }
+
+    function openDropdown() {
+        locationPicker.classList.add("is-open");
+        locationSelector.setAttribute("aria-expanded", "true");
+    }
+
+    function selectLocation(selectedLocation) {
+        localStorage.setItem(QUICKBITE_LOCATION_KEY, selectedLocation);
+        locationSelectorLabel.textContent = selectedLocation;
+
+        locationOptions.querySelectorAll(".location-option").forEach(function (option) {
+            option.classList.toggle("is-active", option.getAttribute("data-location") === selectedLocation);
+        });
+
+        closeDropdown();
+        document.dispatchEvent(
+            new CustomEvent("quickbite:location-changed", {
+                detail: {
+                    location: selectedLocation
+                }
+            })
+        );
+    }
+
+    locationSelector.addEventListener("click", function () {
+        const isOpen = locationPicker.classList.contains("is-open");
+        if (isOpen) {
+            closeDropdown();
+        } else {
+            openDropdown();
+        }
+    });
+
+    locationOptions.addEventListener("click", function (event) {
+        const option = event.target.closest(".location-option");
+        if (!option) {
+            return;
+        }
+
+        const selectedLocation = option.getAttribute("data-location");
+        if (selectedLocation) {
+            selectLocation(selectedLocation);
+        }
+    });
+
+    document.addEventListener("click", function (event) {
+        if (!locationPicker.contains(event.target)) {
+            closeDropdown();
+        }
+    });
+
+    document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") {
+            closeDropdown();
+        }
+    });
+}
+
 function initializeSharedNavigation() {
     const navToggle = document.getElementById("navToggle");
     const navMenu = document.getElementById("navMenu");
@@ -226,6 +331,7 @@ function initializeSharedOrderPill() {
 }
 
 renderGlobalLayout();
+initializeLocationSelector();
 
 if (document.body.dataset.page !== "home") {
     initializeSharedNavigation();
@@ -234,5 +340,7 @@ if (document.body.dataset.page !== "home") {
 
 window.QuickBiteLayout = {
     renderGlobalLayout: renderGlobalLayout,
-    updateCartCount: updateGlobalCartCount
+    updateCartCount: updateGlobalCartCount,
+    getSelectedLocation: getSelectedLocation
 };
+
