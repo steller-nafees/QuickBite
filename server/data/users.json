@@ -1,1 +1,11 @@
-[]
+[
+  {
+    "id": 1775624866783,
+    "fullName": "H M Nafees N Islam",
+    "email": "nafees.islam.241@northsouth.edu",
+    "phone": "1234",
+    "role": "customer",
+    "passwordHash": "scrypt$16384$8$1$t9Q8amujjERzbRDV2wI5bw==$f67iMFOf+JkPvlP/A0Iv6m4cQf3+QJoiv9WQnuP2JRvw0MuuQfGPI5OJmMIpkcZ/E7O6so2yZlCPX9iCmBsnXg==",
+    "createdAt": "2026-04-08T05:07:46.783Z"
+  }
+]

@@ -66,6 +66,14 @@
                             </div>
                         </div>
 
+                        <div class="vendor-meta-actions">
+                            <div class="vendor-tags" id="vendorTags">Loading tags...</div>
+                            <div class="vendor-actions">
+                                <button class="btn btn-primary" id="orderNow">Order Now</button>
+                                <button class="btn btn-outline" id="visitStall">Visit Stall</button>
+                            </div>
+                        </div>
+
                     </div>
 
                     <!-- Right: Vendor Image -->
@@ -99,10 +107,74 @@
             </div>
         </section>
 
+        <!-- New Dish Highlight -->
+        <section class="new-dish">
+            <div class="container">
+                <div class="section-header">
+                    <div>
+                        <span class="section-kicker">New</span>
+                        <h2 class="section-title">Chef's New Dish</h2>
+                        <p class="section-subtitle">Freshly added — try it before it's gone.</p>
+                    </div>
+                </div>
+
+                <div class="new-dish-card" id="newDishCard">
+                    <img src="./assets/images/placeholder-food.jpg" alt="New Dish" id="newDishImage">
+                    <div class="new-dish-content">
+                        <h3 id="newDishName">Loading...</h3>
+                        <p id="newDishDesc">Delicious new item from this vendor.</p>
+                        <div class="new-dish-meta">
+                            <span class="price" id="newDishPrice">--</span>
+                            <button class="btn add-to-cart">Add to cart</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Reviews Section -->
+        <section class="vendor-reviews">
+            <div class="container">
+                <div class="section-header section-header-centered">
+                    <div>
+                        <span class="section-kicker">Reviews</span>
+                        <h2 class="section-title">What students say</h2>
+                        <p class="section-subtitle">Honest ratings and recent feedback from customers.</p>
+                    </div>
+                </div>
+
+                <div class="reviews-grid">
+                    <aside class="reviews-summary">
+                        <div class="rating-big">
+                            <div class="avg" id="avgRating">--</div>
+                            <div class="stars" id="avgStars">★★★★★</div>
+                            <div class="count" id="reviewsCount">-- reviews</div>
+                        </div>
+                        <div class="rating-breakdown" id="ratingBreakdown">
+                            <!-- JS can render breakdown here -->
+                        </div>
+                    </aside>
+
+                    <div class="reviews-list" id="reviewsList">
+                        <!-- Example review (JS will replace) -->
+                        <article class="review-card">
+                            <div class="review-head">
+                                <strong class="review-author">Student</strong>
+                                <span class="review-date">— today</span>
+                            </div>
+                            <div class="review-body">Great food, quick pickup.</div>
+                        </article>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
         <div id="globalFooter"></div>
 
     </div>
 
+    <script src="js/quickbite-config.js"></script>
     <script src="../src/js/shared/layout.js"></script>
     <!-- Vendor Page Script -->
     <script src="../src/js/pages/vendor.js"></script>

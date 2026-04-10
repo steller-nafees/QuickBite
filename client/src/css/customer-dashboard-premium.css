@@ -1,0 +1,66 @@
+.customer-app {
+    --qb-accent: #9f0707;
+}
+
+.customer-stat-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.customer-overview-split {
+    grid-template-columns: 1.5fr 1fr;
+}
+
+.customer-quick-actions {
+    display: grid;
+    gap: 0.65rem;
+}
+
+.customer-quick-actions .btn {
+    width: 100%;
+    justify-content: center;
+}
+
+.customer-order-total {
+    font-family: "Baloo 2", cursive;
+    font-size: 1rem;
+    color: #5e2414;
+}
+
+.status-pending {
+    background: #fff7db;
+    color: #8e6600;
+    border-color: #f1dc94;
+}
+
+.status-cancelled {
+    background: #f1f3f6;
+    color: #525f72;
+    border-color: #d5dae2;
+}
+
+.customer-premium-form {
+    margin-bottom: 1rem;
+}
+
+.customer-pref-form {
+    padding-top: 0.9rem;
+    border-top: 1px dashed rgba(156, 78, 45, 0.2);
+}
+
+.customer-form-note {
+    color: #7a5847;
+    font-size: 0.86rem;
+    line-height: 1.35;
+}
+
+@media (max-width: 1200px) {
+    .customer-overview-split {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 900px) {
+    .customer-stat-grid {
+        grid-template-columns: 1fr;
+    }
+}

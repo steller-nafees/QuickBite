@@ -11,6 +11,8 @@ const app = express();
 const PORT = Number(process.env.PORT) || 5000;
 const DATA_DIR = path.join(__dirname, '..', 'data');
 const USERS_FILE = path.join(DATA_DIR, 'users.json');
+const PUBLIC_DIR = path.resolve(__dirname, '..', '..', 'client', 'public');
+const CLIENT_SRC_DIR = path.resolve(__dirname, '..', '..', 'client', 'src');
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -27,7 +29,9 @@ app.use((req, res, next) => {
     next();
 });
 
-app.use(express.static(path.join(__dirname, '..', '..', 'client', 'public')));
+app.use(express.static(PUBLIC_DIR));
+/* HTML under / uses ../src which browsers resolve to /src/... — must serve client/src */
+app.use('/src', express.static(CLIENT_SRC_DIR));
 
 function isValidEmail(email) {
     return /.+@.+\..+/.test(String(email || '').trim());
@@ -226,10 +230,25 @@ app.post('/api/auth/login', async (req, res) => {
     });
 });
 
+app.get('/customer-dashboard.html', (req, res) => {
+    res.sendFile(path.join(PUBLIC_DIR, 'customer-dashboard.html'));
+});
+
+app.get('/vendor-dashboard.html', (req, res) => {
+    res.sendFile(path.join(PUBLIC_DIR, 'vendor-dashboard.html'));
+});
+
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '..', '..', 'client', 'public', 'index.html'));
+    res.sendFile(path.join(PUBLIC_DIR, 'index.html'));
 });
 
 app.listen(PORT, () => {
+    const vendorDash = path.join(PUBLIC_DIR, 'vendor-dashboard.html');
+    if (!fs.existsSync(vendorDash)) {
+        console.warn('QuickBite: vendor-dashboard.html not found at', vendorDash);
+    }
     console.log(`QuickBite server running on port ${PORT}`);
+    console.log(`Serving static files from ${PUBLIC_DIR}`);
+    console.log(`Serving /src from ${CLIENT_SRC_DIR}`);
 });
+

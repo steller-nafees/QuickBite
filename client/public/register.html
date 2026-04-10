@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuickBite Registration</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="./assets/icons/app_icon_transparent.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bungee&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../src/css/landing.css">
+    <link rel="stylesheet" href="../src/css/register.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body data-page="register">
+    <div class="page-shell">
+        <div id="globalHeader"></div>
+        <div id="globalOrderPill"></div>
+
+        <section class="register-journey">
+            <div class="container register-main">
+                <header class="register-hero">
+                    <img src="./assets/icons/app_icon_transparent.png" alt="QuickBite" class="register-hero-logo">
+                    <p class="register-kicker">Account Setup</p>
+                    <h1>Create your QuickBite account</h1>
+                    <p>Secure onboarding in two steps. Pick your role, then complete your profile.</p>
+                </header>
+
+                <div class="register-progress" id="registerProgress"></div>
+
+                <form id="registerForm" class="register-card" novalidate>
+                    <section class="register-step is-active" data-step="1">
+                        <h2>Select Role</h2>
+                        <p class="step-subtitle">Choose how you will use QuickBite.</p>
+                        <div class="role-grid">
+                            <label class="role-option">
+                                <input type="radio" name="role" value="customer" required>
+                                <span class="role-icon"><i class="fas fa-user"></i></span>
+                                <span class="role-title">Customer</span>
+                                <span class="role-desc">Browse menus, build platter, and pick up meals fast.</span>
+                            </label>
+                            <label class="role-option">
+                                <input type="radio" name="role" value="vendor" required>
+                                <span class="role-icon"><i class="fas fa-store"></i></span>
+                                <span class="role-title">Vendor</span>
+                                <span class="role-desc">Manage menus, incoming orders, and kitchen flow.</span>
+                            </label>
+                        </div>
+                        <p class="field-error" data-error-for="role"></p>
+                    </section>
+
+                    <section class="register-step" data-step="2" data-role="customer">
+                        <h2>Customer Details</h2>
+                        <p class="email-note" id="emailNoteCustomer"></p>
+                        <div class="form-grid">
+                            <label><span>Full Name</span><input type="text" name="fullNameCustomer" required></label>
+                            <label><span>Phone Number</span><input type="tel" name="phoneCustomer" placeholder="+8801XXXXXXXXX" required></label>
+                            <label>
+                                <span>Password</span>
+                                <input type="password" name="passwordCustomer" id="passwordCustomer" required aria-describedby="strengthCustomer suggestionCustomer">
+                                <small id="strengthCustomer" aria-live="polite">Strength: --</small>
+                                <span class="strength-track" role="progressbar" aria-label="Password strength" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="strengthBarCustomer"></span></span>
+                                <small id="suggestionCustomer" class="strength-suggestion" aria-live="polite"></small>
+                                <ul class="password-checklist" id="checklistCustomer" aria-live="polite">
+                                    <li data-rule="length">8+ characters</li>
+                                    <li data-rule="mixedCase">Upper + lower case</li>
+                                    <li data-rule="number">At least one number</li>
+                                    <li data-rule="special">At least one special character</li>
+                                </ul>
+                            </label>
+                            <label><span>Confirm Password</span><input type="password" name="confirmPasswordCustomer" required></label>
+                        </div>
+                    </section>
+
+                    <section class="register-step" data-step="2" data-role="vendor">
+                        <h2>Vendor Details</h2>
+                        <p class="email-note" id="emailNoteVendor"></p>
+                        <div class="form-grid">
+                            <label><span>Business / Stall Name</span><input type="text" name="vendorBusiness" required></label>
+                            <label><span>Phone Number</span><input type="tel" name="phoneVendor" placeholder="+8801XXXXXXXXX" required></label>
+                            <label>
+                                <span>Password</span>
+                                <input type="password" name="passwordVendor" id="passwordVendor" required aria-describedby="strengthVendor suggestionVendor">
+                                <small id="strengthVendor" aria-live="polite">Strength: --</small>
+                                <span class="strength-track" role="progressbar" aria-label="Password strength" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="strengthBarVendor"></span></span>
+                                <small id="suggestionVendor" class="strength-suggestion" aria-live="polite"></small>
+                                <ul class="password-checklist" id="checklistVendor" aria-live="polite">
+                                    <li data-rule="length">8+ characters</li>
+                                    <li data-rule="mixedCase">Upper + lower case</li>
+                                    <li data-rule="number">At least one number</li>
+                                    <li data-rule="special">At least one special character</li>
+                                </ul>
+                            </label>
+                            <label><span>Confirm Password</span><input type="password" name="confirmPasswordVendor" required></label>
+                        </div>
+                    </section>
+
+                    <div class="register-actions">
+                        <button type="button" class="btn btn-secondary" id="backBtn">Back</button>
+                        <button type="button" class="btn btn-primary" id="nextBtn">Next</button>
+                        <button type="submit" class="btn btn-primary" id="createBtn">Create Account</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <div id="globalFooter"></div>
+    </div>
+
+    <script src="js/quickbite-config.js"></script>
+    <script src="../src/js/shared/layout.js"></script>
+    <script src="../src/js/pages/register.js"></script>
+</body>
+</html>
+
+
