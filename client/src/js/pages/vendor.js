@@ -136,9 +136,14 @@ function renderVendorMenu(vendorName) {
                         <span>★ ${item.rating}</span>
                     </div>
 
-                    <button class="add-to-cart" onclick="addToCart(${item.id})">
-                        <i class="fas fa-plus"></i> Add
-                    </button>
+                    <div class="food-actions">
+                        <button class="add-to-cart" onclick="addToCart(${item.id})">
+                            <i class="fas fa-plus"></i> Add To Platter
+                        </button>
+                        <button class="eat-now" onclick="eatNow(${item.id})">
+                            <i class="fas fa-utensils"></i> Eat Now
+                        </button>
+                    </div>
                 </div>
             </div>
         </article>
@@ -146,7 +151,7 @@ function renderVendorMenu(vendorName) {
 }
 
 // ✅ Cart
-function addToCart(itemId) {
+function addToCart(itemId, options) {
     const item = menuItems.find(i => i.id === itemId);
     let cart = JSON.parse(localStorage.getItem("quickbite-cart")) || [];
 
@@ -159,13 +164,22 @@ function addToCart(itemId) {
     }
 
     localStorage.setItem("quickbite-cart", JSON.stringify(cart));
-    showNotification(item.name + " added to cart");
+    if (!options || !options.silent) {
+        showNotification(item.name + " added to platter");
+    }
 
     if (window.QuickBiteLayout && typeof window.QuickBiteLayout.updateCartCount === "function") {
         window.QuickBiteLayout.updateCartCount();
     }
 }
 
+function eatNow(itemId) {
+    addToCart(itemId, { silent: true });
+    const item = menuItems.find(i => i.id === itemId);
+    if (item) {
+        showNotification(item.name + " is in your platter. Eat Now selected.");
+    }
+}
 // ✅ Notification (same style)
 function showNotification(message) {
     const notification = document.createElement("div");
@@ -195,3 +209,10 @@ function formatCurrency(amount) {
 function showError() {
     document.body.innerHTML = "<h2 style='text-align:center;margin-top:2rem;'>Vendor not found</h2>";
 }
+
+
+
+
+
+
+

@@ -18,6 +18,81 @@ function getSelectedLocation() {
     return QUICKBITE_LOCATIONS[0];
 }
 
+function getAuthUserFromStorage() {
+    try {
+        return JSON.parse(localStorage.getItem("quickbite-auth-user")) || null;
+    } catch (error) {
+        return null;
+    }
+}
+
+function isAppShellPage() {
+    const page = document.body.dataset.page;
+    return page === "customer-dashboard" || page === "vendor-dashboard" || page === "register";
+}
+
+function getAuthNavClusterHtml() {
+    const user = getAuthUserFromStorage();
+    const hasSession = Boolean(user && (user.email || user.fullName || user.name));
+    if (!hasSession) {
+        return "";
+    }
+
+    const page = document.body.dataset.page;
+    const role = String(user.role || "customer").toLowerCase();
+    const dashboardHref = role === "vendor" ? "vendor-dashboard.html" : "customer-dashboard.html";
+    const onMatchingDashboard =
+        (role === "vendor" && page === "vendor-dashboard") ||
+        (role !== "vendor" && page === "customer-dashboard");
+
+    let html = "<span class=\"nav-auth-cluster\">";
+    html += "<a href=\"profile.html\" class=\"nav-link\">Account</a>";
+    if (!onMatchingDashboard || page === "register") {
+        html += "<a href=\"" + dashboardHref + "\" class=\"nav-link nav-link-muted\">Dashboard</a>";
+    }
+    html += "<a href=\"#\" class=\"nav-link nav-link-muted\" data-auth-signout=\"true\">Sign out</a>";
+    html += "</span>";
+    return html;
+}
+
+function updateHeaderUserState() {
+    const user = getAuthUserFromStorage();
+    const btn = document.getElementById("headerUserBtn");
+    if (!btn) return;
+    if (user && (user.fullName || user.name || user.email)) {
+        const name = user.fullName || user.name || user.email.split("@")[0];
+        btn.className = "btn user-btn signed-in btn-user-signed";
+        btn.setAttribute("aria-label", `${name}`);
+        btn.innerHTML = `<i class=\"fas fa-user-circle\"></i><span class=\"user-label\">${name}</span>`;
+        btn.onclick = function () { window.location.href = 'profile.html'; };
+    } else {
+        // show a clear Sign In button when logged out
+        btn.className = "btn btn-signin";
+        btn.setAttribute("aria-label", "Sign in");
+        btn.textContent = "Sign In";
+        btn.onclick = function (e) {
+            e.preventDefault();
+            // Prefer a hidden dedicated login opener (won't trigger page-level CTA click handlers)
+            const loginOpener = document.getElementById('authLoginOpener') || document.querySelector('[data-auth-open="login"]');
+            if (loginOpener) {
+                loginOpener.click();
+                return;
+            }
+
+            // Fallback: choose an opener that is not inside the CTA area to avoid the onboarding notification
+            const openers = Array.from(document.querySelectorAll('[data-auth-open]'));
+            const safeOpener = openers.find(o => !o.closest('.cta') && !o.closest('.hero') && !o.closest('.nav-utilities'));
+            if (safeOpener) {
+                safeOpener.click();
+                return;
+            }
+
+            // Last resort: click the first opener
+            document.querySelector('[data-auth-open]')?.click();
+        };
+    }
+}
+
 function getGlobalHeaderMarkup() {
     const selectedLocation = getSelectedLocation();
     const locationOptions = QUICKBITE_LOCATIONS
@@ -52,13 +127,21 @@ function getGlobalHeaderMarkup() {
                     </div>
                 </div>
                 <div class="nav-menu" id="navMenu">
-                    <a href="${getHomeLink("#discover")}" class="nav-link">Discover</a>
                     <a href="${getHomeLink("#vendors")}" class="nav-link">Vendors</a>
-                    <a href="${getHomeLink("#menu")}" class="nav-link">Top Picks</a>
+                    <a href="${getHomeLink("#menu")}" class="nav-link">Our Menu</a>
                     <a href="${getHomeLink("#experience")}" class="nav-link">Why Us</a>
                     <a href="${getHomeLink("#pricing")}" class="nav-link">Plans</a>
-                    <a href="${getHomeLink("#auth")}" class="nav-link nav-link-muted">Sign In</a>
-                    <a href="${getHomeLink("#auth")}" class="nav-cta">Start Ordering</a>
+                </div>
+
+                <div class="nav-utilities">
+                    <button class="nav-cta cart-icon" data-count="0" aria-label="Cart" id="headerCartBtn">
+                        <i class="fas fa-shopping-cart"></i>
+                    </button>
+
+                    <button class="btn user-btn" id="headerUserBtn" aria-label="Sign in">
+                        <i class="fas fa-user-circle"></i>
+                        <span class="user-label">Sign In</span>
+                    </button>
                 </div>
                 <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
                     <span></span>
@@ -142,7 +225,7 @@ function getGlobalFooterMarkup() {
                     </div>
                 </div>
                 <div class="footer-bottom">
-                    © 2026 QuickBite. Crafted for faster campus food ordering.
+                    © 2026 QuickBite. Developed By H M Nafees N Islam & Hasan Md. Turabi Rahman.
                 </div>
             </div>
         </footer>
@@ -178,6 +261,8 @@ function renderGlobalLayout() {
     }
 
     updateGlobalCartCount();
+    // Ensure header shows correct user state after rendering
+    updateHeaderUserState();
 }
 
 function initializeLocationSelector() {
@@ -249,6 +334,19 @@ function initializeLocationSelector() {
         if (event.key === "Escape") {
             closeDropdown();
         }
+    });
+}
+
+function initializeAuthSignOut() {
+    document.addEventListener("click", function (event) {
+        const trigger = event.target.closest("[data-auth-signout]");
+        if (!trigger) {
+            return;
+        }
+        event.preventDefault();
+        localStorage.removeItem("quickbite-auth-user");
+        localStorage.removeItem("quickbite-profile");
+        window.location.href = "index.html";
     });
 }
 
@@ -332,6 +430,7 @@ function initializeSharedOrderPill() {
 
 renderGlobalLayout();
 initializeLocationSelector();
+initializeAuthSignOut();
 
 if (document.body.dataset.page !== "home") {
     initializeSharedNavigation();
@@ -343,4 +442,8 @@ window.QuickBiteLayout = {
     updateCartCount: updateGlobalCartCount,
     getSelectedLocation: getSelectedLocation
 };
+
+
+
+
 

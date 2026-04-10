@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vendor Dashboard - QuickBite</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="./assets/icons/app_icon_transparent.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../src/css/landing.css">
+  <link rel="stylesheet" href="../src/css/vendor-dashboard-premium.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body data-page="vendor-dashboard">
+  <div class="page-shell">
+    <div id="globalHeader"></div>
+    <div id="globalOrderPill"></div>
+
+    <div class="vendor-app">
+      <aside class="vendor-sidebar" aria-label="Vendor navigation">
+        <div class="vendor-brand">
+          <img src="./assets/icons/app_icon_transparent.png" alt="">
+          <div>
+            <strong>QuickBite</strong>
+            <small>Vendor Hub</small>
+          </div>
+        </div>
+
+        <nav class="vendor-nav" aria-label="Primary">
+          <button type="button" class="vendor-nav-btn is-active" data-tab="overview">
+            <i class="fa-solid fa-chart-pie" aria-hidden="true"></i><span>Dashboard</span>
+          </button>
+          <button type="button" class="vendor-nav-btn" data-tab="orders">
+            <i class="fa-solid fa-receipt" aria-hidden="true"></i><span>Orders</span>
+          </button>
+          <a href="index.html#menu" class="vendor-nav-link">
+            <i class="fa-solid fa-utensils" aria-hidden="true"></i><span>Browse menu</span>
+          </a>
+          <button type="button" class="vendor-nav-btn" data-tab="settings">
+            <i class="fa-solid fa-sliders" aria-hidden="true"></i><span>Settings</span>
+          </button>
+        </nav>
+
+        <div class="vendor-sidebar-foot">
+          <a href="#" class="vendor-nav-signout" data-auth-signout="true">
+            <i class="fa-solid fa-arrow-right-from-bracket" aria-hidden="true"></i><span>Sign out</span>
+          </a>
+        </div>
+      </aside>
+
+      <div class="vendor-workspace">
+        <header class="vendor-topbar">
+          <div class="vendor-search-wrap">
+            <label class="visually-hidden" for="vendorSearch">Search orders</label>
+            <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+            <input type="search" id="vendorSearch" class="vendor-search" placeholder="Search orders, items, or ticket…" autocomplete="off">
+          </div>
+          <div class="vendor-topbar-actions">
+            <button type="button" class="vendor-icon-btn" aria-label="Notifications">
+              <i class="fa-regular fa-bell" aria-hidden="true"></i>
+              <span class="vendor-notify-badge">3</span>
+            </button>
+            <div class="vendor-user-chip" id="vendorUserChip">
+              <span class="vendor-user-avatar" id="vendorTopbarAvatar">V</span>
+              <div class="vendor-user-text">
+                <strong id="vendorTopbarName">Vendor</strong>
+                <span id="vendorTopbarRole">Kitchen partner</span>
+              </div>
+              <i class="fa-solid fa-chevron-down vendor-user-chevron" aria-hidden="true"></i>
+            </div>
+          </div>
+        </header>
+
+        <main class="vendor-main">
+          <section class="vendor-tabs">
+            <article class="vendor-panel tab-panel is-active" data-panel="overview">
+              <div class="vendor-page-title">
+                <h1 id="vendorName">Kitchen Dashboard</h1>
+                <p class="vendor-page-sub">Overview of your stall today — demo visuals; connect backend when ready.</p>
+              </div>
+
+              <div class="vendor-stat-grid">
+                <article class="vendor-stat-card">
+                  <div class="vendor-stat-icon vendor-stat-icon--primary"><i class="fa-solid fa-bag-shopping" aria-hidden="true"></i></div>
+                  <div class="vendor-stat-body">
+                    <span class="vendor-stat-label">Total orders</span>
+                    <div class="vendor-stat-value-row">
+                      <strong class="vendor-stat-value" id="vendorMetricTotal">0</strong>
+                      <span class="vendor-stat-delta vendor-stat-delta--up"><i class="fa-solid fa-caret-up" aria-hidden="true"></i> 2.1%</span>
+                    </div>
+                    <svg class="vendor-spark" viewBox="0 0 80 28" aria-hidden="true"><polyline class="vendor-spark-line vendor-spark-line--a" fill="none" stroke-width="2" points="0,22 12,18 24,20 36,12 48,14 60,8 72,10 80,6"/></svg>
+                  </div>
+                </article>
+                <article class="vendor-stat-card">
+                  <div class="vendor-stat-icon vendor-stat-icon--amber"><i class="fa-solid fa-fire" aria-hidden="true"></i></div>
+                  <div class="vendor-stat-body">
+                    <span class="vendor-stat-label">Preparing</span>
+                    <div class="vendor-stat-value-row">
+                      <strong class="vendor-stat-value" id="vendorMetricPreparing">0</strong>
+                      <span class="vendor-stat-delta vendor-stat-delta--up"><i class="fa-solid fa-caret-up" aria-hidden="true"></i> 1.4%</span>
+                    </div>
+                    <svg class="vendor-spark" viewBox="0 0 80 28" aria-hidden="true"><polyline class="vendor-spark-line vendor-spark-line--b" fill="none" stroke-width="2" points="0,20 14,22 28,16 40,18 52,10 64,12 80,8"/></svg>
+                  </div>
+                </article>
+                <article class="vendor-stat-card">
+                  <div class="vendor-stat-icon vendor-stat-icon--teal"><i class="fa-solid fa-circle-check" aria-hidden="true"></i></div>
+                  <div class="vendor-stat-body">
+                    <span class="vendor-stat-label">Ready</span>
+                    <div class="vendor-stat-value-row">
+                      <strong class="vendor-stat-value" id="vendorMetricReady">0</strong>
+                      <span class="vendor-stat-delta vendor-stat-delta--down"><i class="fa-solid fa-caret-down" aria-hidden="true"></i> 0.6%</span>
+                    </div>
+                    <svg class="vendor-spark" viewBox="0 0 80 28" aria-hidden="true"><polyline class="vendor-spark-line vendor-spark-line--c" fill="none" stroke-width="2" points="0,8 16,12 32,6 48,14 64,10 80,16"/></svg>
+                  </div>
+                </article>
+                <article class="vendor-stat-card">
+                  <div class="vendor-stat-icon vendor-stat-icon--slate"><i class="fa-solid fa-flag-checkered" aria-hidden="true"></i></div>
+                  <div class="vendor-stat-body">
+                    <span class="vendor-stat-label">Completed</span>
+                    <div class="vendor-stat-value-row">
+                      <strong class="vendor-stat-value" id="vendorMetricCompleted">0</strong>
+                      <span class="vendor-stat-delta vendor-stat-delta--up"><i class="fa-solid fa-caret-up" aria-hidden="true"></i> 3.0%</span>
+                    </div>
+                    <svg class="vendor-spark" viewBox="0 0 80 28" aria-hidden="true"><polyline class="vendor-spark-line vendor-spark-line--d" fill="none" stroke-width="2" points="0,18 20,14 40,20 60,12 80,8"/></svg>
+                  </div>
+                </article>
+              </div>
+
+              <div class="vendor-overview-split">
+                <section class="glass-card vendor-summary-card">
+                  <div class="panel-head vendor-panel-head">
+                    <h2>Order activity</h2>
+                    <div class="vendor-period-select">
+                      <label class="visually-hidden" for="vendorPeriod">Period</label>
+                      <select id="vendorPeriod" class="vendor-select">
+                        <option>Last 7 days</option>
+                        <option>Last 24 hours</option>
+                        <option>This month</option>
+                      </select>
+                    </div>
+                  </div>
+                  <p class="chart-demo-caption"><i class="fa-solid fa-chart-area" aria-hidden="true"></i> Sample activity (demo — not live sales)</p>
+                  <div class="vendor-area-chart" role="img" aria-label="Demo area chart for weekly order volume">
+                    <svg class="vendor-area-svg" viewBox="0 0 400 140" preserveAspectRatio="none" aria-hidden="true">
+                      <defs>
+                        <linearGradient id="qbAreaFill" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stop-color="rgba(177, 9, 9, 0.35)"/>
+                          <stop offset="100%" stop-color="rgba(177, 9, 9, 0)"/>
+                        </linearGradient>
+                      </defs>
+                      <path class="vendor-area-grid" d="M0 30 H400 M0 70 H400 M0 110 H400"/>
+                      <path class="vendor-area-path" fill="url(#qbAreaFill)" d="M0,120 L50,95 L100,100 L150,75 L200,80 L250,55 L300,60 L350,40 L400,45 L400,140 L0,140 Z"/>
+                      <path class="vendor-area-stroke" fill="none" stroke-width="2.5" d="M0,120 L50,95 L100,100 L150,75 L200,80 L250,55 L300,60 L350,40 L400,45"/>
+                    </svg>
+                    <div class="vendor-area-labels">
+                      <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+                    </div>
+                  </div>
+                  <div class="vendor-summary-metrics">
+                    <div><span>Prep</span><strong id="avgPrepTime">15 min</strong></div>
+                    <div><span>Accept rate</span><strong>98%</strong></div>
+                    <div><span>Busy window</span><strong>1–2:30 PM</strong></div>
+                  </div>
+                </section>
+
+                <section class="glass-card vendor-selling-card">
+                  <div class="panel-head vendor-panel-head">
+                    <h2>Popular picks</h2>
+                    <a href="index.html#menu" class="vendor-view-all">View menu</a>
+                  </div>
+                  <ul class="vendor-selling-list" id="vendorTopSelling"></ul>
+                </section>
+              </div>
+            </article>
+
+            <article class="vendor-panel tab-panel" data-panel="orders">
+              <div class="vendor-page-title vendor-page-title--compact">
+                <h2>Incoming orders</h2>
+                <span class="badge-chip" id="pendingCount">0 pending</span>
+              </div>
+              <div class="glass-card vendor-orders-card">
+                <div class="filter-strip vendor-filter-strip" id="vendorOrderFilters" role="toolbar" aria-label="Filter kitchen queue">
+                  <button class="filter-btn is-active" data-filter="all" type="button">All</button>
+                  <button class="filter-btn" data-filter="queued" type="button">Queued</button>
+                  <button class="filter-btn" data-filter="preparing" type="button">Preparing</button>
+                  <button class="filter-btn" data-filter="ready" type="button">Ready</button>
+                  <button class="filter-btn" data-filter="completed" type="button">Completed</button>
+                </div>
+                <div id="vendorQueue" class="order-list"></div>
+              </div>
+            </article>
+
+            <article class="vendor-panel tab-panel" data-panel="settings">
+              <div class="vendor-page-title vendor-page-title--compact">
+                <h2>Stall settings</h2>
+                <p class="vendor-page-sub">Saved locally in this browser until backend sync is added.</p>
+              </div>
+              <div class="glass-card vendor-settings-card">
+                <form id="vendorProfileForm" class="premium-form">
+                  <div class="field-wrap">
+                    <input id="vendorBusiness" type="text" placeholder=" " required>
+                    <label for="vendorBusiness">Business / Stall Name</label>
+                  </div>
+                  <div class="field-wrap">
+                    <input id="vendorEmail" type="email" placeholder=" " required>
+                    <label for="vendorEmail">Email</label>
+                  </div>
+                  <div class="field-wrap">
+                    <input id="vendorPhone" type="tel" placeholder=" ">
+                    <label for="vendorPhone">Phone</label>
+                  </div>
+                  <div class="field-wrap">
+                    <input id="vendorPrepTime" type="text" placeholder=" ">
+                    <label for="vendorPrepTime">Default Prep Time</label>
+                  </div>
+                  <div class="field-wrap">
+                    <select id="vendorStatus">
+                      <option value="open">Open</option>
+                      <option value="busy">Busy</option>
+                      <option value="closed">Closed</option>
+                    </select>
+                    <label for="vendorStatus">Store Status</label>
+                  </div>
+                  <div class="field-wrap field-wrap-wide">
+                    <textarea id="vendorNotice" rows="4" placeholder=" "></textarea>
+                    <label for="vendorNotice">Current Notice</label>
+                  </div>
+                  <div class="toggle-row">
+                    <label class="toggle-switch">
+                      <input type="checkbox" id="autoAcceptToggle">
+                      <span class="toggle-slider"></span>
+                      <span>Auto-accept new orders</span>
+                    </label>
+                    <button class="btn btn-primary" type="submit">Save settings</button>
+                  </div>
+                </form>
+              </div>
+            </article>
+          </section>
+        </main>
+      </div>
+    </div>
+
+    <div id="globalFooter"></div>
+  </div>
+
+  <script src="js/quickbite-config.js"></script>
+  <script src="../src/js/shared/layout.js"></script>
+  <script src="../src/js/pages/vendor-dashboard.js"></script>
+</body>
+</html>
