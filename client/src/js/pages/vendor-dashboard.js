@@ -1,7 +1,15 @@
 document.addEventListener("DOMContentLoaded", function () {
+    // Auth guard - check if user is logged in
+    const user = getUser();
+    if (!user || !user.email) {
+        // Not logged in, redirect to home page
+        window.location.replace("index.html");
+        return;
+    }
+
     const session = resolveSessionRole();
-    const user = session.user;
     const role = session.role;
+    
     if (role !== "vendor") {
         window.location.replace("customer-dashboard.html");
         return;
@@ -13,38 +21,38 @@ document.addEventListener("DOMContentLoaded", function () {
     let activeFilter = "all";
 
     hydrateProfile(profile, settings);
-    hydrateTopbar(profile);
-    renderTopSelling();
-    initializeTabs();
+    hydrateSidebar(profile);
+    startClock();
+    initializeNotifications();
+
+    initializeNavigation();
     initializeFilters(function (nextFilter) {
         activeFilter = nextFilter;
         renderQueue(queue, activeFilter);
     });
     initializeForms(user);
 
-    showSkeletonLoading();
-    setTimeout(function () {
-        updateMetrics(queue);
-        renderQueue(queue, activeFilter);
-        showToast("Live queue synced.");
-    }, 550);
+    updateMetrics(queue);
+    renderRecentOrders(queue);
+    renderQueue(queue, activeFilter);
+
+    initializeSearch(queue);
+    initializeLogout();
+
+    showToast("Dashboard loaded.");
 });
 
-function hydrateTopbar(profile) {
+function hydrateSidebar(profile) {
     const name = profile.fullName || "Your stall";
     const safeName = name.length > 36 ? name.slice(0, 33) + "…" : name;
     const initial = name.trim().charAt(0).toUpperCase() || "V";
-    const nameEl = document.getElementById("vendorTopbarName");
-    const avatarEl = document.getElementById("vendorTopbarAvatar");
+    const nameEl = document.getElementById("vendorSidebarName");
+    const avatarEl = document.getElementById("vendorSidebarAvatar");
     if (nameEl) {
         nameEl.textContent = safeName;
     }
     if (avatarEl) {
         avatarEl.textContent = initial;
-    }
-    const roleEl = document.getElementById("vendorTopbarRole");
-    if (roleEl) {
-        roleEl.textContent = "Vendor · QuickBite partner";
     }
 }
 
@@ -72,7 +80,7 @@ function renderTopSelling() {
 }
 
 function hydrateProfile(profile, settings) {
-    document.getElementById("vendorName").textContent = profile.fullName || "Kitchen Dashboard";
+    document.getElementById("vendorWelcome").textContent = profile.fullName || "Kitchen Dashboard";
     document.getElementById("vendorBusiness").value = profile.fullName || "";
     document.getElementById("vendorEmail").value = profile.email || "";
     document.getElementById("vendorPhone").value = profile.phone || "";
@@ -82,18 +90,51 @@ function hydrateProfile(profile, settings) {
     document.getElementById("autoAcceptToggle").checked = Boolean(settings.autoAccept);
 }
 
-function initializeTabs() {
-    document.querySelectorAll(".vendor-nav-btn").forEach(function (button) {
-        button.addEventListener("click", function () {
-            const tab = button.getAttribute("data-tab");
-            document.querySelectorAll(".vendor-nav-btn").forEach(function (btn) {
-                btn.classList.toggle("is-active", btn === button);
-            });
-            document.querySelectorAll(".tab-panel").forEach(function (panel) {
-                panel.classList.toggle("is-active", panel.getAttribute("data-panel") === tab);
-            });
+function initializeNavigation() {
+    document.querySelectorAll(".nav-item").forEach(function (navItem) {
+        navItem.addEventListener("click", function () {
+            const page = navItem.getAttribute("data-page");
+            if (!page) return;
+            navigateTo(page);
         });
     });
+
+    document.querySelectorAll("[data-nav]").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+            const page = btn.getAttribute("data-nav");
+            if (page) navigateTo(page);
+        });
+    });
+
+    const sidebarToggle = document.getElementById("sidebarToggle");
+    if (sidebarToggle) {
+        sidebarToggle.addEventListener("click", function () {
+            document.getElementById("sidebar").classList.toggle("mobile-open");
+        });
+    }
+}
+
+function navigateTo(pageName) {
+    document.querySelectorAll(".nav-item").forEach(function (navItem) {
+        navItem.classList.toggle("active", navItem.getAttribute("data-page") === pageName);
+    });
+
+    document.querySelectorAll(".page").forEach(function (page) {
+        page.classList.toggle("active", page.getAttribute("id") === "page-" + pageName);
+    });
+
+    const titles = {
+        overview: "Dashboard",
+        orders: "Orders",
+        settings: "Settings"
+    };
+
+    const topbarTitle = document.getElementById("topbarTitle");
+    if (topbarTitle) {
+        topbarTitle.textContent = titles[pageName] || "Dashboard";
+    }
+
+    window.location.hash = pageName === "overview" ? "" : pageName;
 }
 
 function initializeFilters(onChange) {
@@ -134,11 +175,49 @@ function initializeForms(user) {
         localStorage.setItem("quickbite-profile", JSON.stringify(nextProfile));
         localStorage.setItem("quickbite-auth-user", JSON.stringify({ ...user, ...nextProfile }));
         localStorage.setItem("quickbite-vendor-settings", JSON.stringify(nextSettings));
-        document.getElementById("vendorName").textContent = nextProfile.fullName || "Kitchen Dashboard";
-        hydrateTopbar(nextProfile);
-        document.getElementById("avgPrepTime").textContent = nextSettings.prepTime || "15 min";
+        document.getElementById("vendorWelcome").textContent = nextProfile.fullName || "Kitchen Dashboard";
+        hydrateSidebar(nextProfile);
         showToast("Vendor settings saved.");
     });
+}
+
+function initializeSearch(queue) {
+    const searchInput = document.getElementById("orderSearch");
+    if (searchInput) {
+        searchInput.addEventListener("input", function () {
+            renderQueue(queue, activeFilter, searchInput.value);
+        });
+    }
+}
+
+function renderRecentOrders(queue) {
+    const container = document.getElementById("vendorRecentOrders");
+    if (!container) return;
+
+    const recent = queue.slice(0, 4);
+    if (!recent.length) {
+        container.innerHTML = "<div class=\"empty-state\">No orders yet.</div>";
+        return;
+    }
+
+    container.innerHTML = recent.map(function (order) {
+        const status = normalizeStatus(order.status);
+        const statusClass = "status-" + status;
+        const eta = order.eta || "N/A";
+
+        return "<div class=\"order-row\">" +
+            "<div class=\"order-row-body\">" +
+            "<div class=\"order-main\">" +
+            "<strong>" + escapeHtml(String(order.orderId)) + "</strong>" +
+            "<span class=\"order-kicker\">" + escapeHtml(String(eta)) + "</span>" +
+            "</div>" +
+            "<small class=\"order-items-line\">" + escapeHtml(String(order.items)) + "</small>" +
+            "</div>" +
+            "<div class=\"order-row-aside\">" +
+            "<span class=\"status-badge " + statusClass + "\">" + capitalize(status) + "</span>" +
+            "</div>" +
+            "</div>";
+    }).join("");
 }
 
 function showSkeletonLoading() {
@@ -146,32 +225,42 @@ function showSkeletonLoading() {
     queueEl.innerHTML = "<div class=\"skeleton\"></div><div class=\"skeleton\"></div><div class=\"skeleton\"></div>";
 }
 
-function renderQueue(queue, filter) {
+function renderQueue(queue, filter, searchTerm) {
     const container = document.getElementById("vendorQueue");
+    const query = String(searchTerm || "").trim().toLowerCase();
+    
     const filtered = queue.filter(function (order) {
-        if (!filter || filter === "all") {
-            return true;
-        }
-        return normalizeStatus(order.status) === filter;
+        const status = normalizeStatus(order.status);
+        const matchesFilter = !filter || filter === "all" ? true : status === filter;
+        if (!matchesFilter) return false;
+
+        if (!query) return true;
+
+        const joined = [order.orderId, order.items, status].join(" ").toLowerCase();
+        return joined.indexOf(query) !== -1;
     });
 
     const pendingCount = queue.filter(function (order) {
         const status = normalizeStatus(order.status);
         return status === "queued" || status === "preparing";
     }).length;
-    document.getElementById("pendingCount").textContent = pendingCount + " pending";
+    
+    const badgeEl = document.getElementById("pendingBadge");
+    if (badgeEl) badgeEl.textContent = pendingCount;
+    
+    const countEl = document.getElementById("pendingCount");
+    if (countEl) countEl.textContent = pendingCount + " pending";
 
     if (!filtered.length) {
         container.innerHTML = "<div class=\"empty-state\">No orders in this status right now.</div>";
         return;
     }
 
-    container.innerHTML = filtered.map(function (order, idx) {
+    container.innerHTML = filtered.map(function (order) {
         const status = normalizeStatus(order.status);
         const statusClass = "status-" + status;
         const eta = order.eta || "N/A";
-        const delay = idx * 45;
-        return "<div class=\"order-row\" style=\"animation-delay:" + delay + "ms\">" +
+        return "<div class=\"order-row\">" +
             "<div class=\"order-row-body\">" +
             "<div class=\"order-main\">" +
             "<strong>" + escapeHtml(String(order.orderId)) + "</strong>" +
@@ -247,6 +336,20 @@ function getUser() {
     }
 }
 
+function initializeLogout() {
+    const logoutBtn = document.getElementById("vendorLogoutBtn");
+    if (!logoutBtn) return;
+    
+    logoutBtn.addEventListener("click", function() {
+        // Clear authentication data
+        localStorage.removeItem("quickbite-auth-user");
+        localStorage.removeItem("quickbite-profile");
+        
+        // Redirect to home page
+        window.location.href = "index.html";
+    });
+}
+
 /**
  * Prefer role on quickbite-auth-user; if missing, recover from quickbite-profile
  * and write back so the session matches server-side role after login/register.
@@ -312,21 +415,120 @@ function capitalize(value) {
 }
 
 function showToast(message) {
-    const existing = document.querySelector(".notification");
-    if (existing) {
-        existing.remove();
+    const toast = document.getElementById("toast");
+    const toastMsg = document.getElementById("toastMsg");
+    if (!toast || !toastMsg) return;
+
+    toastMsg.textContent = message;
+    toast.classList.add("show");
+
+    setTimeout(function () {
+        toast.classList.remove("show");
+    }, 2400);
+}
+
+function startClock() {
+    const clockEl = document.getElementById("clockEl");
+    if (!clockEl) return;
+
+    function updateClock() {
+        const now = new Date();
+        clockEl.textContent = now.toLocaleTimeString("en-US", {
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit"
+        });
     }
-    const notification = document.createElement("div");
-    notification.className = "notification";
-    notification.textContent = message;
-    document.body.appendChild(notification);
-    setTimeout(function () {
-        notification.style.transform = "translateX(0)";
-    }, 30);
-    setTimeout(function () {
-        notification.style.transform = "translateX(120%)";
-        setTimeout(function () {
-            notification.remove();
-        }, 260);
-    }, 2200);
+
+    updateClock();
+    setInterval(updateClock, 1000);
+}
+
+/* ============================================================
+   NOTIFICATIONS
+   ============================================================ */
+function initializeNotifications() {
+    var notifications = [
+        { id: 1, type: 'order', title: 'New Order Received', desc: 'Order #QB-1825 - 2x Pasta Alfredo, 1x Cola', time: Date.now() - 300000, read: false },
+        { id: 2, type: 'order', title: 'New Order Received', desc: 'Order #QB-1824 - 1x Chicken Bowl', time: Date.now() - 900000, read: false },
+        { id: 3, type: 'success', title: 'Order Completed', desc: 'Order #QB-1823 has been picked up', time: Date.now() - 1800000, read: true }
+    ];
+
+    function timeAgo(ms) {
+        var d = Date.now() - ms;
+        if (d < 60000) return "just now";
+        if (d < 3600000) return Math.floor(d / 60000) + "m ago";
+        if (d < 86400000) return Math.floor(d / 3600000) + "h ago";
+        return Math.floor(d / 86400000) + "d ago";
+    }
+
+    function renderNotifications() {
+        var list = document.getElementById('notifList');
+        var dot = document.getElementById('notifDot');
+        
+        if (!notifications.length) {
+            list.innerHTML = '<div class="notif-empty"><i class="fas fa-bell-slash"></i>No notifications yet</div>';
+            if (dot) dot.style.display = 'none';
+            return;
+        }
+
+        var unreadCount = notifications.filter(function(n) { return !n.read; }).length;
+        if (dot) dot.style.display = unreadCount > 0 ? 'block' : 'none';
+
+        list.innerHTML = notifications.map(function(n) {
+            var iconClass = n.type === 'order' ? 'receipt' : n.type === 'success' ? 'check' : 'exclamation-triangle';
+            return '<div class="notif-item ' + (n.read ? '' : 'unread') + '" data-notif-id="' + n.id + '">' +
+                '<div class="notif-icon ' + n.type + '">' +
+                '<i class="fas fa-' + iconClass + '"></i>' +
+                '</div>' +
+                '<div class="notif-content">' +
+                '<div class="notif-title">' + escapeHtml(n.title) + '</div>' +
+                '<div class="notif-desc">' + escapeHtml(n.desc) + '</div>' +
+                '<div class="notif-time">' + timeAgo(n.time) + '</div>' +
+                '</div>' +
+                '</div>';
+        }).join('');
+    }
+
+    function toggleNotifications() {
+        var panel = document.getElementById('notifPanel');
+        panel.classList.toggle('open');
+        
+        // Mark all as read when opened
+        if (panel.classList.contains('open')) {
+            notifications.forEach(function(n) { n.read = true; });
+            renderNotifications();
+        }
+    }
+
+    function clearAllNotifications() {
+        notifications = [];
+        renderNotifications();
+        showToast('All notifications cleared');
+    }
+
+    var notifBtn = document.getElementById('notifBtn');
+    if (notifBtn) {
+        notifBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            toggleNotifications();
+        });
+    }
+
+    var clearBtn = document.getElementById('notifClearAll');
+    if (clearBtn) {
+        clearBtn.addEventListener('click', clearAllNotifications);
+    }
+
+    // Close notifications when clicking outside
+    document.addEventListener('click', function(e) {
+        var panel = document.getElementById('notifPanel');
+        var btn = document.getElementById('notifBtn');
+        if (panel && !panel.contains(e.target) && btn && !btn.contains(e.target)) {
+            panel.classList.remove('open');
+        }
+    });
+
+    // Initial render
+    renderNotifications();
 }

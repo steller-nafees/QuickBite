@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en" data-page="admin-dashboard">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QuickBite — Admin Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Baloo+2:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="../src/css/admin-dashboard.css">
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <a href="index.html" class="sidebar-brand" title="Go to Home">
+      <div class="brand-logo">
+        <i class="fas fa-bolt"></i>
+      </div>
+      <div>
+        <div class="bungee">QuickBite</div>
+        <small>Admin Console</small>
+      </div>
+    </a>
+
+    <div class="sidebar-meta">
+      <span class="meta-chip"><i class="fas fa-circle"></i> Live</span>
+      <span>NSU Campus</span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+      <div class="nav-item active" data-page="overview">
+        <span class="nav-icon"><i class="fas fa-chart-pie"></i></span>
+        <span>Overview</span>
+      </div>
+      <div class="nav-item" data-page="orders">
+        <span class="nav-icon"><i class="fas fa-receipt"></i></span>
+        <span>Orders</span>
+        <span class="nav-badge" id="pendingBadge">0</span>
+      </div>
+      <div class="nav-section-label">Manage</div>
+      <div class="nav-item" data-page="menu">
+        <span class="nav-icon"><i class="fas fa-utensils"></i></span>
+        <span>Menu Items</span>
+      </div>
+      <div class="nav-item" data-page="sales">
+        <span class="nav-icon"><i class="fas fa-chart-line"></i></span>
+        <span>Sales</span>
+      </div>
+      <div class="nav-item" data-page="users">
+        <span class="nav-icon"><i class="fas fa-users"></i></span>
+        <span>Users</span>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="admin-avatar">A</div>
+      <div class="admin-info">
+        <div class="admin-name">Admin</div>
+        <div class="admin-role">Super Admin</div>
+      </div>
+      <button class="sidebar-logout-btn" id="adminLogoutBtn" title="Logout">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Logout</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="sidebar-toggle" id="sidebarToggle"><i class="fas fa-bars"></i></button>
+        <div class="breadcrumb">
+          <span class="breadcrumb-root">QuickBite</span>
+          <i class="fas fa-chevron-right"></i>
+          <span id="topbarTitle">Overview</span>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-clock" id="clockEl"></div>
+        <div class="topbar-notif" id="notifBtn">
+          <i class="fas fa-bell"></i>
+          <span class="notif-dot" id="notifDot"></span>
+        </div>
+      </div>
+    </header>
+
+    <!-- CONTENT -->
+    <div class="content">
+
+      <!-- =================== OVERVIEW =================== -->
+      <div class="page active" id="page-overview">
+        <div class="page-header">
+          <h1>Dashboard Overview</h1>
+          <p>Real-time snapshot of QuickBite operations</p>
+        </div>
+
+        <div class="stat-grid">
+          <div class="stat-card stat-card--primary">
+            <div class="stat-icon"><i class="fas fa-receipt"></i></div>
+            <div class="stat-body">
+              <div class="stat-label">Total Orders</div>
+              <div class="stat-val" id="s-orders">0</div>
+              <div class="stat-sub" id="s-orders-sub"></div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-bangladeshi-taka-sign"></i></div>
+            <div class="stat-body">
+              <div class="stat-label">Revenue Today</div>
+              <div class="stat-val" id="s-revenue">৳0</div>
+              <div class="stat-sub up">+12% vs yesterday</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-utensils"></i></div>
+            <div class="stat-body">
+              <div class="stat-label">Active Items</div>
+              <div class="stat-val" id="s-items">0</div>
+              <div class="stat-sub" id="s-items-sub"></div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-users"></i></div>
+            <div class="stat-body">
+              <div class="stat-label">Registered Users</div>
+              <div class="stat-val" id="s-users">0</div>
+              <div class="stat-sub">Customers &amp; Vendors</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel" style="margin-top:16px">
+          <div class="panel-head"><span class="panel-title">Recent Orders</span></div>
+          <div id="recent-orders-list"></div>
+        </div>
+
+        <div class="panel" style="margin-top:16px">
+          <div class="panel-head"><span class="panel-title">Order Status Breakdown</span></div>
+          <div class="status-breakdown" id="statusBreakdown"></div>
+        </div>
+      </div>
+
+      <!-- =================== ORDERS =================== -->
+      <div class="page" id="page-orders">
+        <div class="page-header">
+          <h1>Order Management</h1>
+          <p>Monitor and update order statuses across all vendors</p>
+        </div>
+        <div class="panel" style="padding:0">
+          <div class="table-toolbar">
+            <div class="toolbar-left">
+              <div class="search-wrap">
+                <i class="fas fa-search"></i>
+                <input class="search-input" placeholder="Search order ID, customer, vendor…" id="orderSearch">
+              </div>
+              <select class="filter-sel" id="orderFilter">
+                <option value="">All Statuses</option>
+                <option>pending</option>
+                <option>preparing</option>
+                <option>ready</option>
+                <option>completed</option>
+                <option>delivered</option>
+              </select>
+            </div>
+            <div class="toolbar-right">
+              <span class="table-count" id="orderCount"></span>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Order ID</th>
+                  <th>Customer</th>
+                  <th>Vendor</th>
+                  <th>Items</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Placed</th>
+                  <th>Update Status</th>
+                </tr>
+              </thead>
+              <tbody id="ordersBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- =================== MENU =================== -->
+      <div class="page" id="page-menu">
+        <div class="page-header">
+          <h1>Menu Items</h1>
+          <p>Add, edit, or remove food items across vendors</p>
+        </div>
+        <div class="panel" style="padding:0">
+          <div class="table-toolbar">
+            <div class="toolbar-left">
+              <div class="search-wrap">
+                <i class="fas fa-search"></i>
+                <input class="search-input" placeholder="Search by item or vendor…" id="menuSearch">
+              </div>
+            </div>
+            <div class="toolbar-right">
+              <button class="btn btn-primary" id="addItemBtn"><i class="fas fa-plus"></i> Add Item</button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Item Name</th>
+                  <th>Description</th>
+                  <th>Price</th>
+                  <th>Vendor</th>
+                  <th>Status</th>
+                  <th>Last Updated</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="menuBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- =================== SALES =================== -->
+      <div class="page" id="page-sales">
+        <div class="page-header">
+          <h1>Sales Records</h1>
+          <p>Revenue breakdown and payment analytics</p>
+        </div>
+        <div class="stat-grid" style="grid-template-columns:repeat(3,1fr)">
+          <div class="stat-card stat-card--primary">
+            <div class="stat-icon"><i class="fas fa-coins"></i></div>
+            <div class="stat-body">
+              <div class="stat-label">Total Revenue</div>
+              <div class="stat-val" id="sr-total">৳0</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+            <div class="stat-body">
+              <div class="stat-label">Completed Orders</div>
+              <div class="stat-val" id="sr-completed">0</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-calculator"></i></div>
+            <div class="stat-body">
+              <div class="stat-label">Avg Order Value</div>
+              <div class="stat-val" id="sr-avg">৳0</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel" style="padding:0;margin-top:16px">
+          <div style="padding:14px 18px 0">
+            <span class="panel-title">Payment Log</span>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Payment ID</th>
+                  <th>Order ID</th>
+                  <th>Method</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Paid At</th>
+                </tr>
+              </thead>
+              <tbody id="paymentsBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- =================== USERS =================== -->
+      <div class="page" id="page-users">
+        <div class="page-header">
+          <h1>Registered Users</h1>
+          <p>All customers and vendors on the platform</p>
+        </div>
+        <div class="panel" style="padding:0">
+          <div class="table-toolbar">
+            <div class="toolbar-left">
+              <div class="search-wrap">
+                <i class="fas fa-search"></i>
+                <input class="search-input" placeholder="Search name or email…" id="userSearch">
+              </div>
+              <select class="filter-sel" id="userRoleFilter">
+                <option value="">All Roles</option>
+                <option>customer</option>
+                <option>vendor</option>
+              </select>
+            </div>
+            <div class="toolbar-right">
+              <span class="table-count" id="userCount"></span>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Phone</th>
+                  <th>Role</th>
+                  <th>Joined</th>
+                </tr>
+              </thead>
+              <tbody id="usersBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /shell -->
+
+<!-- =================== MODAL: ADD/EDIT ITEM =================== -->
+<div class="modal-overlay" id="itemModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title" id="modalTitle">Add Menu Item</h2>
+      <button class="modal-close" id="modalClose"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Item Name <span class="req">*</span></label>
+          <input id="fi-name" placeholder="e.g. Chicken Burger">
+        </div>
+        <div class="form-group">
+          <label>Price (৳) <span class="req">*</span></label>
+          <input id="fi-price" type="number" placeholder="0" min="0">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea id="fi-desc" rows="2" placeholder="Brief description of the item…"></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Vendor <span class="req">*</span></label>
+          <select id="fi-vendor"></select>
+        </div>
+        <div class="form-group">
+          <label>Availability</label>
+          <select id="fi-avail">
+            <option value="1">Available</option>
+            <option value="0">Unavailable</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" id="modalCancel">Cancel</button>
+      <button class="btn btn-primary" id="modalSave">Save Item</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <i class="fas fa-check-circle"></i>
+  <span id="toastMsg"></span>
+</div>
+
+<!-- NOTIFICATION PANEL -->
+<div class="notif-panel" id="notifPanel">
+  <div class="notif-header">
+    <h3>Notifications</h3>
+    <button class="notif-clear-btn" id="notifClearAll">Clear All</button>
+  </div>
+  <div class="notif-list" id="notifList">
+    <!-- Notifications will be inserted here -->
+  </div>
+</div>
+
+<script src="../src/js/pages/admin-dashboard.js"></script>
+</body>
+</html>

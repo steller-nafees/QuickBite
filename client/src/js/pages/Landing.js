@@ -50,6 +50,7 @@ const menuItems = [
         id: 1,
         name: "Classic Burger",
         vendor: "Burger Hub",
+        vendor_id: 2,
         price: 5.49,
         rating: 4.8,
         delivery: "Ready in 13 min",
@@ -62,6 +63,7 @@ const menuItems = [
         id: 2,
         name: "The Big Stack",
         vendor: "Burger Hub",
+        vendor_id: 2,
         price: 7.99,
         rating: 4.7,
         delivery: "Ready in 10 min",
@@ -74,6 +76,7 @@ const menuItems = [
         id: 3,
         name: "Twin Beef Slam",
         vendor: "Grill Station",
+        vendor_id: 5,
         price: 6.99,
         rating: 4.9,
         delivery: "Ready in 15 min",
@@ -86,6 +89,7 @@ const menuItems = [
         id: 4,
         name: "The Royal Tower",
         vendor: "Burger Lab",
+        vendor_id: 6,
         price: 12.99,
         rating: 4.8,
         delivery: "Ready in 14 min",
@@ -98,6 +102,7 @@ const menuItems = [
         id: 5,
         name: "The Deluxe Wagyu",
         vendor: "Burger Lab",
+        vendor_id: 6,
         price: 9.99,
         rating: 4.9,
         delivery: "Ready in 16 min",
@@ -110,6 +115,7 @@ const menuItems = [
         id: 6,
         name: "The Triple Burger",
         vendor: "Smash Point",
+        vendor_id: 7,
         price: 8.49,
         rating: 4.7,
         delivery: "Ready in 11 min",
@@ -119,6 +125,9 @@ const menuItems = [
         image: "https://images.unsplash.com/photo-1550547660-d9450f859349?w=900&h=700&fit=crop"
     }
 ];
+
+// Expose menuItems globally for cart integration
+window.menuItems = menuItems;
 document.addEventListener("DOMContentLoaded", function () {
     initializeNavigation();
     initializeSearch();
@@ -127,11 +136,6 @@ document.addEventListener("DOMContentLoaded", function () {
     renderTrendingItems();
     initializeAnimations();
     updateCartCount();
-
-    document.addEventListener("quickbite:location-changed", function () {
-        renderVendors();
-        renderTrendingItems();
-    });
 });
 
 function initializeBackToTop() {
@@ -243,7 +247,7 @@ function initializeSearch() {
             return;
         }
 
-        currentSuggestions = getMenuItemsByLocation()
+        currentSuggestions = menuItems
             .filter(function (item) {
                 return item.name.toLowerCase().includes(normalizedQuery) || item.vendor.toLowerCase().includes(normalizedQuery);
             })
@@ -373,39 +377,13 @@ function syncOrderPillState() {
     orderShell.classList.toggle("is-docked", shouldDock);
 }
 
-function getSelectedLocationForLanding() {
-    return window.QuickBiteLayout && typeof window.QuickBiteLayout.getSelectedLocation === "function"
-        ? window.QuickBiteLayout.getSelectedLocation()
-        : "NSU Main Canteen";
-}
-
-function getMenuItemsByLocation() {
-    const selectedLocation = getSelectedLocationForLanding();
-    const allowedVendors = vendors
-        .filter(function (vendor) {
-            return vendor.location === selectedLocation;
-        })
-        .map(function (vendor) {
-            return vendor.name;
-        });
-
-    return menuItems.filter(function (item) {
-        return allowedVendors.includes(item.vendor);
-    });
-}
-
 function renderVendors() {
     const vendorsGrid = document.getElementById("vendorsGrid");
     if (!vendorsGrid) {
         return;
     }
 
-    const selectedLocation = getSelectedLocationForLanding();
-
     const topVendors = vendors
-        .filter(function (vendor) {
-            return vendor.location === selectedLocation;
-        })
         .slice()
         .sort(function (a, b) {
             return b.totalOrders - a.totalOrders;
@@ -417,7 +395,7 @@ function renderVendors() {
             <article class="vendor-card">
                 <div class="vendor-info">
                     <h3 class="vendor-name">No vendors available</h3>
-                    <p class="vendor-cuisine">No active vendors found for ${selectedLocation}.</p>
+                    <p class="vendor-cuisine">No active vendors found.</p>
                 </div>
             </article>
         `;
@@ -463,20 +441,19 @@ function renderTrendingItems() {
         return;
     }
 
-    const itemsForLocation = getMenuItemsByLocation();
-    if (itemsForLocation.length === 0) {
+    if (menuItems.length === 0) {
         trendingGrid.innerHTML = `
             <article class="food-card">
                 <div class="food-info">
                     <h3 class="food-name">No menu available</h3>
-                    <p class="food-description">No food items are available for this canteen right now.</p>
+                    <p class="food-description">No food items are available right now.</p>
                 </div>
             </article>
         `;
         return;
     }
 
-    trendingGrid.innerHTML = itemsForLocation
+    trendingGrid.innerHTML = menuItems
         .map(function (item, index) {
             return `
                 <article class="food-card animate-fade-in-up" style="animation-delay: ${index * 0.1}s">
@@ -507,7 +484,7 @@ function renderTrendingItems() {
         button.addEventListener("click", function (e) {
             e.stopPropagation();
             const itemId = Number(this.getAttribute("data-item-id"));
-            const item = itemsForLocation.find(function (menuItem) {
+            const item = menuItems.find(function (menuItem) {
                 return menuItem.id === itemId;
             });
 
@@ -527,25 +504,7 @@ function renderTrendingItems() {
 }
 
 function addToCart(item) {
-    let cart = JSON.parse(localStorage.getItem("quickbite-cart")) || [];
-    const existingItem = cart.find(function (cartItem) {
-        return cartItem.id === item.id;
-    });
-
-    if (existingItem) {
-        existingItem.quantity += 1;
-    } else {
-        cart.push({
-            id: item.id,
-            name: item.name,
-            price: item.price,
-            quantity: 1
-        });
-    }
-
-    localStorage.setItem("quickbite-cart", JSON.stringify(cart));
-    showNotification(item.name + " added to cart");
-    updateCartCount();
+    window.QuickBiteCart.add(item);
 }
 
 function showNotification(message) {
@@ -642,6 +601,11 @@ document.addEventListener("click", function (e) {
 });
 
 document.addEventListener("click", function (e) {
+    // Don't trigger onboarding notification for cart button
+    if (e.target.closest('#headerCartBtn')) {
+        return;
+    }
+    
     if (e.target.closest(".cta .btn-primary") || e.target.closest(".nav-cta")) {
         e.preventDefault();
         showNotification("Student onboarding flow starts here");

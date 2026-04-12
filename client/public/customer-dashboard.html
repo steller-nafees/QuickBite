@@ -1,207 +1,246 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-page="customer-dashboard">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Customer Dashboard - QuickBite</title>
-  <link rel="icon" type="image/png" sizes="32x32" href="./assets/icons/app_icon_transparent.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../src/css/landing.css">
-  <link rel="stylesheet" href="../src/css/vendor-dashboard-premium.css">
-  <link rel="stylesheet" href="../src/css/customer-dashboard-premium.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QuickBite — Customer Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Baloo+2:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="../src/css/customer-dashboard.css">
 </head>
-<body data-page="customer-dashboard">
-  <div class="page-shell">
-    <div id="globalHeader"></div>
-    <div id="globalOrderPill"></div>
+<body>
+<div class="shell">
 
-    <div class="vendor-app customer-app">
-      <aside class="vendor-sidebar" aria-label="Customer navigation">
-        <div class="vendor-brand">
-          <img src="./assets/icons/app_icon_transparent.png" alt="">
-          <div>
-            <strong>QuickBite</strong>
-            <small>Customer Hub</small>
-          </div>
-        </div>
-
-        <nav class="vendor-nav" aria-label="Primary">
-          <button type="button" class="vendor-nav-btn is-active" data-tab="overview">
-            <i class="fa-solid fa-house" aria-hidden="true"></i><span>Overview</span>
-          </button>
-          <button type="button" class="vendor-nav-btn" data-tab="orders">
-            <i class="fa-solid fa-receipt" aria-hidden="true"></i><span>Orders</span>
-          </button>
-          <button type="button" class="vendor-nav-btn" data-tab="settings">
-            <i class="fa-solid fa-user-gear" aria-hidden="true"></i><span>Settings</span>
-          </button>
-          <a href="index.html#menu" class="vendor-nav-link">
-            <i class="fa-solid fa-utensils" aria-hidden="true"></i><span>Browse menu</span>
-          </a>
-        </nav>
-
-        <div class="vendor-sidebar-foot">
-          <a href="#" class="vendor-nav-signout" data-auth-signout="true">
-            <i class="fa-solid fa-arrow-right-from-bracket" aria-hidden="true"></i><span>Sign out</span>
-          </a>
-        </div>
-      </aside>
-
-      <div class="vendor-workspace">
-        <header class="vendor-topbar">
-          <div class="vendor-search-wrap">
-            <label class="visually-hidden" for="customerSearch">Search your orders</label>
-            <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
-            <input type="search" id="customerSearch" class="vendor-search" placeholder="Search order id, vendor, item..." autocomplete="off">
-          </div>
-          <div class="vendor-topbar-actions">
-            <a href="index.html#menu" class="vendor-icon-btn" aria-label="Browse menu">
-              <i class="fa-solid fa-bowl-food" aria-hidden="true"></i>
-            </a>
-            <div class="vendor-user-chip">
-              <span class="vendor-user-avatar" id="customerTopbarAvatar">C</span>
-              <div class="vendor-user-text">
-                <strong id="customerTopbarName">Customer</strong>
-                <span>QuickBite account</span>
-              </div>
-              <i class="fa-solid fa-chevron-down vendor-user-chevron" aria-hidden="true"></i>
-            </div>
-          </div>
-        </header>
-
-        <main class="vendor-main">
-          <section class="vendor-tabs">
-            <article class="vendor-panel tab-panel is-active" data-panel="overview">
-              <div class="vendor-page-title">
-                <h1 id="customerName">Welcome back</h1>
-                <p class="vendor-page-sub" id="customerHeroEmail">Track recent orders, review status, and keep your profile details updated.</p>
-              </div>
-
-              <div class="vendor-stat-grid customer-stat-grid">
-                <article class="vendor-stat-card">
-                  <div class="vendor-stat-icon vendor-stat-icon--primary"><i class="fa-solid fa-bag-shopping" aria-hidden="true"></i></div>
-                  <div class="vendor-stat-body">
-                    <span class="vendor-stat-label">Total Orders</span>
-                    <div class="vendor-stat-value-row"><strong class="vendor-stat-value" id="customerMetricOrders">0</strong></div>
-                  </div>
-                </article>
-                <article class="vendor-stat-card">
-                  <div class="vendor-stat-icon vendor-stat-icon--teal"><i class="fa-solid fa-circle-check" aria-hidden="true"></i></div>
-                  <div class="vendor-stat-body">
-                    <span class="vendor-stat-label">Completed</span>
-                    <div class="vendor-stat-value-row"><strong class="vendor-stat-value" id="customerMetricCompleted">0</strong></div>
-                  </div>
-                </article>
-                <article class="vendor-stat-card">
-                  <div class="vendor-stat-icon vendor-stat-icon--amber"><i class="fa-solid fa-clock" aria-hidden="true"></i></div>
-                  <div class="vendor-stat-body">
-                    <span class="vendor-stat-label">Active Orders</span>
-                    <div class="vendor-stat-value-row"><strong class="vendor-stat-value" id="customerMetricPending">0</strong></div>
-                  </div>
-                </article>
-              </div>
-
-              <div class="vendor-overview-split customer-overview-split">
-                <section class="glass-card">
-                  <div class="vendor-panel-head">
-                    <h2>Recent Orders</h2>
-                    <button type="button" class="filter-btn is-active" id="heroJumpOrders">View all</button>
-                  </div>
-                  <div id="customerRecentOrders" class="order-list"></div>
-                </section>
-
-                <section class="glass-card">
-                  <div class="vendor-panel-head">
-                    <h2>Quick Actions</h2>
-                  </div>
-                  <div class="customer-quick-actions">
-                    <a class="btn btn-primary" href="index.html#menu">Browse menu</a>
-                    <button type="button" class="btn btn-secondary" data-tab-jump="orders">Check all orders</button>
-                    <button type="button" class="btn btn-secondary" data-tab-jump="settings">Update preferences</button>
-                  </div>
-                </section>
-              </div>
-            </article>
-
-            <article class="vendor-panel tab-panel" data-panel="orders">
-              <div class="vendor-page-title vendor-page-title--compact">
-                <h2>Order History</h2>
-                <a class="btn btn-secondary btn-compact" href="index.html#menu">Reorder</a>
-              </div>
-              <div class="glass-card vendor-orders-card">
-                <div class="filter-strip vendor-filter-strip" id="customerOrderFilters" role="toolbar" aria-label="Filter orders by status">
-                  <button class="filter-btn is-active" type="button" data-filter="all">All</button>
-                  <button class="filter-btn" type="button" data-filter="pending">Pending</button>
-                  <button class="filter-btn" type="button" data-filter="preparing">Preparing</button>
-                  <button class="filter-btn" type="button" data-filter="completed">Completed</button>
-                  <button class="filter-btn" type="button" data-filter="cancelled">Cancelled</button>
-                </div>
-                <div id="customerOrderHistory" class="order-list"></div>
-              </div>
-            </article>
-
-            <article class="vendor-panel tab-panel" data-panel="settings">
-              <div class="vendor-page-title vendor-page-title--compact">
-                <h2>My Settings</h2>
-                <p class="vendor-page-sub">Your details are saved locally in this browser.</p>
-              </div>
-              <div class="glass-card vendor-settings-card">
-                <form id="customerProfileForm" class="premium-form customer-premium-form">
-                  <div class="field-wrap">
-                    <input id="customerFullName" type="text" placeholder=" " required autocomplete="name">
-                    <label for="customerFullName">Full Name</label>
-                  </div>
-                  <div class="field-wrap">
-                    <input id="customerEmail" type="email" placeholder=" " required autocomplete="email">
-                    <label for="customerEmail">Email</label>
-                  </div>
-                  <div class="field-wrap">
-                    <input id="customerPhone" type="tel" placeholder=" " autocomplete="tel">
-                    <label for="customerPhone">Phone</label>
-                  </div>
-                  <div class="toggle-row">
-                    <span class="customer-form-note">Save your contact details for faster checkout.</span>
-                    <button class="btn btn-primary" type="submit">Save Profile</button>
-                  </div>
-                </form>
-
-                <form id="customerPrefsForm" class="premium-form customer-premium-form customer-pref-form">
-                  <div class="field-wrap">
-                    <select id="customerPickup">
-                      <option>NSU Main Canteen</option>
-                      <option>NSU Annex Canteen</option>
-                      <option>NSU Business Canteen</option>
-                    </select>
-                    <label for="customerPickup">Default Pickup</label>
-                  </div>
-                  <div class="field-wrap">
-                    <input id="customerDiet" type="text" placeholder=" ">
-                    <label for="customerDiet">Dietary Preference</label>
-                  </div>
-                  <div class="field-wrap field-wrap-wide">
-                    <textarea id="customerNotes" rows="4" placeholder=" "></textarea>
-                    <label for="customerNotes">Order Notes</label>
-                  </div>
-                  <div class="toggle-row">
-                    <span class="customer-form-note">Preferences are applied as defaults for new orders.</span>
-                    <button class="btn btn-secondary" type="submit">Save Preferences</button>
-                  </div>
-                </form>
-              </div>
-            </article>
-          </section>
-        </main>
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <a href="index.html" class="sidebar-brand" title="Go to Home">
+      <div class="brand-logo">
+        <i class="fas fa-bolt"></i>
       </div>
+      <div>
+        <div class="bungee">QuickBite</div>
+        <small>Customer Portal</small>
+      </div>
+    </a>
+
+    <div class="sidebar-meta">
+      <span class="meta-chip"><i class="fas fa-circle"></i> Live</span>
+      <span>NSU Campus</span>
     </div>
 
-    <div id="globalFooter"></div>
-  </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+      <div class="nav-item active" data-page="overview">
+        <span class="nav-icon"><i class="fas fa-chart-pie"></i></span>
+        <span>Overview</span>
+      </div>
+      <div class="nav-item" data-page="orders">
+        <span class="nav-icon"><i class="fas fa-receipt"></i></span>
+        <span>My Orders</span>
+      </div>
+      <div class="nav-section-label">Account</div>
+      <div class="nav-item" data-page="settings">
+        <span class="nav-icon"><i class="fas fa-user-gear"></i></span>
+        <span>Settings</span>
+      </div>
+    </nav>
 
-  <script src="js/quickbite-config.js"></script>
-  <script src="../src/js/shared/layout.js"></script>
-  <script src="../src/js/pages/customer-dashboard.js"></script>
+    <div class="sidebar-footer">
+      <div class="admin-avatar" id="customerSidebarAvatar">C</div>
+      <div class="admin-info">
+        <div class="admin-name" id="customerSidebarName">Customer</div>
+        <div class="admin-role">QuickBite User</div>
+      </div>
+      <button class="sidebar-logout-btn" id="customerLogoutBtn" title="Logout">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Logout</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="sidebar-toggle" id="sidebarToggle"><i class="fas fa-bars"></i></button>
+        <div class="breadcrumb">
+          <span class="breadcrumb-root">QuickBite</span>
+          <i class="fas fa-chevron-right"></i>
+          <span id="topbarTitle">Overview</span>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-clock" id="clockEl"></div>
+        <a href="index.html#menu" class="topbar-btn" title="Browse Menu">
+          <i class="fas fa-utensils"></i>
+        </a>
+        <div class="topbar-notif" id="notifBtn">
+          <i class="fas fa-bell"></i>
+          <span class="notif-dot" id="notifDot"></span>
+        </div>
+      </div>
+    </header>
+
+    <!-- CONTENT -->
+    <div class="content">
+
+      <!-- =================== OVERVIEW =================== -->
+      <div class="page active" id="page-overview">
+        <div class="page-header">
+          <h1 id="customerWelcome">Welcome back</h1>
+          <p id="customerSubtitle">Track recent orders, review status, and keep your profile details updated.</p>
+        </div>
+
+        <div class="stat-grid">
+          <div class="stat-card stat-card--primary">
+            <div class="stat-icon"><i class="fas fa-bag-shopping"></i></div>
+            <div class="stat-body">
+              <div class="stat-label">Total Orders</div>
+              <div class="stat-val" id="customerMetricOrders">0</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-circle-check"></i></div>
+            <div class="stat-body">
+              <div class="stat-label">Completed</div>
+              <div class="stat-val" id="customerMetricCompleted">0</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-clock"></i></div>
+            <div class="stat-body">
+              <div class="stat-label">Active Orders</div>
+              <div class="stat-val" id="customerMetricPending">0</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel" style="margin-top:16px">
+          <div class="panel-head">
+            <span class="panel-title">Recent Orders</span>
+            <button class="link-btn" data-nav="orders">View all <i class="fas fa-arrow-right"></i></button>
+          </div>
+          <div id="customerRecentOrders"></div>
+        </div>
+      </div>
+
+      <!-- =================== ORDERS =================== -->
+      <div class="page" id="page-orders">
+        <div class="page-header">
+          <h1>Order History</h1>
+          <p>View and track all your past and current orders</p>
+        </div>
+        <div class="panel" style="padding:0">
+          <div class="table-toolbar">
+            <div class="toolbar-left">
+              <div class="search-wrap">
+                <i class="fas fa-search"></i>
+                <input class="search-input" placeholder="Search order ID, vendor, item…" id="orderSearch">
+              </div>
+              <div class="filter-strip" id="customerOrderFilters">
+                <button class="filter-btn is-active" type="button" data-filter="all">All</button>
+                <button class="filter-btn" type="button" data-filter="pending">Pending</button>
+                <button class="filter-btn" type="button" data-filter="preparing">Preparing</button>
+                <button class="filter-btn" type="button" data-filter="completed">Completed</button>
+                <button class="filter-btn" type="button" data-filter="cancelled">Cancelled</button>
+              </div>
+            </div>
+            <div class="toolbar-right">
+              <a href="index.html#menu" class="btn btn-primary"><i class="fas fa-plus"></i> New Order</a>
+            </div>
+          </div>
+          <div class="order-list" id="customerOrderHistory"></div>
+        </div>
+      </div>
+
+      <!-- =================== SETTINGS =================== -->
+      <div class="page" id="page-settings">
+        <div class="page-header">
+          <h1>My Settings</h1>
+          <p>Update your profile details and order preferences</p>
+        </div>
+
+        <div class="panel" style="margin-bottom:16px">
+          <div class="panel-head">
+            <span class="panel-title">Profile Information</span>
+          </div>
+          <form id="customerProfileForm" class="settings-form">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Full Name <span class="req">*</span></label>
+                <input id="customerFullName" type="text" placeholder="Your full name" required autocomplete="name">
+              </div>
+              <div class="form-group">
+                <label>Email <span class="req">*</span></label>
+                <input id="customerEmail" type="email" placeholder="your.email@example.com" required autocomplete="email">
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Phone</label>
+              <input id="customerPhone" type="tel" placeholder="01XXXXXXXXX" autocomplete="tel">
+            </div>
+            <div style="margin-top:16px">
+              <button class="btn btn-primary" type="submit"><i class="fas fa-save"></i> Save Profile</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <span class="panel-title">Order Preferences</span>
+          </div>
+          <form id="customerPrefsForm" class="settings-form">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Default Pickup Location</label>
+                <select id="customerPickup">
+                  <option>NSU Main Canteen</option>
+                  <option>NSU Annex Canteen</option>
+                  <option>NSU Business Canteen</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Dietary Preference</label>
+                <input id="customerDiet" type="text" placeholder="e.g. Vegetarian, Halal">
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Default Order Notes</label>
+              <textarea id="customerNotes" rows="3" placeholder="Any special instructions for your orders…"></textarea>
+            </div>
+            <div style="margin-top:16px">
+              <button class="btn btn-ghost" type="submit"><i class="fas fa-save"></i> Save Preferences</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /shell -->
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <i class="fas fa-check-circle"></i>
+  <span id="toastMsg"></span>
+</div>
+
+<!-- NOTIFICATION PANEL -->
+<div class="notif-panel" id="notifPanel">
+  <div class="notif-header">
+    <h3>Notifications</h3>
+    <button class="notif-clear-btn" id="notifClearAll">Clear All</button>
+  </div>
+  <div class="notif-list" id="notifList">
+    <!-- Notifications will be inserted here -->
+  </div>
+</div>
+
+<script src="js/quickbite-config.js"></script>
+<script src="../src/js/pages/customer-dashboard.js"></script>
 </body>
 </html>

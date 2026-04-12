@@ -1,6 +1,13 @@
 document.addEventListener("DOMContentLoaded", function () {
+    // Auth guard - check if user is logged in
+    const user = getUser();
+    if (!user || !user.email) {
+        // Not logged in, redirect to home page
+        window.location.replace("index.html");
+        return;
+    }
+
     const session = resolveSessionRole();
-    const user = session.user;
     const role = session.role;
 
     if (role === "vendor") {
@@ -14,37 +21,33 @@ document.addEventListener("DOMContentLoaded", function () {
     let activeFilter = "all";
 
     hydrateProfile(profile, prefs);
-    hydrateTopbar(profile);
+    hydrateSidebar(profile);
+    startClock();
+    initializeNotifications();
 
-    initializeTabs();
+    initializeNavigation();
     initializeFilters(function (filter) {
         activeFilter = filter;
         renderHistory(history, activeFilter, "customerOrderHistory", 100);
     });
 
     updateCustomerMetrics(history);
-    renderHistory(history, "all", "customerRecentOrders", 4);
+    renderRecentOrders(history);
     renderHistory(history, activeFilter, "customerOrderHistory", 100);
 
-    initializeQuickActions();
     initializeForms(user);
+    initializeSearch(history);
+    initializeLogout();
 
-    const searchInput = document.getElementById("customerSearch");
-    if (searchInput) {
-        searchInput.addEventListener("input", function () {
-            renderHistory(history, activeFilter, "customerOrderHistory", 100, searchInput.value);
-        });
-    }
-
-    const hashTab = (window.location.hash || "").replace(/^#/, "").toLowerCase();
-    if (hashTab === "orders" || hashTab === "settings" || hashTab === "overview") {
-        activateTab(hashTab);
+    const hashPage = (window.location.hash || "").replace(/^#/, "").toLowerCase();
+    if (hashPage === "orders" || hashPage === "settings") {
+        navigateTo(hashPage);
     }
 });
 
 function hydrateProfile(profile, prefs) {
-    document.getElementById("customerName").textContent = "Welcome back, " + (profile.fullName || "Customer");
-    document.getElementById("customerHeroEmail").textContent = profile.email || "Add your email and preferences to complete your setup.";
+    document.getElementById("customerWelcome").textContent = "Welcome back, " + (profile.fullName || "Customer");
+    document.getElementById("customerSubtitle").textContent = profile.email || "Track recent orders, review status, and keep your profile details updated.";
 
     document.getElementById("customerFullName").value = profile.fullName || "";
     document.getElementById("customerEmail").value = profile.email || "";
@@ -55,13 +58,13 @@ function hydrateProfile(profile, prefs) {
     document.getElementById("customerNotes").value = prefs.notes || "";
 }
 
-function hydrateTopbar(profile) {
+function hydrateSidebar(profile) {
     const name = profile.fullName || "Customer";
     const safeName = name.length > 30 ? name.slice(0, 27) + "…" : name;
     const initial = getInitials(name);
 
-    const nameEl = document.getElementById("customerTopbarName");
-    const avatarEl = document.getElementById("customerTopbarAvatar");
+    const nameEl = document.getElementById("customerSidebarName");
+    const avatarEl = document.getElementById("customerSidebarAvatar");
 
     if (nameEl) {
         nameEl.textContent = safeName;
@@ -72,47 +75,51 @@ function hydrateTopbar(profile) {
     }
 }
 
-function initializeQuickActions() {
-    const jumpOrders = document.getElementById("heroJumpOrders");
-    if (jumpOrders) {
-        jumpOrders.addEventListener("click", function () {
-            activateTab("orders");
-            history.replaceState(null, "", "customer-dashboard.html#orders");
+function initializeNavigation() {
+    document.querySelectorAll(".nav-item").forEach(function (navItem) {
+        navItem.addEventListener("click", function () {
+            const page = navItem.getAttribute("data-page");
+            if (!page) return;
+            navigateTo(page);
+        });
+    });
+
+    document.querySelectorAll("[data-nav]").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+            const page = btn.getAttribute("data-nav");
+            if (page) navigateTo(page);
+        });
+    });
+
+    const sidebarToggle = document.getElementById("sidebarToggle");
+    if (sidebarToggle) {
+        sidebarToggle.addEventListener("click", function () {
+            document.getElementById("sidebar").classList.toggle("mobile-open");
         });
     }
-
-    document.querySelectorAll("[data-tab-jump]").forEach(function (button) {
-        button.addEventListener("click", function () {
-            const tab = button.getAttribute("data-tab-jump");
-            if (tab) {
-                activateTab(tab);
-                history.replaceState(null, "", "customer-dashboard.html#" + tab);
-            }
-        });
-    });
 }
 
-function initializeTabs() {
-    document.querySelectorAll(".vendor-nav-btn").forEach(function (button) {
-        button.addEventListener("click", function () {
-            const tab = button.getAttribute("data-tab");
-            if (!tab) {
-                return;
-            }
-            activateTab(tab);
-            history.replaceState(null, "", "customer-dashboard.html#" + tab);
-        });
-    });
-}
-
-function activateTab(tabName) {
-    document.querySelectorAll(".vendor-nav-btn").forEach(function (btn) {
-        btn.classList.toggle("is-active", btn.getAttribute("data-tab") === tabName);
+function navigateTo(pageName) {
+    document.querySelectorAll(".nav-item").forEach(function (navItem) {
+        navItem.classList.toggle("active", navItem.getAttribute("data-page") === pageName);
     });
 
-    document.querySelectorAll(".tab-panel").forEach(function (panel) {
-        panel.classList.toggle("is-active", panel.getAttribute("data-panel") === tabName);
+    document.querySelectorAll(".page").forEach(function (page) {
+        page.classList.toggle("active", page.getAttribute("id") === "page-" + pageName);
     });
+
+    const titles = {
+        overview: "Overview",
+        orders: "My Orders",
+        settings: "Settings"
+    };
+
+    const topbarTitle = document.getElementById("topbarTitle");
+    if (topbarTitle) {
+        topbarTitle.textContent = titles[pageName] || "Overview";
+    }
+
+    window.location.hash = pageName === "overview" ? "" : pageName;
 }
 
 function initializeFilters(onChange) {
@@ -149,9 +156,9 @@ function initializeForms(user) {
         localStorage.setItem("quickbite-profile", JSON.stringify(nextProfile));
         localStorage.setItem("quickbite-auth-user", JSON.stringify({ ...user, ...nextProfile }));
 
-        document.getElementById("customerName").textContent = "Welcome back, " + (nextProfile.fullName || "Customer");
-        document.getElementById("customerHeroEmail").textContent = nextProfile.email || "Add your email and preferences to complete your setup.";
-        hydrateTopbar(nextProfile);
+        document.getElementById("customerWelcome").textContent = "Welcome back, " + (nextProfile.fullName || "Customer");
+        document.getElementById("customerSubtitle").textContent = nextProfile.email || "Track recent orders, review status, and keep your profile details updated.";
+        hydrateSidebar(nextProfile);
 
         showToast("Customer profile updated.");
     });
@@ -168,6 +175,50 @@ function initializeForms(user) {
         localStorage.setItem("quickbite-saved-info", JSON.stringify(nextPrefs));
         showToast("Preferences saved.");
     });
+}
+
+function initializeSearch(history) {
+    const searchInput = document.getElementById("orderSearch");
+    if (searchInput) {
+        searchInput.addEventListener("input", function () {
+            renderHistory(history, activeFilter, "customerOrderHistory", 100, searchInput.value);
+        });
+    }
+}
+
+function renderRecentOrders(history) {
+    const container = document.getElementById("customerRecentOrders");
+    if (!container) return;
+
+    const recent = history.slice(0, 4);
+    if (!recent.length) {
+        container.innerHTML = "<div class=\"empty-state\">No orders yet. Browse the menu to place your first order!</div>";
+        return;
+    }
+
+    container.innerHTML = recent.map(function (order, idx) {
+        const id = order.id || order.orderId || "N/A";
+        const vendor = order.vendor || "QuickBite Vendor";
+        const date = order.date || "Date unavailable";
+        const items = order.items || "Item details unavailable";
+        const total = typeof order.total === "number" ? formatCurrency(order.total) : "N/A";
+        const status = normalizeStatus(order.status);
+        const statusClass = "status-" + status;
+
+        return "<div class=\"order-row\">" +
+            "<div class=\"order-row-body\">" +
+            "<div class=\"order-main\">" +
+            "<strong>#" + escapeHtml(String(id)) + " · " + escapeHtml(String(vendor)) + "</strong>" +
+            "<span class=\"order-kicker\">" + escapeHtml(String(date)) + "</span>" +
+            "</div>" +
+            "<small class=\"order-items-line\">" + escapeHtml(String(items)) + "</small>" +
+            "</div>" +
+            "<div class=\"order-row-aside\">" +
+            "<span class=\"status-badge " + statusClass + "\">" + escapeHtml(capitalize(status)) + "</span>" +
+            "<strong class=\"customer-order-total\">" + escapeHtml(String(total)) + "</strong>" +
+            "</div>" +
+            "</div>";
+    }).join("");
 }
 
 function renderHistory(history, filter, containerId, limit, searchTerm) {
@@ -214,9 +265,8 @@ function renderHistory(history, filter, containerId, limit, searchTerm) {
         const total = typeof order.total === "number" ? formatCurrency(order.total) : "N/A";
         const status = normalizeStatus(order.status);
         const statusClass = "status-" + status;
-        const delay = idx * 35;
 
-        return "<div class=\"order-row\" style=\"animation-delay:" + delay + "ms\">" +
+        return "<div class=\"order-row\">" +
             "<div class=\"order-row-body\">" +
             "<div class=\"order-main\">" +
             "<strong>#" + escapeHtml(String(id)) + " · " + escapeHtml(String(vendor)) + "</strong>" +
@@ -276,6 +326,20 @@ function getUser() {
     } catch (error) {
         return {};
     }
+}
+
+function initializeLogout() {
+    const logoutBtn = document.getElementById("customerLogoutBtn");
+    if (!logoutBtn) return;
+    
+    logoutBtn.addEventListener("click", function() {
+        // Clear authentication data
+        localStorage.removeItem("quickbite-auth-user");
+        localStorage.removeItem("quickbite-profile");
+        
+        // Redirect to home page
+        window.location.href = "index.html";
+    });
 }
 
 function resolveSessionRole() {
@@ -368,24 +432,120 @@ function capitalize(value) {
 }
 
 function showToast(message) {
-    const existing = document.querySelector(".notification");
-    if (existing) {
-        existing.remove();
+    const toast = document.getElementById("toast");
+    const toastMsg = document.getElementById("toastMsg");
+    if (!toast || !toastMsg) return;
+
+    toastMsg.textContent = message;
+    toast.classList.add("show");
+
+    setTimeout(function () {
+        toast.classList.remove("show");
+    }, 2400);
+}
+
+function startClock() {
+    const clockEl = document.getElementById("clockEl");
+    if (!clockEl) return;
+
+    function updateClock() {
+        const now = new Date();
+        clockEl.textContent = now.toLocaleTimeString("en-US", {
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit"
+        });
     }
 
-    const notification = document.createElement("div");
-    notification.className = "notification";
-    notification.textContent = message;
-    document.body.appendChild(notification);
+    updateClock();
+    setInterval(updateClock, 1000);
+}
 
-    setTimeout(function () {
-        notification.style.transform = "translateX(0)";
-    }, 30);
+/* ============================================================
+   NOTIFICATIONS
+   ============================================================ */
+function initializeNotifications() {
+    var notifications = [
+        { id: 1, type: 'success', title: 'Order Confirmed', desc: 'Your order #QB-1825 has been confirmed', time: Date.now() - 300000, read: false },
+        { id: 2, type: 'order', title: 'Order Preparing', desc: 'Order #QB-1824 is being prepared', time: Date.now() - 900000, read: false },
+        { id: 3, type: 'warning', title: 'Delivery Update', desc: 'Your order #QB-1823 will arrive in 10 minutes', time: Date.now() - 1800000, read: true }
+    ];
 
-    setTimeout(function () {
-        notification.style.transform = "translateX(120%)";
-        setTimeout(function () {
-            notification.remove();
-        }, 260);
-    }, 2200);
+    function timeAgo(ms) {
+        var d = Date.now() - ms;
+        if (d < 60000) return "just now";
+        if (d < 3600000) return Math.floor(d / 60000) + "m ago";
+        if (d < 86400000) return Math.floor(d / 3600000) + "h ago";
+        return Math.floor(d / 86400000) + "d ago";
+    }
+
+    function renderNotifications() {
+        var list = document.getElementById('notifList');
+        var dot = document.getElementById('notifDot');
+        
+        if (!notifications.length) {
+            list.innerHTML = '<div class="notif-empty"><i class="fas fa-bell-slash"></i>No notifications yet</div>';
+            if (dot) dot.style.display = 'none';
+            return;
+        }
+
+        var unreadCount = notifications.filter(function(n) { return !n.read; }).length;
+        if (dot) dot.style.display = unreadCount > 0 ? 'block' : 'none';
+
+        list.innerHTML = notifications.map(function(n) {
+            var iconClass = n.type === 'order' ? 'receipt' : n.type === 'success' ? 'check' : 'exclamation-triangle';
+            return '<div class="notif-item ' + (n.read ? '' : 'unread') + '" data-notif-id="' + n.id + '">' +
+                '<div class="notif-icon ' + n.type + '">' +
+                '<i class="fas fa-' + iconClass + '"></i>' +
+                '</div>' +
+                '<div class="notif-content">' +
+                '<div class="notif-title">' + escapeHtml(n.title) + '</div>' +
+                '<div class="notif-desc">' + escapeHtml(n.desc) + '</div>' +
+                '<div class="notif-time">' + timeAgo(n.time) + '</div>' +
+                '</div>' +
+                '</div>';
+        }).join('');
+    }
+
+    function toggleNotifications() {
+        var panel = document.getElementById('notifPanel');
+        panel.classList.toggle('open');
+        
+        // Mark all as read when opened
+        if (panel.classList.contains('open')) {
+            notifications.forEach(function(n) { n.read = true; });
+            renderNotifications();
+        }
+    }
+
+    function clearAllNotifications() {
+        notifications = [];
+        renderNotifications();
+        showToast('All notifications cleared');
+    }
+
+    var notifBtn = document.getElementById('notifBtn');
+    if (notifBtn) {
+        notifBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            toggleNotifications();
+        });
+    }
+
+    var clearBtn = document.getElementById('notifClearAll');
+    if (clearBtn) {
+        clearBtn.addEventListener('click', clearAllNotifications);
+    }
+
+    // Close notifications when clicking outside
+    document.addEventListener('click', function(e) {
+        var panel = document.getElementById('notifPanel');
+        var btn = document.getElementById('notifBtn');
+        if (panel && !panel.contains(e.target) && btn && !btn.contains(e.target)) {
+            panel.classList.remove('open');
+        }
+    });
+
+    // Initial render
+    renderNotifications();
 }
