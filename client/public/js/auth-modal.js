@@ -62,6 +62,32 @@ document.addEventListener('DOMContentLoaded', function () {
         form.querySelectorAll('.auth-form-error').forEach(e => e.remove());
     }
 
+    function redirectToAuthApp(redirectPath) {
+        const fallback = redirectPath || '/customer-dashboard.html';
+        try {
+            const origin = new URL(AUTH_API_BASE).origin;
+            const pathPart = fallback.startsWith('/') ? fallback : '/' + fallback;
+            window.location.assign(origin + pathPart);
+        } catch (error) {
+            window.location.href = fallback;
+        }
+    }
+
+    function stayOnHomeAfterAuth() {
+        const page = String(document.body?.dataset?.page || '').toLowerCase();
+        const path = String(window.location.pathname || '').toLowerCase();
+        const isHome = page === 'home' || path.endsWith('/index.html') || path === '/' || path.endsWith('\\index.html');
+
+        if (isHome) {
+            if (typeof window.updateHeaderUserState === 'function') {
+                try { window.updateHeaderUserState(); } catch (e) { /* ignore */ }
+            }
+            return;
+        }
+
+        window.location.href = 'index.html';
+    }
+
     /* ── Invalid field highlight ── */
     function markInvalid(input) {
         input.classList.add('field-invalid');
@@ -212,9 +238,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 
                 closeModal();
                 
-                // Redirect to appropriate dashboard
+                // Stay on home after auth
                 setTimeout(() => {
-                    window.location.href = data.redirectTo;
+                    stayOnHomeAfterAuth();
                 }, 800);
                 
             } catch (error) {
@@ -232,8 +258,23 @@ document.addEventListener('DOMContentLoaded', function () {
     const nextBtn    = regContainer.querySelector('[data-reg-next]');
     const backBtn    = regContainer.querySelector('[data-reg-back]');
     const registerBtn = regContainer.querySelector('.reg-controls .btn');
+    const roleInput  = document.getElementById('regRole');
+    const roleButtons = Array.from(regContainer.querySelectorAll('[data-reg-role]'));
 
     let currentStep = 0;
+
+    function getSelectedRole() {
+        const role = String(roleInput?.value || 'customer').toLowerCase();
+        return role === 'vendor' ? 'vendor' : 'customer';
+    }
+
+    function setSelectedRole(role) {
+        const normalized = String(role || '').toLowerCase() === 'vendor' ? 'vendor' : 'customer';
+        if (roleInput) roleInput.value = normalized;
+        roleButtons.forEach((btn) => {
+            btn.classList.toggle('is-selected', String(btn.getAttribute('data-reg-role') || '').toLowerCase() === normalized);
+        });
+    }
 
     function resetRegSteps() {
         currentStep = 0;
@@ -242,6 +283,7 @@ document.addEventListener('DOMContentLoaded', function () {
         renderStrength('');
         const pwConf = document.getElementById('regPasswordConfirm');
         if (pwConf) pwConf.classList.remove('mismatch');
+        setSelectedRole('customer');
     }
 
     function renderStep() {
@@ -335,6 +377,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const name = document.getElementById('regName').value.trim();
             const phone = document.getElementById('regPhone').value.trim();
             const password = document.getElementById('regPassword').value;
+            const role = getSelectedRole();
             
             try {
                 // Check if email is available
@@ -354,7 +397,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     throw new Error('Email already exists. Please login.');
                 }
                 
-                // Register the user (default to customer for modal registration)
+                // Register the user
                 const response = await fetch(AUTH_API_BASE + '/register', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -363,7 +406,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         fullName: name,
                         phone,
                         password,
-                        role: 'customer' // Default role for modal registration
+                        role
                     })
                 });
                 
@@ -390,9 +433,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 
                 closeModal();
                 
-                // Redirect to appropriate dashboard
+                // Stay on home after auth
                 setTimeout(() => {
-                    window.location.href = data.redirectTo;
+                    stayOnHomeAfterAuth();
                 }, 800);
                 
             } catch (error) {
@@ -401,6 +444,11 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     }
+
+    // Role selection buttons
+    roleButtons.forEach((btn) => {
+        btn.addEventListener('click', () => setSelectedRole(btn.getAttribute('data-reg-role')));
+    });
 
     /* ── Password strength ── */
     const pwFieldWrap = document.getElementById('regPassword')?.closest('.field-wrap');

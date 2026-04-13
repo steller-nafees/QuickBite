@@ -37,6 +37,11 @@
     border-radius: 0 !important;
 }
 
+/* ── Role selector spacing ── */
+.auth-role-block {
+    margin-bottom: 14px;
+}
+
 /* ── Error banner — matches notifications.css auth-error style ── */
 .auth-form-error {
     background: rgba(177, 9, 9, 0.08);

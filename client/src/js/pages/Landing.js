@@ -437,11 +437,15 @@ function renderVendors() {
 }
 function renderTrendingItems() {
     const trendingGrid = document.getElementById("trendingGrid");
+    const carouselLeft = document.getElementById("carouselLeft");
+    const carouselRight = document.getElementById("carouselRight");
     if (!trendingGrid) {
         return;
     }
 
-    if (menuItems.length === 0) {
+    const bestSellerItems = menuItems.slice(0, 6);
+
+    if (bestSellerItems.length === 0) {
         trendingGrid.innerHTML = `
             <article class="food-card">
                 <div class="food-info">
@@ -453,7 +457,7 @@ function renderTrendingItems() {
         return;
     }
 
-    trendingGrid.innerHTML = menuItems
+    trendingGrid.innerHTML = bestSellerItems
         .map(function (item, index) {
             return `
                 <article class="food-card animate-fade-in-up" style="animation-delay: ${index * 0.1}s">
@@ -484,7 +488,7 @@ function renderTrendingItems() {
         button.addEventListener("click", function (e) {
             e.stopPropagation();
             const itemId = Number(this.getAttribute("data-item-id"));
-            const item = menuItems.find(function (menuItem) {
+            const item = bestSellerItems.find(function (menuItem) {
                 return menuItem.id === itemId;
             });
 
@@ -496,11 +500,32 @@ function renderTrendingItems() {
 
     trendingGrid.querySelectorAll(".food-card").forEach(function (card, index) {
         card.addEventListener("click", function () {
-            const item = itemsForLocation[index];
+            const item = bestSellerItems[index];
             showNotification(item.name + " details previewed");
             console.log("Clicked food item:", item);
         });
     });
+
+    if (carouselLeft && carouselRight) {
+        const scrollAmount = function () {
+            const firstCard = trendingGrid.querySelector(".food-card");
+            return firstCard ? firstCard.offsetWidth + 24 : 320;
+        };
+
+        carouselLeft.addEventListener("click", function () {
+            trendingGrid.scrollBy({
+                left: -scrollAmount(),
+                behavior: "smooth"
+            });
+        });
+
+        carouselRight.addEventListener("click", function () {
+            trendingGrid.scrollBy({
+                left: scrollAmount(),
+                behavior: "smooth"
+            });
+        });
+    }
 }
 
 function addToCart(item) {

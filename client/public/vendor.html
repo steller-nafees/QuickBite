@@ -16,6 +16,8 @@
 
     <!-- Reuse SAME CSS -->
     <link rel="stylesheet" href="../src/css/landing.css">
+    <link rel="stylesheet" href="../src/css/auth-modal.css">
+    <link rel="stylesheet" href="../src/css/auth-modal-additions.css">
     <link rel="stylesheet" href="../src/css/vendor.css">
     <link rel="stylesheet" href="../src/css/cart.css">
 
@@ -176,10 +178,121 @@
     </div>
 
     <script src="js/quickbite-config.js"></script>
+    <!-- Hidden login opener so header Sign In can open login without triggering CTA notification -->
+    <a href="#" id="authLoginOpener" data-auth-open="login" style="display:none"></a>
     <script src="../src/js/shared/layout.js"></script>
     <!-- Vendor Page Script -->
     <script src="../src/js/pages/vendor.js"></script>
+    <script src="js/auth-modal.js"></script>
     <script src="../src/js/components/cart.js"></script>
+
+    <!-- Auth Modal -->
+    <div class="auth-modal" id="authModal" aria-hidden="true">
+        <div class="auth-backdrop" data-auth-close></div>
+        <div class="auth-panel">
+            <button class="auth-close" aria-label="Close" data-auth-close>&times;</button>
+            <div class="auth-grid">
+                <button class="auth-back" aria-label="Back" data-auth-back>&larr;</button>
+                <div class="auth-left">
+                    <div class="auth-heading" id="greetingText">Good Morning, Welcome To QuickBite.</div>
+
+                    <div class="auth-forms">
+                        <form id="loginForm" class="auth-form active auth-login-simple">
+                            <div class="auth-sub-title">Login</div>
+                            <p class="auth-sub-description">Enter Your Credentials before anyone does to skip the queue</p>
+                            <div class="field-wrap">
+                                <input id="loginEmail" type="email" placeholder=" " autocomplete="email">
+                                <label for="loginEmail">Email</label>
+                            </div>
+                            <div class="field-wrap has-toggle">
+                                <input id="loginPassword" type="password" placeholder=" " autocomplete="current-password">
+                                <button type="button" class="pw-toggle" aria-label="Show password" data-target="loginPassword"><i class="fas fa-eye"></i></button>
+                                <label for="loginPassword">Password</label>
+                            </div>
+                            <label class="remember-row">
+                                <input type="checkbox" id="rememberMe">
+                                <span class="checkmark"></span>
+                                <span class="text">Remember me</span>
+                            </label>
+                            <button type="button" class="btn btn-primary auth-submit auth-login-btn">Login</button>
+                            <p class="auth-tos">Not a member? <a href="#" data-auth-switch="register">Create an account</a></p>
+                        </form>
+
+                        <form id="registerForm" class="auth-form">
+                            <div class="reg-steps">
+                                <div class="step">
+                                    <div class="auth-sub-title">Register</div>
+                                    <p class="auth-sub-description">Create your account to skip the queue</p>
+
+                                    <div class="field-wrap">
+                                        <input id="regEmail" type="email" placeholder=" " autocomplete="email">
+                                        <label for="regEmail">Email</label>
+                                    </div>
+                                    <div class="field-wrap">
+                                        <input id="regName" type="text" placeholder=" " autocomplete="name">
+                                        <label for="regName">Full name</label>
+                                    </div>
+                                    <div class="field-wrap">
+                                        <input id="regPhone" type="tel" placeholder=" " autocomplete="tel">
+                                        <label for="regPhone">Phone</label>
+                                    </div>
+
+                                    <div class="auth-role-block">
+                                        <p class="auth-sub-description" style="margin:10px 0 8px;">Role</p>
+                                        <div class="role-options" role="group" aria-label="Select role">
+                                            <button type="button" class="role-btn is-selected" data-reg-role="customer">Customer</button>
+                                            <button type="button" class="role-btn" data-reg-role="vendor">Vendor</button>
+                                        </div>
+                                        <input type="hidden" id="regRole" value="customer">
+                                    </div>
+  
+                                    <button type="button" class="btn btn-primary auth-submit auth-login-btn" data-reg-next>Next</button>
+                                    <p class="auth-tos">Already have an account?
+                                        <a href="#" data-auth-switch="login" style="color:var(--color-red);">Sign in</a>
+                                    </p>
+                                </div>
+
+                                <div class="step hidden">
+                                    <div class="auth-sub-title">Create Password</div>
+                                    <p class="auth-sub-description">Set a strong password to secure your account</p>
+
+                                    <div class="field-wrap has-toggle">
+                                        <input id="regPassword" type="password" placeholder=" " autocomplete="new-password">
+                                        <button type="button" class="pw-toggle" aria-label="Show password" data-target="regPassword">
+                                            <i class="fas fa-eye-slash"></i>
+                                        </button>
+                                        <label for="regPassword">Password</label>
+                                    </div>
+                                    <div class="field-wrap has-toggle">
+                                        <input id="regPasswordConfirm" type="password" placeholder=" " autocomplete="new-password">
+                                        <button type="button" class="pw-toggle" aria-label="Show password" data-target="regPasswordConfirm">
+                                            <i class="fas fa-eye-slash"></i>
+                                        </button>
+                                        <label for="regPasswordConfirm">Confirm password</label>
+                                    </div>
+
+                                    <div class="reg-controls">
+                                        <button type="button" class="btn btn-secondary" data-reg-back>Back</button>
+                                        <button type="button" class="btn btn-primary" data-reg-submit>Create Account</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="auth-right" aria-hidden="true">
+                    <div class="auth-right-top">
+                        <div class="auth-logo">
+                            <img src="./assets/icons/app_icon_transparent_dark.png" alt="QuickBite">
+                        </div>
+                        <div class="auth-brand">QuickBite</div>
+                        <div class="auth-tag">Pre-order. Pick up. Bite.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
 </body>
 </html>

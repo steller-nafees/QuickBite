@@ -1,621 +1,636 @@
 /* ============================================================
    QuickBite Admin Dashboard — admin-dashboard.js
+   Vanilla JS (no external UI libs)
    ============================================================ */
 
 "use strict";
 
-/* ============================================================
-   HELPERS
-   ============================================================ */
 const $ = (id) => document.getElementById(id);
-const rnd = (a, b) => Math.floor(Math.random() * (b - a + 1)) + a;
-const fmt = (n) => "৳" + Math.round(n).toLocaleString("en-IN");
-const fmtDate = (ms) => new Date(ms).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
-const fmtDateTime = (ms) => new Date(ms).toLocaleString("en-GB", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
+const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
-function timeAgo(ms) {
-  const d = Date.now() - ms;
-  if (d < 60000) return "just now";
-  if (d < 3600000) return Math.floor(d / 60000) + "m ago";
-  if (d < 86400000) return Math.floor(d / 3600000) + "h ago";
-  return Math.floor(d / 86400000) + "d ago";
+const ORDER_STATUSES = ["pending", "preparing", "ready", "completed", "delivered"];
+const PAYMENT_METHODS = ["card", "wallet", "cash"];
+const PAYMENT_STATUSES = ["pending", "completed", "failed"];
+
+function uid(prefix) {
+  return `${prefix}_${Math.random().toString(16).slice(2)}_${Date.now().toString(16)}`;
 }
 
-/* ============================================================
-   SEED DATA  (mirrors schema)
-   ============================================================ */
-const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-const STATUSES = ["pending", "preparing", "ready", "completed", "delivered"];
-const METHODS  = ["cash", "card", "wallet"];
-
-const VENDOR_NAMES   = ["Pizza Hub", "Burger Station", "Rice Bowl", "Snack Corner", "Desi Bites", "Noodle Bar"];
-const CUSTOMER_NAMES = ["Rahim Islam", "Tanvir Ahmed", "Nusrat Jahan", "Farhan Hossain", "Sadia Akter",
-                        "Mehdi Hasan", "Tania Begum", "Rafiq Uddin", "Lamia Sultana", "Omar Faruk",
-                        "Razia Khatun", "Imran Khan", "Sumaiya Parvin", "Bashir Mia", "Farhana Nasrin"];
-const FOOD_NAMES = ["Chicken Burger", "Beef Pizza", "Kacchi Biryani", "Cheese Fries", "Grilled Sandwich",
-                    "Veggie Roll", "Chicken Shawarma", "Dal Rice Bowl", "Egg Chowmein", "Fruit Juice",
-                    "Mutton Rezala", "Pasta Arrabiata", "Paneer Tikka", "Beef Steak", "Lemon Sharbat"];
-
-const DB = { users: [], food: [], orders: [], payments: [], editId: null };
-
-function seedDB() {
-  /* Vendors */
-  for (let i = 0; i < VENDOR_NAMES.length; i++) {
-    DB.users.push({
-      user_id: i + 1,
-      full_name: VENDOR_NAMES[i],
-      email: "vendor" + (i + 1) + "@nsu.edu",
-      phone: "017" + rnd(10000000, 99999999),
-      role: "vendor",
-      created_at: Date.now() - rnd(10, 300) * 86400000
-    });
-  }
-
-  /* Customers */
-  for (let i = 0; i < CUSTOMER_NAMES.length; i++) {
-    DB.users.push({
-      user_id: VENDOR_NAMES.length + i + 1,
-      full_name: CUSTOMER_NAMES[i],
-      email: CUSTOMER_NAMES[i].split(" ")[0].toLowerCase() + (i + 1) + "@nsu.edu",
-      phone: "018" + rnd(10000000, 99999999),
-      role: "customer",
-      created_at: Date.now() - rnd(1, 120) * 86400000
-    });
-  }
-
-  const vendors   = DB.users.filter(u => u.role === "vendor");
-  const customers = DB.users.filter(u => u.role === "customer");
-
-  /* Food items */
-  for (let i = 0; i < FOOD_NAMES.length; i++) {
-    const v = vendors[rnd(0, vendors.length - 1)];
-    DB.food.push({
-      food_id: i + 1,
-      item_name: FOOD_NAMES[i],
-      description: "Freshly prepared " + FOOD_NAMES[i].toLowerCase() + " from our campus kitchen.",
-      price: rnd(60, 380),
-      is_available: Math.random() > 0.2 ? 1 : 0,
-      managed_by: v.user_id,
-      vendor_name: v.full_name,
-      created_at: Date.now() - rnd(5, 60) * 86400000,
-      updated_at: Date.now() - rnd(0, 5) * 86400000
-    });
-  }
-
-  /* Orders & Payments */
-  for (let i = 1; i <= 35; i++) {
-    const c   = customers[rnd(0, customers.length - 1)];
-    const v   = vendors[rnd(0, vendors.length - 1)];
-    const st  = STATUSES[rnd(0, STATUSES.length - 1)];
-    const amt = rnd(120, 980);
-    const ts  = Date.now() - rnd(0, 7) * 86400000 - rnd(0, 86400000);
-
-    DB.orders.push({
-      order_id: i,
-      customer_id: c.user_id,
-      customer_name: c.full_name,
-      vendor_id: v.user_id,
-      vendor_name: v.full_name,
-      total_amount: amt,
-      status: st,
-      created_at: ts,
-      items_count: rnd(1, 4)
-    });
-
-    const ps = (st === "completed" || st === "delivered") ? "completed"
-             : (st === "pending") ? "pending" : "completed";
-
-    DB.payments.push({
-      payment_id: i,
-      order_id: i,
-      method: METHODS[rnd(0, METHODS.length - 1)],
-      amount: amt,
-      status: ps,
-      paid_at: ts + rnd(0, 1800000)
-    });
-  }
+function money(amount) {
+  const n = Number(amount || 0);
+  return "৳" + n.toFixed(0);
 }
 
-seedDB();
-
-/* ============================================================
-   CLOCK
-   ============================================================ */
-function updateClock() {
-  const now = new Date();
-  $("clockEl").textContent = now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
-}
-setInterval(updateClock, 1000);
-updateClock();
-
-/* ============================================================
-   NOTIFICATIONS
-   ============================================================ */
-let notifications = [
-  { id: 1, type: 'order', title: 'New Order Received', desc: 'Order #ORD-035 from Rahim Islam - ৳450', time: Date.now() - 300000, read: false },
-  { id: 2, type: 'success', title: 'Payment Completed', desc: 'Payment for Order #ORD-034 successful', time: Date.now() - 900000, read: false },
-  { id: 3, type: 'warning', title: 'Low Stock Alert', desc: 'Chicken Burger is running low at Pizza Hub', time: Date.now() - 1800000, read: true },
-  { id: 4, type: 'order', title: 'New Order Received', desc: 'Order #ORD-033 from Nusrat Jahan - ৳320', time: Date.now() - 3600000, read: true }
-];
-
-function renderNotifications() {
-  const list = $('notifList');
-  const dot = $('notifDot');
-  
-  if (!notifications.length) {
-    list.innerHTML = '<div class="notif-empty"><i class="fas fa-bell-slash"></i>No notifications yet</div>';
-    if (dot) dot.style.display = 'none';
-    return;
-  }
-
-  const unreadCount = notifications.filter(n => !n.read).length;
-  if (dot) dot.style.display = unreadCount > 0 ? 'block' : 'none';
-
-  list.innerHTML = notifications.map(n => `
-    <div class="notif-item ${n.read ? '' : 'unread'}" data-notif-id="${n.id}">
-      <div class="notif-icon ${n.type}">
-        <i class="fas fa-${n.type === 'order' ? 'receipt' : n.type === 'success' ? 'check' : 'exclamation-triangle'}"></i>
-      </div>
-      <div class="notif-content">
-        <div class="notif-title">${n.title}</div>
-        <div class="notif-desc">${n.desc}</div>
-        <div class="notif-time">${timeAgo(n.time)}</div>
-      </div>
-    </div>
-  `).join('');
+function fmt(iso) {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  const p = (x) => String(x).padStart(2, "0");
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
 }
 
-function toggleNotifications() {
-  const panel = $('notifPanel');
-  panel.classList.toggle('open');
-  
-  // Mark all as read when opened
-  if (panel.classList.contains('open')) {
-    notifications.forEach(n => n.read = true);
-    renderNotifications();
-  }
+function todayKey(d) {
+  const x = new Date(d);
+  const p = (n) => String(n).padStart(2, "0");
+  return `${x.getFullYear()}-${p(x.getMonth() + 1)}-${p(x.getDate())}`;
 }
 
-function clearAllNotifications() {
-  notifications = [];
-  renderNotifications();
-  showToast('All notifications cleared');
+function escapeHtml(s) {
+  return String(s ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
 }
 
-$('notifBtn').addEventListener('click', (e) => {
-  e.stopPropagation();
-  toggleNotifications();
-});
+function seedData() {
+  const users = [
+    { user_id: "u_admin_01", name: "Admin", role: "admin" },
+    { user_id: "u_cus_01", name: "Ayesha Rahman", role: "customer" },
+    { user_id: "u_cus_02", name: "Tanvir Hasan", role: "customer" },
+    { user_id: "u_cus_03", name: "Nusrat Jahan", role: "customer" },
+    { user_id: "u_ven_01", name: "Burger Hub", role: "vendor" },
+    { user_id: "u_ven_02", name: "The Pasta Corner", role: "vendor" },
+    { user_id: "u_ven_03", name: "Sushi Express", role: "vendor" },
+  ];
 
-$('notifClearAll').addEventListener('click', clearAllNotifications);
+  const foods = [
+    { food_id: "f_101", vendor_id: "u_ven_01", name: "Classic Chicken Burger", category: "Burger", price: 180, is_available: true, description: "Juicy chicken patty, lettuce, and house sauce.", image: "" },
+    { food_id: "f_102", vendor_id: "u_ven_01", name: "Spicy Beef Burger", category: "Burger", price: 220, is_available: true, description: "Beef patty with a spicy kick.", image: "" },
+    { food_id: "f_201", vendor_id: "u_ven_02", name: "Creamy Alfredo Pasta", category: "Pasta", price: 250, is_available: true, description: "Creamy sauce, garlic, parmesan.", image: "" },
+    { food_id: "f_202", vendor_id: "u_ven_02", name: "Arrabbiata Pasta", category: "Pasta", price: 230, is_available: false, description: "Tomato chili sauce, basil.", image: "" },
+    { food_id: "f_301", vendor_id: "u_ven_03", name: "Salmon Sushi Set", category: "Sushi", price: 320, is_available: true, description: "Fresh salmon nigiri set.", image: "" },
+    { food_id: "f_302", vendor_id: "u_ven_03", name: "Chicken Katsu Roll", category: "Sushi", price: 280, is_available: true, description: "Crispy katsu, mayo, sesame.", image: "" },
+  ];
 
-// Close notifications when clicking outside
-document.addEventListener('click', (e) => {
-  const panel = $('notifPanel');
-  const btn = $('notifBtn');
-  if (panel && !panel.contains(e.target) && !btn.contains(e.target)) {
-    panel.classList.remove('open');
-  }
-});
+  const now = Date.now();
+  const orders = [
+    { order_id: "o_9001", customer_id: "u_cus_01", vendor_id: "u_ven_01", total_amount: 400, status: "pending", created_at: new Date(now - 12 * 60e3).toISOString(), pickup_time: new Date(now + 18 * 60e3).toISOString() },
+    { order_id: "o_9002", customer_id: "u_cus_02", vendor_id: "u_ven_02", total_amount: 250, status: "preparing", created_at: new Date(now - 30 * 60e3).toISOString(), pickup_time: new Date(now + 10 * 60e3).toISOString() },
+    { order_id: "o_9003", customer_id: "u_cus_03", vendor_id: "u_ven_03", total_amount: 600, status: "ready", created_at: new Date(now - 45 * 60e3).toISOString(), pickup_time: new Date(now + 5 * 60e3).toISOString() },
+    { order_id: "o_9004", customer_id: "u_cus_01", vendor_id: "u_ven_03", total_amount: 280, status: "completed", created_at: new Date(now - 2.8 * 3600e3).toISOString(), pickup_time: new Date(now - 2.2 * 3600e3).toISOString() },
+    { order_id: "o_9005", customer_id: "u_cus_02", vendor_id: "u_ven_01", total_amount: 220, status: "delivered", created_at: new Date(now - 5.5 * 3600e3).toISOString(), pickup_time: new Date(now - 5.0 * 3600e3).toISOString() },
+  ];
 
-// Initial render
-renderNotifications();
+  const orderItems = [
+    { order_item_id: "oi_1", order_id: "o_9001", food_id: "f_101", item_name: "Classic Chicken Burger", quantity: 1, unit_price: 180, total_price: 180 },
+    { order_item_id: "oi_2", order_id: "o_9001", food_id: "f_102", item_name: "Spicy Beef Burger", quantity: 1, unit_price: 220, total_price: 220 },
+    { order_item_id: "oi_3", order_id: "o_9002", food_id: "f_201", item_name: "Creamy Alfredo Pasta", quantity: 1, unit_price: 250, total_price: 250 },
+    { order_item_id: "oi_4", order_id: "o_9003", food_id: "f_301", item_name: "Salmon Sushi Set", quantity: 1, unit_price: 320, total_price: 320 },
+    { order_item_id: "oi_5", order_id: "o_9003", food_id: "f_302", item_name: "Chicken Katsu Roll", quantity: 1, unit_price: 280, total_price: 280 },
+    { order_item_id: "oi_6", order_id: "o_9004", food_id: "f_302", item_name: "Chicken Katsu Roll", quantity: 1, unit_price: 280, total_price: 280 },
+    { order_item_id: "oi_7", order_id: "o_9005", food_id: "f_102", item_name: "Spicy Beef Burger", quantity: 1, unit_price: 220, total_price: 220 },
+  ];
 
-/* ============================================================
-   NAVIGATION
-   ============================================================ */
-const PAGE_TITLES = {
-  overview: "Overview",
-  orders:   "Order Management",
-  menu:     "Menu Items",
-  sales:    "Sales Records",
-  users:    "Users"
+  const payments = [
+    { payment_id: "p_7001", order_id: "o_9001", method: "wallet", status: "pending", amount: 400, paid_at: null },
+    { payment_id: "p_7002", order_id: "o_9002", method: "card", status: "completed", amount: 250, paid_at: new Date(now - 28 * 60e3).toISOString() },
+    { payment_id: "p_7003", order_id: "o_9003", method: "cash", status: "pending", amount: 600, paid_at: null },
+    { payment_id: "p_7004", order_id: "o_9004", method: "wallet", status: "completed", amount: 280, paid_at: new Date(now - 2.7 * 3600e3).toISOString() },
+    { payment_id: "p_7005", order_id: "o_9005", method: "card", status: "completed", amount: 220, paid_at: new Date(now - 5.4 * 3600e3).toISOString() },
+  ];
+
+  return { users, foods, orders, orderItems, payments };
+}
+
+const state = {
+  view: "overview",
+  search: "",
+  orderTab: "All",
+  menuQuery: "",
+  menuVendor: "",
+  menuCategory: "",
+  editingFoodId: null,
+  sessionUser: null,
+  sessionVendorId: null,
+  isVendorSession: false,
+  liveTimer: null,
+  ...seedData(),
 };
 
-function navigateTo(pageId) {
-  document.querySelectorAll(".nav-item").forEach(el => el.classList.remove("active"));
-  document.querySelectorAll(".page").forEach(p  => p.classList.remove("active"));
+function getSessionUser() {
+  try {
+    return JSON.parse(localStorage.getItem("quickbite-auth-user") || "null");
+  } catch {
+    return null;
+  }
+}
 
-  const navEl = document.querySelector(`.nav-item[data-page="${pageId}"]`);
-  const pageEl = $("page-" + pageId);
+function normalizeId(id) {
+  if (id === null || id === undefined) return "";
+  return String(id);
+}
 
-  if (navEl)  navEl.classList.add("active");
-  if (pageEl) pageEl.classList.add("active");
+function userName(id) {
+  const u = state.users.find((x) => x.user_id === id);
+  return u ? u.name : id;
+}
 
-  $("topbarTitle").textContent = PAGE_TITLES[pageId] || pageId;
+function vendorOptionsHtml() {
+  const vendors = state.users.filter((u) => u.role === "vendor");
+  return vendors.map((v) => `<option value="${escapeHtml(v.user_id)}">${escapeHtml(v.name)}</option>`).join("");
+}
 
-  const renderers = {
-    overview: renderOverview,
-    orders:   renderOrders,
-    menu:     renderMenu,
-    sales:    renderSales,
-    users:    renderUsers
+function categoryOptionsHtml(extraFirstLabel) {
+  const cats = Array.from(new Set(state.foods.map((f) => f.category))).sort((a, b) => a.localeCompare(b));
+  const opts = cats.map((c) => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
+  if (!extraFirstLabel) return opts;
+  return `<option value="">${escapeHtml(extraFirstLabel)}</option>${opts}`;
+}
+
+function renderHeader() {
+  const titles = {
+    overview: ["Dashboard Overview", "Monitor today’s performance, see recent orders, and keep the platform flowing."],
+    menu: ["Menu Management", "Add, edit, remove, and control availability across all vendors."],
+    orders: ["Orders", "Live order monitoring with in-place status updates and quick filters."],
+    sales: ["Sales Records", "Revenue summary, daily trends, and payment breakdown across orders."],
   };
-  if (renderers[pageId]) renderers[pageId]();
+  const [t, s] = titles[state.view] || titles.overview;
+  $("pageTitle").textContent = t;
+  $("pageSubtitle").textContent = s;
+  $("globalSearch").value = state.search;
 }
 
-document.querySelectorAll(".nav-item").forEach(el => {
-  el.addEventListener("click", () => navigateTo(el.dataset.page));
-});
+function setView(view) {
+  state.view = view;
+  state.search = "";
+  renderHeader();
 
-/* "View all" link-buttons */
-document.addEventListener("click", (e) => {
-  const btn = e.target.closest("[data-goto]");
-  if (btn) navigateTo(btn.dataset.goto);
-});
+  $$(".nav-btn").forEach((b) => b.classList.toggle("is-active", b.dataset.view === view));
+  $$(".view").forEach((v) => v.classList.toggle("is-active", v.dataset.view === view));
 
-/* Sidebar toggle (mobile) */
-$("sidebarToggle").addEventListener("click", () => {
-  $("sidebar").classList.toggle("mobile-open");
-});
+  renderAll();
+}
 
-/* ============================================================
-   OVERVIEW
-   ============================================================ */
+function statCalc() {
+  const scopedOrders = state.isVendorSession && state.sessionVendorId
+    ? state.orders.filter((o) => o.vendor_id === state.sessionVendorId)
+    : state.orders;
+  const scopedFoods = state.isVendorSession && state.sessionVendorId
+    ? state.foods.filter((f) => f.vendor_id === state.sessionVendorId)
+    : state.foods;
+
+  const ordersToday = scopedOrders.filter((o) => todayKey(o.created_at) === todayKey(Date.now()));
+  const pending = scopedOrders.filter((o) => o.status === "pending").length;
+  const activeFoods = scopedFoods.filter((f) => f.is_available).length;
+  const ids = new Set(ordersToday.map((o) => o.order_id));
+  const revenueToday = state.payments
+    .filter((p) => ids.has(p.order_id) && p.status === "completed")
+    .reduce((sum, p) => sum + Number(p.amount || 0), 0);
+  return { ordersToday, pending, activeFoods, revenueToday, scopedOrders, scopedFoods };
+}
+
+function statusBadgeHtml(status) {
+  const s = String(status || "pending");
+  const t = s.charAt(0).toUpperCase() + s.slice(1);
+  return `<span class="badge ${escapeHtml(s)}"><span class="dot"></span>${escapeHtml(t)}</span>`;
+}
+
 function renderOverview() {
-  const today     = new Date().setHours(0, 0, 0, 0);
-  const todayOrders = DB.orders.filter(o => o.created_at >= today);
-  const todayRev  = todayOrders.reduce((s, o) => s + o.total_amount, 0)
-                  || DB.orders.slice(0, 6).reduce((s, o) => s + o.total_amount, 0);
-  const avail     = DB.food.filter(f => f.is_available).length;
-  const pending   = DB.orders.filter(o => o.status === "pending").length;
+  const { ordersToday, pending, activeFoods, revenueToday, scopedOrders, scopedFoods } = statCalc();
 
-  $("s-orders").textContent     = DB.orders.length;
-  $("s-orders-sub").textContent = todayOrders.length + " today";
-  $("s-revenue").textContent    = fmt(todayRev);
-  $("s-items").textContent      = avail + "/" + DB.food.length;
-  $("s-items-sub").textContent  = (DB.food.length - avail) + " unavailable";
-  $("s-users").textContent      = DB.users.length;
-  $("pendingBadge").textContent = pending;
+  $("statOrdersToday").textContent = String(ordersToday.length);
+  $("statOrdersTodayMeta").textContent = `${scopedOrders.length} tracked in live list`;
+  $("statPending").textContent = String(pending);
+  $("statRevenueToday").textContent = money(revenueToday);
+  $("statActiveFoods").textContent = String(activeFoods);
+  $("statActiveFoodsMeta").textContent = `${scopedFoods.length} total items`;
 
-  /* Recent orders */
-  const recent = DB.orders.slice().sort((a, b) => b.created_at - a.created_at).slice(0, 8);
-  $("recent-orders-list").innerHTML = recent.map(o => `
-    <div class="order-row">
-      <div>
-        <div class="order-id">#ORD-${String(o.order_id).padStart(3, "0")}</div>
-        <div class="order-meta">${o.customer_name} · ${o.vendor_name}</div>
-      </div>
-      <div style="text-align:right">
-        <div style="font-weight:600;color:var(--text-accent);font-size:12px;font-family:var(--font-secondary)">${fmt(o.total_amount)}</div>
-        <span class="badge badge-${o.status}">${o.status}</span>
-      </div>
-    </div>`).join("");
+  const rows = scopedOrders.slice(0, 8).map((o) => {
+    const pay = state.payments.find((p) => p.order_id === o.order_id);
+    const payText = pay ? `${pay.method} • ${pay.status}` : "—";
+    return `
+      <tr>
+        <td>${escapeHtml(o.order_id)}</td>
+        <td>${escapeHtml(userName(o.customer_id))}</td>
+        <td>${escapeHtml(userName(o.vendor_id))}</td>
+        <td>${escapeHtml(money(o.total_amount))}</td>
+        <td>${statusBadgeHtml(o.status)}</td>
+        <td>${escapeHtml(fmt(o.pickup_time))}</td>
+        <td>${escapeHtml(payText)}</td>
+      </tr>
+    `;
+  }).join("");
 
-  /* Status breakdown */
-  const counts = {};
-  STATUSES.forEach(s => counts[s] = 0);
-  DB.orders.forEach(o => counts[o.status] = (counts[o.status] || 0) + 1);
-  $("statusBreakdown").innerHTML = STATUSES.map(s => `
-    <div class="status-chip">
-      <span class="status-dot dot-${s}"></span>
-      <div>
-        <div class="chip-label">${s}</div>
-        <div class="chip-val">${counts[s]}</div>
-      </div>
-    </div>`).join("");
+  $("recentOrdersBody").innerHTML = rows || `<tr><td colspan="7" class="muted">No orders found.</td></tr>`;
 }
 
-renderOverview();
+function renderMenuFilters() {
+  $("menuVendorFilter").innerHTML = `<option value="">All Vendors</option>${vendorOptionsHtml()}`;
+  $("menuCategoryFilter").innerHTML = categoryOptionsHtml("All Categories");
+  $("menuVendorFilter").value = state.menuVendor;
+  $("menuCategoryFilter").value = state.menuCategory;
+  $("menuSearch").value = state.menuQuery;
 
-/* ============================================================
-   ORDERS
-   ============================================================ */
-function renderOrders() {
-  const q = $("orderSearch").value.toLowerCase().trim();
-  const f = $("orderFilter").value;
+  if (state.isVendorSession) {
+    $("menuVendorFilter").value = state.sessionVendorId || "";
+    $("menuVendorFilter").disabled = true;
+  } else {
+    $("menuVendorFilter").disabled = false;
+  }
+}
 
-  const rows = DB.orders.filter(o => {
-    const m = !q
-      || String(o.order_id).includes(q)
-      || o.customer_name.toLowerCase().includes(q)
-      || o.vendor_name.toLowerCase().includes(q);
-    return m && (!f || o.status === f);
-  }).sort((a, b) => b.created_at - a.created_at);
+function matchesFoodFilter(f) {
+  if (state.menuVendor && f.vendor_id !== state.menuVendor) return false;
+  if (state.menuCategory && f.category !== state.menuCategory) return false;
+  const q = (state.search || state.menuQuery).trim().toLowerCase();
+  if (!q) return true;
+  const hay = [f.name, f.category, userName(f.vendor_id)].join(" ").toLowerCase();
+  return hay.includes(q);
+}
 
-  $("orderCount").textContent = rows.length + " order" + (rows.length !== 1 ? "s" : "");
-
-  $("ordersBody").innerHTML = rows.length
-    ? rows.map(o => `
+function renderMenu() {
+  renderMenuFilters();
+  const rows = state.foods.filter(matchesFoodFilter).map((f) => {
+    const toggleClass = f.is_available ? "toggle on" : "toggle";
+    const ariaPressed = f.is_available ? "true" : "false";
+    const availLabel = f.is_available ? "Available" : "Unavailable";
+    return `
       <tr>
-        <td class="td-id">#ORD-${String(o.order_id).padStart(3, "0")}</td>
-        <td class="td-strong">${o.customer_name}</td>
-        <td>${o.vendor_name}</td>
-        <td class="td-muted">${o.items_count} item${o.items_count > 1 ? "s" : ""}</td>
-        <td class="td-amount">${fmt(o.total_amount)}</td>
-        <td><span class="badge badge-${o.status}">${o.status}</span></td>
-        <td class="td-muted">${timeAgo(o.created_at)}</td>
+        <td>${escapeHtml(f.name)}</td>
+        <td>${escapeHtml(f.category)}</td>
+        <td>${escapeHtml(money(f.price))}</td>
+        <td>${escapeHtml(userName(f.vendor_id))}</td>
         <td>
-          <select class="status-sel" data-order-id="${o.order_id}">
-            ${STATUSES.map(s => `<option value="${s}"${o.status === s ? " selected" : ""}>${s}</option>`).join("")}
+          <button class="${toggleClass}" type="button" data-action="toggleFood" data-id="${escapeHtml(f.food_id)}" aria-pressed="${ariaPressed}" aria-label="Availability toggle">
+            <span class="knob"></span>
+          </button>
+          <span class="muted" style="margin-left:8px">${escapeHtml(availLabel)}</span>
+        </td>
+        <td>
+          <button class="btn ghost sm" type="button" data-action="editFood" data-id="${escapeHtml(f.food_id)}"><i class="fa-solid fa-pen"></i>Edit</button>
+          <button class="btn ghost sm" type="button" data-action="deleteFood" data-id="${escapeHtml(f.food_id)}"><i class="fa-solid fa-trash"></i>Delete</button>
+        </td>
+      </tr>
+    `;
+  }).join("");
+
+  $("foodBody").innerHTML = rows || `<tr><td colspan="6" class="muted">No items match your filters.</td></tr>`;
+}
+
+function renderOrderTabs() {
+  const tabs = ["All", "Pending", "Preparing", "Ready", "Completed", "Delivered"];
+  $("orderTabs").innerHTML = tabs.map((t) => {
+    const cls = "tab" + (state.orderTab === t ? " is-active" : "");
+    return `<button class="${cls}" type="button" data-tab="${escapeHtml(t)}">${escapeHtml(t)}</button>`;
+  }).join("");
+}
+
+function matchesOrderFilter(o) {
+  if (state.isVendorSession && state.sessionVendorId && o.vendor_id !== state.sessionVendorId) return false;
+  if (state.orderTab !== "All" && o.status !== state.orderTab.toLowerCase()) return false;
+  const q = (state.search || "").trim().toLowerCase();
+  if (!q) return true;
+  const items = state.orderItems.filter((it) => it.order_id === o.order_id).map((it) => it.item_name).join(", ");
+  const hay = [o.order_id, userName(o.customer_id), userName(o.vendor_id), o.status, String(o.total_amount), items].join(" ").toLowerCase();
+  return hay.includes(q);
+}
+
+function renderOrders() {
+  renderOrderTabs();
+  const rows = state.orders.filter(matchesOrderFilter).map((o) => {
+    const its = state.orderItems.filter((it) => it.order_id === o.order_id);
+    const itemsLabel = its.length ? its.map((i) => `${i.item_name} ×${i.quantity}`).join(", ") : "—";
+    const pay = state.payments.find((p) => p.order_id === o.order_id);
+    const payStatus = pay ? pay.status : "pending";
+    const payLabel = pay ? `${pay.method} • ${payStatus}` : "—";
+    const options = ORDER_STATUSES.map((s) => `<option value="${escapeHtml(s)}"${s === o.status ? " selected" : ""}>${escapeHtml(s)}</option>`).join("");
+    return `
+      <tr>
+        <td>${escapeHtml(o.order_id)}</td>
+        <td>${escapeHtml(userName(o.customer_id))}</td>
+        <td>${escapeHtml(userName(o.vendor_id))}</td>
+        <td>${escapeHtml(itemsLabel)}</td>
+        <td>${escapeHtml(money(o.total_amount))}</td>
+        <td>${statusBadgeHtml(o.status)}</td>
+        <td>${escapeHtml(fmt(o.pickup_time))}</td>
+        <td>${escapeHtml(payLabel)}</td>
+        <td>
+          <select data-action="setOrderStatus" data-id="${escapeHtml(o.order_id)}" aria-label="Update order status">
+            ${options}
           </select>
         </td>
-      </tr>`).join("")
-    : `<tr><td colspan="8" class="table-empty"><i class="fas fa-inbox"></i>No orders found</td></tr>`;
+      </tr>
+    `;
+  }).join("");
+
+  $("ordersBody").innerHTML = rows || `<tr><td colspan="9" class="muted">No orders match your filters.</td></tr>`;
 }
 
-$("orderSearch").addEventListener("input", renderOrders);
-$("orderFilter").addEventListener("change", renderOrders);
-
-/* Delegated change for status selects */
-$("ordersBody").addEventListener("change", (e) => {
-  const sel = e.target.closest(".status-sel");
-  if (!sel) return;
-  const id = parseInt(sel.dataset.orderId);
-  const o  = DB.orders.find(x => x.order_id === id);
-  if (o) {
-    o.status = sel.value;
-    showToast("Order #ORD-" + String(id).padStart(3, "0") + " → " + sel.value);
-    renderOverview();
-  }
-});
-
-/* ============================================================
-   MENU
-   ============================================================ */
-function renderMenu() {
-  const q = $("menuSearch").value.toLowerCase().trim();
-  const rows = DB.food.filter(f =>
-    !q || f.item_name.toLowerCase().includes(q) || f.vendor_name.toLowerCase().includes(q)
-  );
-
-  $("menuBody").innerHTML = rows.length
-    ? rows.map(f => `
-      <tr>
-        <td class="td-id">#${f.food_id}</td>
-        <td class="td-strong">${f.item_name}</td>
-        <td class="td-desc">${f.description}</td>
-        <td class="td-amount">${fmt(f.price)}</td>
-        <td>${f.vendor_name}</td>
-        <td><span class="badge badge-${f.is_available ? "available" : "unavailable"}">${f.is_available ? "Available" : "Unavailable"}</span></td>
-        <td class="td-muted">${fmtDate(f.updated_at)}</td>
-        <td style="white-space:nowrap">
-          <button class="btn-icon-sm" data-edit="${f.food_id}" title="Edit"><i class="fas fa-pen"></i></button>
-          <button class="btn-icon-sm" data-toggle="${f.food_id}" title="${f.is_available ? "Mark unavailable" : "Mark available"}">
-            <i class="fas fa-${f.is_available ? "eye-slash" : "eye"}"></i>
-          </button>
-          <button class="btn-icon-sm danger" data-delete="${f.food_id}" title="Delete"><i class="fas fa-trash"></i></button>
-        </td>
-      </tr>`).join("")
-    : `<tr><td colspan="8" class="table-empty"><i class="fas fa-utensils"></i>No items found</td></tr>`;
-}
-
-$("menuSearch").addEventListener("input", renderMenu);
-
-$("menuBody").addEventListener("click", (e) => {
-  const edit   = e.target.closest("[data-edit]");
-  const toggle = e.target.closest("[data-toggle]");
-  const del    = e.target.closest("[data-delete]");
-
-  if (edit)   openEditItem(parseInt(edit.dataset.edit));
-  if (toggle) toggleAvailability(parseInt(toggle.dataset.toggle));
-  if (del)    deleteItem(parseInt(del.dataset.delete));
-});
-
-function toggleAvailability(id) {
-  const f = DB.food.find(x => x.food_id === id);
-  if (!f) return;
-  f.is_available = f.is_available ? 0 : 1;
-  f.updated_at = Date.now();
-  renderMenu();
-  renderOverview();
-  showToast(f.item_name + " marked as " + (f.is_available ? "available" : "unavailable"));
-}
-
-function deleteItem(id) {
-  if (!confirm("Delete this menu item? This cannot be undone.")) return;
-  DB.food = DB.food.filter(x => x.food_id !== id);
-  renderMenu();
-  renderOverview();
-  showToast("Item deleted");
-}
-
-/* ---- Modal ---- */
-function populateVendorDropdown(selectedVendorId) {
-  const vendors = DB.users.filter(u => u.role === "vendor");
-  $("fi-vendor").innerHTML = `<option value="">Select vendor</option>`
-    + vendors.map(v => `<option value="${v.user_id}"${v.user_id === selectedVendorId ? " selected" : ""}>${v.full_name}</option>`).join("");
-}
-
-function openAddItem() {
-  DB.editId = null;
-  $("modalTitle").textContent = "Add Menu Item";
-  $("fi-name").value  = "";
-  $("fi-price").value = "";
-  $("fi-desc").value  = "";
-  $("fi-avail").value = "1";
-  populateVendorDropdown(null);
-  $("itemModal").classList.add("open");
-}
-
-function openEditItem(id) {
-  const f = DB.food.find(x => x.food_id === id);
-  if (!f) return;
-  DB.editId = id;
-  $("modalTitle").textContent = "Edit Menu Item";
-  $("fi-name").value  = f.item_name;
-  $("fi-price").value = f.price;
-  $("fi-desc").value  = f.description;
-  $("fi-avail").value = f.is_available ? "1" : "0";
-  populateVendorDropdown(f.managed_by);
-  $("itemModal").classList.add("open");
-}
-
-function closeModal() {
-  $("itemModal").classList.remove("open");
-}
-
-function saveItem() {
-  const name  = $("fi-name").value.trim();
-  const price = parseFloat($("fi-price").value);
-  const desc  = $("fi-desc").value.trim();
-  const vid   = parseInt($("fi-vendor").value);
-  const avail = $("fi-avail").value === "1" ? 1 : 0;
-
-  if (!name || isNaN(price) || !vid) {
-    showToast("Please fill all required fields");
-    return;
-  }
-
-  const vendor = DB.users.find(u => u.user_id === vid);
-
-  if (DB.editId) {
-    const f = DB.food.find(x => x.food_id === DB.editId);
-    if (f) {
-      Object.assign(f, {
-        item_name: name, price, description: desc,
-        managed_by: vid, vendor_name: vendor.full_name,
-        is_available: avail, updated_at: Date.now()
-      });
-      showToast("Item updated successfully");
-    }
-  } else {
-    const newId = Math.max(0, ...DB.food.map(x => x.food_id)) + 1;
-    DB.food.push({
-      food_id: newId, item_name: name, description: desc,
-      price, is_available: avail, managed_by: vid,
-      vendor_name: vendor.full_name,
-      created_at: Date.now(), updated_at: Date.now()
-    });
-    showToast("Item added successfully");
-  }
-
-  closeModal();
-  renderMenu();
-  renderOverview();
-}
-
-$("addItemBtn").addEventListener("click", openAddItem);
-$("modalClose").addEventListener("click", closeModal);
-$("modalCancel").addEventListener("click", closeModal);
-$("modalSave").addEventListener("click", saveItem);
-
-$("itemModal").addEventListener("click", (e) => {
-  if (e.target === $("itemModal")) closeModal();
-});
-
-/* ============================================================
-   SALES
-   ============================================================ */
 function renderSales() {
-  const completed = DB.payments.filter(p => p.status === "completed");
-  const total     = completed.reduce((s, p) => s + p.amount, 0);
-  const compOrds  = DB.orders.filter(o => o.status === "completed" || o.status === "delivered").length;
-  const avg       = compOrds ? Math.round(total / compOrds) : 0;
+  const visibleOrderIds = state.isVendorSession && state.sessionVendorId
+    ? new Set(state.orders.filter((o) => o.vendor_id === state.sessionVendorId).map((o) => o.order_id))
+    : null;
 
-  $("sr-total").textContent     = fmt(total);
-  $("sr-completed").textContent = compOrds;
-  $("sr-avg").textContent       = fmt(avg);
+  const scopedPayments = visibleOrderIds ? state.payments.filter((p) => visibleOrderIds.has(p.order_id)) : state.payments;
+  const completed = scopedPayments.filter((p) => p.status === "completed");
+  const totalRevenue = completed.reduce((sum, p) => sum + Number(p.amount || 0), 0);
+  const uniqueOrders = new Set(completed.map((p) => p.order_id)).size;
+  const avg = uniqueOrders ? totalRevenue / uniqueOrders : 0;
 
-  /* Payment log */
-  $("paymentsBody").innerHTML = DB.payments
-    .slice().sort((a, b) => b.paid_at - a.paid_at)
-    .map(p => `
-      <tr>
-        <td class="td-id">#PAY-${String(p.payment_id).padStart(3, "0")}</td>
-        <td class="td-id">#ORD-${String(p.order_id).padStart(3, "0")}</td>
-        <td style="text-transform:capitalize">${p.method}</td>
-        <td class="td-amount">${fmt(p.amount)}</td>
-        <td><span class="badge badge-${p.status === "completed" ? "paid" : p.status}">${p.status}</span></td>
-        <td class="td-muted">${fmtDateTime(p.paid_at)}</td>
-      </tr>`).join("");
-}
+  $("salesTotalRevenue").textContent = money(totalRevenue);
+  $("salesOrdersCompleted").textContent = String(uniqueOrders);
+  $("salesAvgOrder").textContent = money(avg);
+  $("salesPaymentsCount").textContent = String(scopedPayments.length);
+  $("paymentCountLabel").textContent = `${scopedPayments.length} payments`;
 
-/* ============================================================
-   USERS
-   ============================================================ */
-function renderUsers() {
-  const q  = $("userSearch").value.toLowerCase().trim();
-  const rf = $("userRoleFilter").value;
-
-  const rows = DB.users.filter(u => {
-    const m  = !q || u.full_name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q);
-    const r  = !rf || u.role === rf;
-    return m && r;
+  // Daily revenue (last 7 days)
+  const byDay = new Map();
+  completed.filter((p) => p.paid_at).forEach((p) => {
+    const key = todayKey(p.paid_at);
+    byDay.set(key, (byDay.get(key) || 0) + Number(p.amount || 0));
   });
+  const rows = Array.from(byDay.entries()).sort((a, b) => a[0].localeCompare(b[0])).slice(-7);
+  const max = rows.reduce((m, r) => Math.max(m, r[1]), 0) || 1;
 
-  $("userCount").textContent = rows.length + " user" + (rows.length !== 1 ? "s" : "");
+  $("dailyRevenue").innerHTML = rows.length
+    ? rows.map(([day, amt]) => {
+      const pct = Math.max(4, Math.round((amt / max) * 100));
+      return `
+        <div class="barrow">
+          <div class="muted">${escapeHtml(day)}</div>
+          <div class="bar"><div style="width:${pct}%"></div></div>
+          <div class="baramt">${escapeHtml(money(amt))}</div>
+        </div>
+      `;
+    }).join("")
+    : `<div class="muted">No completed payments yet.</div>`;
 
-  $("usersBody").innerHTML = rows.length
-    ? rows.map(u => `
-      <tr>
-        <td class="td-id">#${u.user_id}</td>
-        <td class="td-strong">${u.full_name}</td>
-        <td style="color:var(--text-secondary)">${u.email}</td>
-        <td style="color:var(--text-secondary)">${u.phone}</td>
-        <td><span class="badge badge-${u.role}">${u.role}</span></td>
-        <td class="td-muted">${fmtDate(u.created_at)}</td>
-      </tr>`).join("")
-    : `<tr><td colspan="6" class="table-empty"><i class="fas fa-users"></i>No users found</td></tr>`;
+  // Payments table
+  const payRows = scopedPayments.slice(0, 30).map((p) => `
+    <tr>
+      <td>${escapeHtml(p.payment_id)}</td>
+      <td>${escapeHtml(p.order_id)}</td>
+      <td>${escapeHtml(p.method)}</td>
+      <td>${escapeHtml(money(p.amount))}</td>
+      <td>${escapeHtml(p.status)}</td>
+      <td>${escapeHtml(p.paid_at ? fmt(p.paid_at) : "—")}</td>
+    </tr>
+  `).join("");
+  $("paymentsBody").innerHTML = payRows || `<tr><td colspan="6" class="muted">No payments found.</td></tr>`;
 }
 
-$("userSearch").addEventListener("input", renderUsers);
-$("userRoleFilter").addEventListener("change", renderUsers);
-
-/* ============================================================
-   TOAST
-   ============================================================ */
-let toastTimer = null;
-
-function showToast(msg) {
-  $("toastMsg").textContent = msg;
-  const toast = $("toast");
-  toast.classList.add("show");
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => toast.classList.remove("show"), 2800);
-}
-
-/* ============================================================
-   LOGOUT
-   ============================================================ */
-function initializeLogout() {
-  const logoutBtn = document.getElementById("adminLogoutBtn");
-  if (!logoutBtn) return;
-  
-  logoutBtn.addEventListener("click", function() {
-    // Clear authentication data
-    localStorage.removeItem("quickbite-auth-user");
-    localStorage.removeItem("quickbite-profile");
-    
-    // Redirect to home page
-    window.location.href = "index.html";
-  });
-}
-
-/* ============================================================
-   INIT
-   ============================================================ */
-(function init() {
-  // Auth guard - check if user is logged in and is admin
-  try {
-    const user = JSON.parse(localStorage.getItem("quickbite-auth-user"));
-    if (!user || !user.email) {
-      // Not logged in, redirect to home page
-      window.location.replace("index.html");
-      return;
-    }
-    
-    if (user.role !== "admin") {
-      // Not an admin, redirect to appropriate dashboard
-      if (user.role === "vendor") {
-        window.location.replace("vendor-dashboard.html");
-      } else {
-        window.location.replace("customer-dashboard.html");
-      }
-      return;
-    }
-  } catch (error) {
-    window.location.replace("index.html");
-    return;
-  }
-  
+function renderAll() {
   renderOverview();
-  /* Pre-render other pages in background so data is ready */
-  renderOrders();
   renderMenu();
-  renderUsers();
-  /* Sales uses random data so render on demand */
-  
-  // Initialize logout button
-  initializeLogout();
-})();
+  renderOrders();
+  renderSales();
+}
+
+/* ===========================
+   Modal (Food)
+   =========================== */
+
+function openFoodModal(mode, foodId) {
+  state.editingFoodId = mode === "edit" ? foodId : null;
+  const isEdit = !!state.editingFoodId;
+  $("foodModalTitle").textContent = isEdit ? "Edit Food Item" : "Add New Food Item";
+  $("foodModalSave").textContent = isEdit ? "Save Changes" : "Save Item";
+
+  $("fiVendor").innerHTML = vendorOptionsHtml();
+  const firstVendor = state.users.find((u) => u.role === "vendor");
+
+  if (!isEdit) {
+    $("fiName").value = "";
+    $("fiDesc").value = "";
+    $("fiCategory").value = "";
+    $("fiPrice").value = "0";
+    $("fiVendor").value = state.isVendorSession ? (state.sessionVendorId || "") : (firstVendor ? firstVendor.user_id : "");
+    setAvail(true);
+    $("fiImage").value = "";
+  } else {
+    const f = state.foods.find((x) => x.food_id === foodId);
+    if (!f) return;
+    $("fiName").value = f.name;
+    $("fiDesc").value = f.description || "";
+    $("fiCategory").value = f.category;
+    $("fiPrice").value = String(f.price);
+    $("fiVendor").value = f.vendor_id;
+    setAvail(!!f.is_available);
+    $("fiImage").value = "";
+  }
+
+  if (state.isVendorSession) {
+    $("fiVendor").disabled = true;
+  } else {
+    $("fiVendor").disabled = false;
+  }
+
+  $("foodModal").hidden = false;
+}
+
+function closeFoodModal() {
+  $("foodModal").hidden = true;
+  state.editingFoodId = null;
+}
+
+function setAvail(on) {
+  const btn = $("fiAvail");
+  btn.classList.toggle("on", !!on);
+  btn.setAttribute("aria-pressed", on ? "true" : "false");
+  $("fiAvailLabel").textContent = on ? "Available" : "Unavailable";
+}
+
+function saveFoodFromModal() {
+  const name = $("fiName").value.trim();
+  const description = $("fiDesc").value.trim();
+  const category = $("fiCategory").value.trim();
+  const vendor_id = $("fiVendor").value;
+  const price = Number($("fiPrice").value || 0);
+  const is_available = $("fiAvail").classList.contains("on");
+  const imageFile = $("fiImage").files && $("fiImage").files[0] ? $("fiImage").files[0].name : "";
+
+  if (!name || !category || !vendor_id || !(price >= 0)) return;
+
+  if (!state.editingFoodId) {
+    state.foods.unshift({ food_id: uid("f"), vendor_id, name, category, price, is_available, description, image: imageFile });
+  } else {
+    const idx = state.foods.findIndex((f) => f.food_id === state.editingFoodId);
+    if (idx >= 0) {
+      state.foods[idx] = { ...state.foods[idx], vendor_id, name, category, price, is_available, description, image: imageFile || state.foods[idx].image };
+    }
+  }
+
+  closeFoodModal();
+  renderAll();
+}
+
+/* ===========================
+   Events
+   =========================== */
+
+function wireEvents() {
+  // Navigation
+  $$(".nav-btn").forEach((b) => b.addEventListener("click", () => setView(b.dataset.view)));
+
+  // Jump button
+  $$("[data-jump]").forEach((b) => b.addEventListener("click", () => setView(b.dataset.jump)));
+
+  // Global search
+  $("globalSearch").addEventListener("input", (e) => {
+    state.search = e.target.value || "";
+    renderAll();
+  });
+
+  // Menu filters
+  $("menuSearch").addEventListener("input", (e) => { state.menuQuery = e.target.value || ""; renderMenu(); });
+  $("menuVendorFilter").addEventListener("change", (e) => { state.menuVendor = e.target.value || ""; renderMenu(); });
+  $("menuCategoryFilter").addEventListener("change", (e) => { state.menuCategory = e.target.value || ""; renderMenu(); });
+
+  $("addFoodBtn").addEventListener("click", () => openFoodModal("add"));
+
+  // Orders tabs (delegated)
+  $("orderTabs").addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-tab]");
+    if (!btn) return;
+    state.orderTab = btn.dataset.tab || "All";
+    renderOrders();
+  });
+
+  // Table actions (delegated)
+  $("foodBody").addEventListener("click", (e) => {
+    const el = e.target.closest("[data-action]");
+    if (!el) return;
+    const action = el.dataset.action;
+    const id = el.dataset.id;
+    if (action === "toggleFood") {
+      const f = state.foods.find((x) => x.food_id === id);
+      if (!f) return;
+      f.is_available = !f.is_available;
+      renderMenu();
+      renderOverview();
+      return;
+    }
+    if (action === "editFood") return openFoodModal("edit", id);
+    if (action === "deleteFood") {
+      state.foods = state.foods.filter((x) => x.food_id !== id);
+      renderAll();
+    }
+  });
+
+  $("ordersBody").addEventListener("change", (e) => {
+    const sel = e.target.closest("[data-action='setOrderStatus']");
+    if (!sel) return;
+    const orderId = sel.dataset.id;
+    const status = sel.value;
+    if (!ORDER_STATUSES.includes(status)) return;
+    const o = state.orders.find((x) => x.order_id === orderId);
+    if (!o) return;
+    if (state.isVendorSession && state.sessionVendorId && o.vendor_id !== state.sessionVendorId) return;
+    o.status = status;
+
+    if (status === "completed" || status === "delivered") {
+      const pay = state.payments.find((p) => p.order_id === orderId);
+      if (pay && pay.status !== "completed") {
+        pay.status = "completed";
+        pay.paid_at = new Date().toISOString();
+      }
+    }
+
+    renderAll();
+  });
+
+  // Modal
+  $("foodModalClose").addEventListener("click", closeFoodModal);
+  $("foodModalCancel").addEventListener("click", closeFoodModal);
+  $("foodModalSave").addEventListener("click", saveFoodFromModal);
+  $("foodModal").addEventListener("mousedown", (e) => { if (e.target === e.currentTarget) closeFoodModal(); });
+  $("fiAvail").addEventListener("click", () => setAvail(!$("fiAvail").classList.contains("on")));
+}
+
+function startLiveFeed() {
+  if (state.liveTimer) clearInterval(state.liveTimer);
+  state.liveTimer = setInterval(() => {
+    if (state.isVendorSession && state.sessionVendorId) {
+      // For vendor sessions, keep data stable and scoped (no random global feed).
+      return;
+    }
+    // Add a new pending order sometimes
+    if (Math.random() < 0.45) {
+      const customers = state.users.filter((u) => u.role === "customer");
+      const vendors = state.users.filter((u) => u.role === "vendor");
+      if (!customers.length || !vendors.length) return;
+      const customer = customers[Math.floor(Math.random() * customers.length)];
+      const vendor = vendors[Math.floor(Math.random() * vendors.length)];
+      const order_id = "o_" + String(9000 + Math.floor(Math.random() * 900)).padStart(4, "0");
+      const total_amount = 120 + Math.floor(Math.random() * 540);
+      const now = Date.now();
+      const order = {
+        order_id,
+        customer_id: customer.user_id,
+        vendor_id: vendor.user_id,
+        total_amount,
+        status: "pending",
+        created_at: new Date(now).toISOString(),
+        pickup_time: new Date(now + (10 + Math.floor(Math.random() * 20)) * 60e3).toISOString(),
+      };
+      state.orders.unshift(order);
+      state.payments.unshift({
+        payment_id: uid("p"),
+        order_id,
+        method: PAYMENT_METHODS[Math.floor(Math.random() * PAYMENT_METHODS.length)],
+        status: "pending",
+        amount: total_amount,
+        paid_at: null,
+      });
+    }
+
+    // Move one order forward
+    const idx = state.orders.findIndex((o) => o.status === "pending" || o.status === "preparing");
+    if (idx >= 0 && Math.random() < 0.55) {
+      const s = state.orders[idx].status;
+      state.orders[idx] = { ...state.orders[idx], status: s === "pending" ? "preparing" : "ready" };
+    }
+
+    state.orders = state.orders.slice(0, 28);
+    renderAll();
+  }, 6500);
+}
+
+function init() {
+  state.sessionUser = getSessionUser();
+  const role = String((state.sessionUser && state.sessionUser.role) || "").toLowerCase();
+  state.isVendorSession = role === "vendor";
+
+  if (state.isVendorSession) {
+    const storedId = normalizeId(state.sessionUser.user_id || state.sessionUser.id || state.sessionUser.vendor_id);
+    const storedName = String(state.sessionUser.fullName || state.sessionUser.name || "").trim();
+
+    // Prefer ID match if present.
+    let vendor = storedId ? state.users.find((u) => normalizeId(u.user_id) === storedId && u.role === "vendor") : null;
+    if (!vendor && storedName) {
+      vendor = state.users.find((u) => u.role === "vendor" && String(u.name || "").toLowerCase() === storedName.toLowerCase());
+    }
+    if (!vendor) {
+      vendor = { user_id: storedId || uid("u_ven"), name: storedName || "Vendor", role: "vendor" };
+      state.users.push(vendor);
+    }
+    state.sessionVendorId = vendor.user_id;
+
+    // Scope the menu vendor filter to this vendor by default.
+    state.menuVendor = state.sessionVendorId;
+  }
+
+  const sidebarSubline = $("sidebarSubline");
+  const sidebarUserName = $("sidebarUserName");
+  if (state.isVendorSession && state.sessionVendorId) {
+    const vendorName = userName(state.sessionVendorId);
+    if (sidebarSubline) sidebarSubline.textContent = vendorName;
+    if (sidebarUserName) sidebarUserName.textContent = vendorName;
+  } else {
+    if (sidebarSubline) sidebarSubline.textContent = "Admin Console";
+    if (sidebarUserName) sidebarUserName.textContent = "Admin";
+  }
+
+  // Fill static selects for menu filters/modal
+  $("menuVendorFilter").innerHTML = `<option value="">All Vendors</option>${vendorOptionsHtml()}`;
+  $("menuCategoryFilter").innerHTML = categoryOptionsHtml("All Categories");
+  $("fiVendor").innerHTML = vendorOptionsHtml();
+
+  wireEvents();
+  renderHeader();
+  renderAll();
+  startLiveFeed();
+}
+
+document.addEventListener("DOMContentLoaded", init);

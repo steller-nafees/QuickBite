@@ -146,7 +146,7 @@
                     <i class="fas fa-bowl-food"></i>
                     <p>Your platter is empty</p>
                     <small>Add items from the menu to get started</small>
-                    <div class="view-menu" onclick="window.location.href='#menu'">View Menu</div>
+                    <div class="view-menu" onclick="window.location.href='menu.html'">View Menu</div>
                 </div>`;
             if (footer) footer.style.display = 'none';
             return;
@@ -456,6 +456,7 @@
             order_id     : orderId,
             customer_id  : user?.user_id || null,
             vendor_id    : cart[0]?.vendor_id || null,
+            vendor       : cart[0]?.vendor || "QuickBite Vendor",
             total_amount : total,
             status       : 'pending',
             created_at   : new Date().toISOString(),

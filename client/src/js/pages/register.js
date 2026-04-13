@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // Already logged in, redirect to appropriate dashboard
             const role = String(user.role || "customer").toLowerCase();
             if (role === "vendor") {
-                window.location.replace("vendor-dashboard.html");
+                window.location.replace("admin-dashboard.html");
             } else if (role === "admin") {
                 window.location.replace("admin-dashboard.html");
             } else {
@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const AUTH_API_BASE = window.QUICKBITE_AUTH_API || "http://localhost:5000/api/auth";
 
-    const form = document.getElementById("registerForm");
+    const form = document.getElementById("registerJourneyForm");
     const progress = document.getElementById("registerProgress");
     const backBtn = document.getElementById("backBtn");
     const nextBtn = document.getElementById("nextBtn");

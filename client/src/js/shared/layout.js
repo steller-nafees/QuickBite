@@ -28,7 +28,7 @@ function getAuthUserFromStorage() {
 
 function isAppShellPage() {
     const page = document.body.dataset.page;
-    return page === "customer-dashboard" || page === "vendor-dashboard" || page === "register";
+    return page === "customer-dashboard" || page === "admin-dashboard" || page === "register";
 }
 
 function getAuthNavClusterHtml() {
@@ -40,9 +40,9 @@ function getAuthNavClusterHtml() {
 
     const page = document.body.dataset.page;
     const role = String(user.role || "customer").toLowerCase();
-    const dashboardHref = role === "vendor" ? "vendor-dashboard.html" : "customer-dashboard.html";
+    const dashboardHref = role === "vendor" ? "admin-dashboard.html" : "customer-dashboard.html";
     const onMatchingDashboard =
-        (role === "vendor" && page === "vendor-dashboard") ||
+        (role === "vendor" && page === "admin-dashboard") ||
         (role !== "vendor" && page === "customer-dashboard");
 
     let html = "<span class=\"nav-auth-cluster\">";
@@ -60,6 +60,7 @@ function updateHeaderUserState() {
     const btn = document.getElementById("headerUserBtn");
     if (!btn) return;
     if (user && (user.fullName || user.name || user.email)) {
+        const role = String(user.role || "customer").toLowerCase();
         const fullName = user.fullName || user.name || user.email.split("@")[0];
         const firstName = fullName.split(' ')[0];
         const initial = firstName.charAt(0).toUpperCase();
@@ -71,7 +72,7 @@ function updateHeaderUserState() {
             <span class="user-greeting">Hi, <strong>${firstName}</strong></span>
             <i class="fas fa-chevron-down user-dropdown-icon"></i>
             <div class="user-dropdown" id="userDropdown">
-                <a href="customer-dashboard.html" class="dropdown-item"><i class="fas fa-chart-pie"></i> Dashboard</a>
+                <a href="${role === "vendor" ? "admin-dashboard.html" : "customer-dashboard.html"}" class="dropdown-item"><i class="fas fa-chart-pie"></i> Dashboard</a>
                 <a href="#" class="dropdown-item" id="dropdownNotif"><i class="fas fa-bell"></i> Notifications</a>
                 <a href="#" class="dropdown-item" id="dropdownLogout"><i class="fas fa-sign-out-alt"></i> Log Out</a>
             </div>
@@ -136,11 +137,44 @@ function updateHeaderUserState() {
                 return;
             }
 
-            // Last resort: click the first opener
+            // Last resort: directly open the modal if present (works even if auth-modal.js hasn't bound click handlers)
+            if (typeof window.QuickBiteAuthOpen === "function") {
+                window.QuickBiteAuthOpen("login");
+                return;
+            }
+
             document.querySelector('[data-auth-open]')?.click();
         };
     }
 }
+
+function openAuthModalFallback(type) {
+    const modal = document.getElementById("authModal");
+    if (!modal) return false;
+
+    const loginForm = document.getElementById("loginForm");
+    const registerForm = document.getElementById("registerForm");
+
+    modal.setAttribute("aria-hidden", "false");
+
+    if (loginForm && registerForm) {
+        if (type === "register") {
+            registerForm.classList.add("active");
+            loginForm.classList.remove("active");
+        } else {
+            loginForm.classList.add("active");
+            registerForm.classList.remove("active");
+        }
+    }
+
+    return true;
+}
+
+// Expose a tiny safe API so header Sign In can always open the modal.
+window.QuickBiteAuthOpen = function (type) {
+    const t = String(type || "login").toLowerCase();
+    return openAuthModalFallback(t);
+};
 
 function getGlobalHeaderMarkup() {
     const selectedLocation = getSelectedLocation();
@@ -177,10 +211,9 @@ function getGlobalHeaderMarkup() {
                 </div>
                 <div class="nav-menu" id="navMenu">
                     <a href="${getHomeLink("#vendors")}" class="nav-link">Vendors</a>
-                    <a href="${getHomeLink("#menu")}" class="nav-link">Our Menu</a>
+                    <a href="menu.html" class="nav-link">Our Menu</a>
                     <a href="${getHomeLink("#menu")}" class="nav-link">Best Picks</a>
                     <a href="${getHomeLink("#experience")}" class="nav-link">About Us</a>
-                    <a href="${getHomeLink("#pricing")}" class="nav-link">Plans</a>
                 </div>
 
                 <div class="nav-utilities">
@@ -598,8 +631,3 @@ window.QuickBiteLayout = {
     updateCartCount: updateGlobalCartCount,
     getSelectedLocation: getSelectedLocation
 };
-
-
-
-
-

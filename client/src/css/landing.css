@@ -1854,14 +1854,46 @@ section {
     background: var(--color-red-dark);
 }
 
-.trending-bestsellers .trending-grid {
-    grid-template-columns: repeat(3, 1fr);
+.carousel-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
     gap: 1rem;
+}
+
+.carousel-track {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: calc((100% - 2rem) / 3);
+    gap: 1rem;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+    padding: 0.25rem 0;
+}
+
+.carousel-track::-webkit-scrollbar {
+    display: none;
+}
+
+.carousel-btn {
+    width: 3.25rem;
+    height: 3.25rem;
+    border: 1px solid rgba(255, 251, 233, 0.22);
+    border-radius: 50%;
+    background: rgba(255, 251, 233, 0.12);
+    color: var(--color-cream);
+    flex-shrink: 0;
+}
+
+.carousel-btn:hover,
+.carousel-btn:focus-visible {
+    transform: translateY(-2px);
+    background: rgba(255, 251, 233, 0.2);
 }
 
 .trending-bestsellers .food-card {
     padding: 1.35rem 1rem 1rem;
-
     border-radius: 22px;
     background: #fffbe9;
     box-shadow: none;
@@ -2121,11 +2153,14 @@ section {
     .experience-grid,
     .steps-container,
     .vendors-grid,
-    .trending-grid,
     .testimonial-grid,
     .footer-grid,
     .category-grid {
         grid-template-columns: repeat(2, 1fr);
+    }
+
+    .carousel-track {
+        grid-auto-columns: calc((100% - 1rem) / 2);
     }
 
     .cta-panel {
@@ -2177,12 +2212,19 @@ section {
     .experience-grid,
     .steps-container,
     .vendors-grid,
-    .trending-grid,
     .testimonial-grid,
     .footer-grid,
     .category-grid,
     .mini-cards {
         grid-template-columns: 1fr;
+    }
+
+    .carousel-wrapper {
+        gap: 0.75rem;
+    }
+
+    .carousel-track {
+        grid-auto-columns: 100%;
     }
 
     .hero-search,
@@ -2198,6 +2240,11 @@ section {
     .btn,
     .nav-cta {
         width: 100%;
+    }
+
+    .carousel-btn {
+        width: 2.8rem;
+        height: 2.8rem;
     }
 
     .search-suggestion-item {

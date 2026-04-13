@@ -251,7 +251,25 @@
                             cards.</p>
                     </div>
                 </div>
-                <div class="trending-grid" id="trendingGrid"></div>
+                <div class="carousel-wrapper">
+                    <button class="carousel-btn left" id="carouselLeft">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+
+                    <div class="carousel-track" id="trendingGrid">
+                        <!-- JS will inject 6 best seller items -->
+                    </div>
+
+                    <button class="carousel-btn right" id="carouselRight">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+
+                <div class="menu-cta">
+                    <a href="menu.html" class="btn btn-primary">
+                        Explore Full Menu <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
             </div>
         </section>
 
@@ -387,6 +405,15 @@
                                     <div class="field-wrap">
                                         <input id="regPhone" type="tel" placeholder=" " autocomplete="tel">
                                         <label for="regPhone">Phone</label>
+                                    </div>
+
+                                    <div class="auth-role-block">
+                                        <p class="auth-sub-description" style="margin:10px 0 8px;">Role</p>
+                                        <div class="role-options" role="group" aria-label="Select role">
+                                            <button type="button" class="role-btn is-selected" data-reg-role="customer">Customer</button>
+                                            <button type="button" class="role-btn" data-reg-role="vendor">Vendor</button>
+                                        </div>
+                                        <input type="hidden" id="regRole" value="customer">
                                     </div>
 
                                     <button type="button" class="btn btn-primary auth-submit auth-login-btn"
