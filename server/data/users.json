@@ -1,11 +1,20 @@
 [
   {
-    "id": 1775624866783,
-    "fullName": "H M Nafees N Islam",
-    "email": "nafees.islam.241@northsouth.edu",
-    "phone": "1234",
+    "id": 1776063231260,
+    "fullName": "H.M. NAFEES N. ISLAM",
+    "email": "nafeesnislam.official@gmail.com",
+    "phone": "+8801317850288",
+    "role": "vendor",
+    "passwordHash": "scrypt$16384$8$1$FCzSbh6sHAIYhwhAxOHFUg==$/PdK0AElIiXv2vxRjHG+0QY3gSt7vLaVJVuZ+Aw8pAWHdkwWs3MfmrPn9i8RPdyoGOuUmi8SNcPT4n6ws4UZng==",
+    "createdAt": "2026-04-13T06:53:51.260Z"
+  },
+  {
+    "id": 1776069289031,
+    "fullName": "Nafees",
+    "email": "homelyproperties.official@gmail.com",
+    "phone": "+8801317850288",
     "role": "customer",
-    "passwordHash": "scrypt$16384$8$1$t9Q8amujjERzbRDV2wI5bw==$f67iMFOf+JkPvlP/A0Iv6m4cQf3+QJoiv9WQnuP2JRvw0MuuQfGPI5OJmMIpkcZ/E7O6so2yZlCPX9iCmBsnXg==",
-    "createdAt": "2026-04-08T05:07:46.783Z"
+    "passwordHash": "scrypt$16384$8$1$kMzh4NqbRPv80fg2oiB/Qw==$nUnLqRC5UCEJ9wE98f4A/619XaEE2I+VRpGYf5ufe1L+iIgftfcxLJQKTa+Wux6+TGGLsqezssx7pTn6oYH7Ig==",
+    "createdAt": "2026-04-13T08:34:49.031Z"
   }
 ]

@@ -11,7 +11,8 @@
             try {
                 const user = JSON.parse(localStorage.getItem("quickbite-auth-user")) || {};
                 const role = (user.role || "customer").toLowerCase();
-                window.location.replace(role === "vendor" ? "vendor-dashboard.html" : "customer-dashboard.html#overview");
+                const role = String((user && user.role) || "").toLowerCase();
+                window.location.replace(role === "vendor" ? "admin-dashboard.html" : "customer-dashboard.html#overview");
             } catch (error) {
                 window.location.replace("customer-dashboard.html#overview");
             }

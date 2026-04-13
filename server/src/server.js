@@ -42,11 +42,15 @@ function normalizeEmail(email) {
 }
 
 function sanitizeRole(role) {
-    return role === 'vendor' ? 'vendor' : 'customer';
+    if (role === 'vendor') return 'vendor';
+    if (role === 'admin') return 'admin';
+    return 'customer';
 }
 
 function getRedirectForRole(role) {
-    return role === 'vendor' ? '/vendor-dashboard.html' : '/customer-dashboard.html';
+    if (role === 'vendor') return '/admin-dashboard.html';
+    if (role === 'admin') return '/admin-dashboard.html';
+    return '/customer-dashboard.html';
 }
 
 async function ensureUsersFile() {
@@ -234,8 +238,8 @@ app.get('/customer-dashboard.html', (req, res) => {
     res.sendFile(path.join(PUBLIC_DIR, 'customer-dashboard.html'));
 });
 
-app.get('/vendor-dashboard.html', (req, res) => {
-    res.sendFile(path.join(PUBLIC_DIR, 'vendor-dashboard.html'));
+app.get('/admin-dashboard.html', (req, res) => {
+    res.sendFile(path.join(PUBLIC_DIR, 'admin-dashboard.html'));
 });
 
 app.get('/', (req, res) => {
@@ -243,12 +247,7 @@ app.get('/', (req, res) => {
 });
 
 app.listen(PORT, () => {
-    const vendorDash = path.join(PUBLIC_DIR, 'vendor-dashboard.html');
-    if (!fs.existsSync(vendorDash)) {
-        console.warn('QuickBite: vendor-dashboard.html not found at', vendorDash);
-    }
     console.log(`QuickBite server running on port ${PORT}`);
     console.log(`Serving static files from ${PUBLIC_DIR}`);
     console.log(`Serving /src from ${CLIENT_SRC_DIR}`);
 });
-

@@ -18,6 +18,9 @@
         rel="stylesheet">
     <link rel="stylesheet" href="../src/css/landing.css">
     <link rel="stylesheet" href="../src/css/auth-modal.css">
+    <link rel="stylesheet" href="../src/css/notifications.css">
+    <link rel="stylesheet" href="../src/css/auth-modal-additions.css">
+    <link rel="stylesheet" href="../src/css/cart.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -248,7 +251,25 @@
                             cards.</p>
                     </div>
                 </div>
-                <div class="trending-grid" id="trendingGrid"></div>
+                <div class="carousel-wrapper">
+                    <button class="carousel-btn left" id="carouselLeft">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+
+                    <div class="carousel-track" id="trendingGrid">
+                        <!-- JS will inject 6 best seller items -->
+                    </div>
+
+                    <button class="carousel-btn right" id="carouselRight">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+
+                <div class="menu-cta">
+                    <a href="menu.html" class="btn btn-primary">
+                        Explore Full Menu <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
             </div>
         </section>
 
@@ -309,13 +330,25 @@
         <div id="globalFooter"></div>
     </div>
 
+    <!-- NOTIFICATION PANEL -->
+    <div class="notif-panel" id="notifPanel">
+        <div class="notif-header">
+            <h3>Notifications</h3>
+            <button class="notif-clear-btn" id="notifClearAll">Clear All</button>
+        </div>
+        <div class="notif-list" id="notifList">
+            <!-- Notifications will be inserted here -->
+        </div>
+    </div>
+
     <script src="js/quickbite-config.js"></script>
     <!-- Hidden login opener so header Sign In can open login without triggering CTA notification -->
     <a href="#" id="authLoginOpener" data-auth-open="login" style="display:none"></a>
-    <script src="../src/js/shared/layout.js"></script>
     <!-- Landing Page Script -->
+    <script src="../src/js/shared/layout.js"></script>
     <script src="../src/js/pages/Landing.js"></script>
     <script src="js/auth-modal.js"></script>
+    <script src="../src/js/components/cart.js"></script>
 
     <!-- Auth Modal -->
     <div class="auth-modal" id="authModal" aria-hidden="true">
@@ -325,12 +358,13 @@
             <div class="auth-grid">
                 <button class="auth-back" aria-label="Back" data-auth-back>&larr;</button>
                 <div class="auth-left">
-                    <div class="auth-brand">Welcome To QuickBite</div>
-                    <h2 class="auth-heading">Good Morning!</h2>
-                    <p class="auth-sub"></p>
+                    <div class="auth-heading" id="greetingText">Good Morning, Welcome To QuickBite.</div>
 
                     <div class="auth-forms">
                         <form id="loginForm" class="auth-form active auth-login-simple">
+                            <div class="auth-sub-title">Login</div>
+                            <p class="auth-sub-description">Enter Your Credentials before anyone does to skip the queue
+                            </p>
                             <div class="field-wrap">
                                 <input id="loginEmail" type="email" placeholder=" " autocomplete="email">
                                 <label for="loginEmail">Email</label>
@@ -338,7 +372,8 @@
                             <div class="field-wrap has-toggle">
                                 <input id="loginPassword" type="password" placeholder=" "
                                     autocomplete="current-password">
-                                <button type="button" class="pw-toggle" aria-label="Show password" data-target="loginPassword"><i class="fas fa-eye"></i></button>
+                                <button type="button" class="pw-toggle" aria-label="Show password"
+                                    data-target="loginPassword"><i class="fas fa-eye"></i></button>
                                 <label for="loginPassword">Password</label>
                             </div>
                             <label class="remember-row">
@@ -352,28 +387,17 @@
                         </form>
 
                         <form id="registerForm" class="auth-form">
-                            <div class="reg-steps" data-step="0">
-                                <!-- Step 0: Email only -->
+                            <div class="reg-steps">
+
+                                <!-- ── Step 0: Basic info ── -->
                                 <div class="step">
+                                    <div class="auth-sub-title">Register</div>
+                                    <p class="auth-sub-description">Create your account to skip the queue</p>
+
                                     <div class="field-wrap">
                                         <input id="regEmail" type="email" placeholder=" " autocomplete="email">
                                         <label for="regEmail">Email</label>
                                     </div>
-                                    <p class="auth-tos">Already have an account? <a href="#" data-auth-switch="login"
-                                            style="color: var(--color-red);">Sign in</a></p>
-                                </div>
-
-                                <!-- Step 1: Role selection -->
-                                <div class="step hidden">
-                                    <p style="margin-bottom:8px;color:var(--color-gray)">Select your role</p>
-                                    <div class="role-options">
-                                        <button type="button" class="role-btn" data-role="customer">Customer</button>
-                                        <button type="button" class="role-btn" data-role="vendor">Vendor</button>
-                                    </div>
-                                </div>
-
-                                <!-- Step 2: Name, Phone, Password, Confirm (single screen) -->
-                                <div class="step hidden">
                                     <div class="field-wrap">
                                         <input id="regName" type="text" placeholder=" " autocomplete="name">
                                         <label for="regName">Full name</label>
@@ -382,40 +406,59 @@
                                         <input id="regPhone" type="tel" placeholder=" " autocomplete="tel">
                                         <label for="regPhone">Phone</label>
                                     </div>
+
+                                    <div class="auth-role-block">
+                                        <p class="auth-sub-description" style="margin:10px 0 8px;">Role</p>
+                                        <div class="role-options" role="group" aria-label="Select role">
+                                            <button type="button" class="role-btn is-selected" data-reg-role="customer">Customer</button>
+                                            <button type="button" class="role-btn" data-reg-role="vendor">Vendor</button>
+                                        </div>
+                                        <input type="hidden" id="regRole" value="customer">
+                                    </div>
+
+                                    <button type="button" class="btn btn-primary auth-submit auth-login-btn"
+                                        data-reg-next>Next</button>
+                                    <p class="auth-tos">Already have an account?
+                                        <a href="#" data-auth-switch="login" style="color:var(--color-red);">Sign in</a>
+                                    </p>
+                                </div>
+
+                                <!-- ── Step 1: Password ── -->
+                                <div class="step hidden">
+                                    <div class="auth-sub-title">Create Password</div>
+                                    <p class="auth-sub-description">Set a strong password to secure your account</p>
+
                                     <div class="field-wrap has-toggle">
                                         <input id="regPassword" type="password" placeholder=" "
                                             autocomplete="new-password">
-                                        <button type="button" class="pw-toggle" aria-label="Show password" data-target="regPassword"><i class="fas fa-eye"></i></button>
+                                        <button type="button" class="pw-toggle" aria-label="Show password"
+                                            data-target="regPassword">
+                                            <i class="fas fa-eye-slash"></i>
+                                        </button>
                                         <label for="regPassword">Password</label>
                                     </div>
-                                    <div class="pw-strength">
-                                        <div class="strength-bar" aria-hidden="true">
-                                            <span class="bar seg seg-1"></span>
-                                            <span class="bar seg seg-2"></span>
-                                            <span class="bar seg seg-3"></span>
-                                            <span class="bar seg seg-4"></span>
-                                        </div>
-                                        <ul class="pw-criteria">
-                                            <li data-crit="length">At least 8 characters</li>
-                                            <li data-crit="upper">Uppercase letter</li>
-                                            <li data-crit="number">Number</li>
-                                            <li data-crit="special">Special character</li>
-                                        </ul>
-                                    </div>
+
+                                    <!-- pw-strength widget is injected here by JS -->
+
                                     <div class="field-wrap has-toggle">
                                         <input id="regPasswordConfirm" type="password" placeholder=" "
                                             autocomplete="new-password">
-                                        <button type="button" class="pw-toggle" aria-label="Show password" data-target="regPasswordConfirm"><i class="fas fa-eye"></i></button>
+                                        <button type="button" class="pw-toggle" aria-label="Show password"
+                                            data-target="regPasswordConfirm">
+                                            <i class="fas fa-eye-slash"></i>
+                                        </button>
                                         <label for="regPasswordConfirm">Confirm password</label>
+                                    </div>
+
+                                    <div class="reg-controls">
+                                        <button type="button" class="btn btn-primary auth-login-btn"
+                                            style="width:100%;">Register</button>
                                     </div>
                                 </div>
 
-                                <div class="reg-controls">
-                                    <button type="button" class="btn btn-outline" data-reg-back>Back</button>
-                                    <button type="button" class="btn btn-primary" data-reg-next>Next</button>
-                                </div>
                             </div>
                         </form>
+
                     </div>
                 </div>
 

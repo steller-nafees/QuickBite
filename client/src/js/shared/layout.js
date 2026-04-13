@@ -28,7 +28,7 @@ function getAuthUserFromStorage() {
 
 function isAppShellPage() {
     const page = document.body.dataset.page;
-    return page === "customer-dashboard" || page === "vendor-dashboard" || page === "register";
+    return page === "customer-dashboard" || page === "admin-dashboard" || page === "register";
 }
 
 function getAuthNavClusterHtml() {
@@ -40,9 +40,9 @@ function getAuthNavClusterHtml() {
 
     const page = document.body.dataset.page;
     const role = String(user.role || "customer").toLowerCase();
-    const dashboardHref = role === "vendor" ? "vendor-dashboard.html" : "customer-dashboard.html";
+    const dashboardHref = role === "vendor" ? "admin-dashboard.html" : "customer-dashboard.html";
     const onMatchingDashboard =
-        (role === "vendor" && page === "vendor-dashboard") ||
+        (role === "vendor" && page === "admin-dashboard") ||
         (role !== "vendor" && page === "customer-dashboard");
 
     let html = "<span class=\"nav-auth-cluster\">";
@@ -60,11 +60,61 @@ function updateHeaderUserState() {
     const btn = document.getElementById("headerUserBtn");
     if (!btn) return;
     if (user && (user.fullName || user.name || user.email)) {
-        const name = user.fullName || user.name || user.email.split("@")[0];
+        const role = String(user.role || "customer").toLowerCase();
+        const fullName = user.fullName || user.name || user.email.split("@")[0];
+        const firstName = fullName.split(' ')[0];
+        const initial = firstName.charAt(0).toUpperCase();
+        
         btn.className = "btn user-btn signed-in btn-user-signed";
-        btn.setAttribute("aria-label", `${name}`);
-        btn.innerHTML = `<i class=\"fas fa-user-circle\"></i><span class=\"user-label\">${name}</span>`;
-        btn.onclick = function () { window.location.href = 'profile.html'; };
+        btn.setAttribute("aria-label", `${fullName}`);
+        btn.innerHTML = `
+            <div class="user-avatar">${initial}</div>
+            <span class="user-greeting">Hi, <strong>${firstName}</strong></span>
+            <i class="fas fa-chevron-down user-dropdown-icon"></i>
+            <div class="user-dropdown" id="userDropdown">
+                <a href="${role === "vendor" ? "admin-dashboard.html" : "customer-dashboard.html"}" class="dropdown-item"><i class="fas fa-chart-pie"></i> Dashboard</a>
+                <a href="#" class="dropdown-item" id="dropdownNotif"><i class="fas fa-bell"></i> Notifications</a>
+                <a href="#" class="dropdown-item" id="dropdownLogout"><i class="fas fa-sign-out-alt"></i> Log Out</a>
+            </div>
+        `;
+        
+        // Add click handler for dropdown toggle
+        btn.onclick = function (e) {
+            e.stopPropagation();
+            const dropdown = document.getElementById("userDropdown");
+            if (dropdown) {
+                dropdown.classList.toggle("show");
+            }
+        };
+        
+        // Add click handler for Notifications in dropdown
+        const notifLink = document.getElementById("dropdownNotif");
+        if (notifLink) {
+            notifLink.onclick = function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleNotifications();
+                // Close the dropdown
+                const dropdown = document.getElementById("userDropdown");
+                if (dropdown) {
+                    dropdown.classList.remove("show");
+                }
+            };
+        }
+        
+        // Add click handler for Logout in dropdown
+        const logoutLink = document.getElementById("dropdownLogout");
+        if (logoutLink) {
+            logoutLink.onclick = function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                // Clear authentication data
+                localStorage.removeItem("quickbite-auth-user");
+                localStorage.removeItem("quickbite-profile");
+                // Redirect to home page
+                window.location.href = "index.html";
+            };
+        }
     } else {
         // show a clear Sign In button when logged out
         btn.className = "btn btn-signin";
@@ -87,11 +137,44 @@ function updateHeaderUserState() {
                 return;
             }
 
-            // Last resort: click the first opener
+            // Last resort: directly open the modal if present (works even if auth-modal.js hasn't bound click handlers)
+            if (typeof window.QuickBiteAuthOpen === "function") {
+                window.QuickBiteAuthOpen("login");
+                return;
+            }
+
             document.querySelector('[data-auth-open]')?.click();
         };
     }
 }
+
+function openAuthModalFallback(type) {
+    const modal = document.getElementById("authModal");
+    if (!modal) return false;
+
+    const loginForm = document.getElementById("loginForm");
+    const registerForm = document.getElementById("registerForm");
+
+    modal.setAttribute("aria-hidden", "false");
+
+    if (loginForm && registerForm) {
+        if (type === "register") {
+            registerForm.classList.add("active");
+            loginForm.classList.remove("active");
+        } else {
+            loginForm.classList.add("active");
+            registerForm.classList.remove("active");
+        }
+    }
+
+    return true;
+}
+
+// Expose a tiny safe API so header Sign In can always open the modal.
+window.QuickBiteAuthOpen = function (type) {
+    const t = String(type || "login").toLowerCase();
+    return openAuthModalFallback(t);
+};
 
 function getGlobalHeaderMarkup() {
     const selectedLocation = getSelectedLocation();
@@ -128,9 +211,9 @@ function getGlobalHeaderMarkup() {
                 </div>
                 <div class="nav-menu" id="navMenu">
                     <a href="${getHomeLink("#vendors")}" class="nav-link">Vendors</a>
-                    <a href="${getHomeLink("#menu")}" class="nav-link">Our Menu</a>
-                    <a href="${getHomeLink("#experience")}" class="nav-link">Why Us</a>
-                    <a href="${getHomeLink("#pricing")}" class="nav-link">Plans</a>
+                    <a href="menu.html" class="nav-link">Our Menu</a>
+                    <a href="${getHomeLink("#menu")}" class="nav-link">Best Picks</a>
+                    <a href="${getHomeLink("#experience")}" class="nav-link">About Us</a>
                 </div>
 
                 <div class="nav-utilities">
@@ -350,6 +433,110 @@ function initializeAuthSignOut() {
     });
 }
 
+function initializeUserDropdown() {
+    // Close user dropdown when clicking outside
+    document.addEventListener("click", function (event) {
+        const userBtn = document.getElementById("headerUserBtn");
+        const dropdown = document.getElementById("userDropdown");
+        if (dropdown && userBtn && !userBtn.contains(event.target)) {
+            dropdown.classList.remove("show");
+        }
+    });
+}
+
+/* ============================================================
+   NOTIFICATIONS
+   ============================================================ */
+function initializeNotifications() {
+    var notifications = [
+        { id: 1, type: 'success', title: 'Welcome to QuickBite', desc: 'Your account has been created successfully', time: Date.now() - 300000, read: false },
+        { id: 2, type: 'order', title: 'Browse Menu', desc: 'Check out our trending items and place your first order', time: Date.now() - 900000, read: false },
+        { id: 3, type: 'warning', title: 'Campus Hours', desc: 'All vendors are open from 10 AM to 8 PM', time: Date.now() - 1800000, read: true }
+    ];
+
+    function timeAgo(ms) {
+        var d = Date.now() - ms;
+        if (d < 60000) return "just now";
+        if (d < 3600000) return Math.floor(d / 60000) + "m ago";
+        if (d < 86400000) return Math.floor(d / 3600000) + "h ago";
+        return Math.floor(d / 86400000) + "d ago";
+    }
+
+    function renderNotifications() {
+        var list = document.getElementById('notifList');
+        
+        if (!notifications.length) {
+            list.innerHTML = '<div class="notif-empty"><i class="fas fa-bell-slash"></i>No notifications yet</div>';
+            return;
+        }
+
+        list.innerHTML = notifications.map(function(n) {
+            var iconClass = n.type === 'order' ? 'receipt' : n.type === 'success' ? 'check' : 'exclamation-triangle';
+            return '<div class="notif-item ' + (n.read ? '' : 'unread') + '" data-notif-id="' + n.id + '">' +
+                '<div class="notif-icon ' + n.type + '">' +
+                '<i class="fas fa-' + iconClass + '"></i>' +
+                '</div>' +
+                '<div class="notif-content">' +
+                '<div class="notif-title">' + escapeHtml(n.title) + '</div>' +
+                '<div class="notif-desc">' + escapeHtml(n.desc) + '</div>' +
+                '<div class="notif-time">' + timeAgo(n.time) + '</div>' +
+                '</div>' +
+                '</div>';
+        }).join('');
+    }
+
+    function toggleNotifications() {
+        var panel = document.getElementById('notifPanel');
+        if (!panel) return;
+        
+        panel.classList.toggle('open');
+        
+        // Mark all as read when opened
+        if (panel.classList.contains('open')) {
+            notifications.forEach(function(n) { n.read = true; });
+            renderNotifications();
+        }
+    }
+
+    function clearAllNotifications() {
+        notifications = [];
+        renderNotifications();
+    }
+
+    var notifBtn = document.getElementById('notifBtn');
+    if (notifBtn) {
+        notifBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            toggleNotifications();
+        });
+    }
+
+    var clearBtn = document.getElementById('notifClearAll');
+    if (clearBtn) {
+        clearBtn.addEventListener('click', clearAllNotifications);
+    }
+
+    // Close notifications when clicking outside
+    document.addEventListener('click', function(e) {
+        var panel = document.getElementById('notifPanel');
+        if (panel && !panel.contains(e.target)) {
+            panel.classList.remove('open');
+        }
+    });
+
+    // Make toggleNotifications available globally for dropdown link
+    window.toggleNotifications = toggleNotifications;
+
+    // Initial render
+    renderNotifications();
+}
+
+function escapeHtml(text) {
+    const div = document.createElement("div");
+    div.textContent = text;
+    return div.innerHTML;
+}
+
 function initializeSharedNavigation() {
     const navToggle = document.getElementById("navToggle");
     const navMenu = document.getElementById("navMenu");
@@ -431,6 +618,8 @@ function initializeSharedOrderPill() {
 renderGlobalLayout();
 initializeLocationSelector();
 initializeAuthSignOut();
+initializeNotifications();
+initializeUserDropdown();
 
 if (document.body.dataset.page !== "home") {
     initializeSharedNavigation();
@@ -442,8 +631,3 @@ window.QuickBiteLayout = {
     updateCartCount: updateGlobalCartCount,
     getSelectedLocation: getSelectedLocation
 };
-
-
-
-
-
