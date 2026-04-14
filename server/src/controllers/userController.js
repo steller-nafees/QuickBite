@@ -1,33 +1,68 @@
 const userService = require("../services/userService");
 
 exports.getAllUsers = async (req, res) => {
-  const users = await userService.getAllUsers();
+  try {
+    const users = await userService.getAllUsers();
 
-  res.status(200).json({
-    status: "success",
-    results: users.length,
-    data: { users },
-  });
+    res.status(200).json({
+      status: "success",
+      results: users.length,
+      data: { users },
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: "error",
+      message: error.message || "Failed to fetch users",
+    });
+  }
 };
 
 exports.createUser = async (req, res) => {
-  const userId = await userService.createUser(req.body);
+  try {
+    if (!req.body.name || !req.body.email || !req.body.password) {
+      return res.status(400).json({
+        status: "fail",
+        message: "Missing required fields: name, email, password",
+      });
+    }
 
-  res.status(201).json({
-    status: "success",
-    results: userId,
-    data: { userId },
-  });
+    const userId = await userService.createUser(req.body);
+
+    res.status(201).json({
+      status: "success",
+      message: "User created successfully",
+      data: { userId },
+    });
+  } catch (error) {
+    res.status(400).json({
+      status: "fail",
+      message: error.message || "Failed to create user",
+    });
+  }
 };
 
 exports.getUser = async (req, res) => {
-  const user = await userService.getUser(req.params.id);
+  try {
+    const user = await userService.getUser(req.params.id);
 
-  res.status(200).json({
-    status: "success",
-    results: user ? 1 : 0,
-    data: { user },
-  });
+    if (!user) {
+      return res.status(404).json({
+        status: "fail",
+        message: "User not found",
+      });
+    }
+
+    res.status(200).json({
+      status: "success",
+      results: user ? 1 : 0,
+      data: { user },
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: "error",
+      message: error.message || "Failed to fetch user",
+    });
+  }
 };
 
 exports.updateMe = async (req, res) => {
@@ -48,6 +83,13 @@ exports.updateMe = async (req, res) => {
       if (allowedFields.includes(el)) filteredBody[el] = req.body[el];
     });
 
+    if (Object.keys(filteredBody).length === 0) {
+      return res.status(400).json({
+        status: "fail",
+        message: "No valid fields to update",
+      });
+    }
+
     // Update user document
     await userService.updateUser(req.user.id, filteredBody);
 
@@ -55,6 +97,7 @@ exports.updateMe = async (req, res) => {
 
     res.status(200).json({
       status: "success",
+      message: "Profile updated successfully",
       data: {
         user,
       },
@@ -62,7 +105,7 @@ exports.updateMe = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       status: "error",
-      message: error.message,
+      message: error.message || "Failed to update profile",
     });
   }
 };
@@ -78,7 +121,7 @@ exports.deleteMe = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       status: "error",
-      message: error.message,
+      message: error.message || "Failed to delete account",
     });
   }
 };
