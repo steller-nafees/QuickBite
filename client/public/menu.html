@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuickBite Menu</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="./assets/icons/app_icon_transparent.png">
+    <link rel="shortcut icon" href="./assets/icons/app_icon_transparent.png" type="image/png">
+    <link rel="apple-touch-icon" href="./assets/icons/app_icon_transparent.png">
+    <link rel="manifest" href="/favicon/site.webmanifest">
+    <meta name="description" content="Browse the full QuickBite menu, search meals fast, and filter by campus vendors.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=DM+Sans:wght@400;500;700&family=Bungee&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../src/css/landing.css">
+    <link rel="stylesheet" href="../src/css/menu.css">
+    <link rel="stylesheet" href="../src/css/auth-modal.css">
+    <link rel="stylesheet" href="../src/css/notifications.css">
+    <link rel="stylesheet" href="../src/css/auth-modal-additions.css">
+    <link rel="stylesheet" href="../src/css/cart.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body data-page="menu">
+    <div class="page-shell">
+        <div id="globalHeader"></div>
+        <div id="globalOrderPill"></div>
+
+        <main class="menu-page">
+            <section class="menu-shell-section">
+                <div class="container menu-shell">
+                    <aside class="menu-sidebar">
+                        <div class="sidebar-card">
+                            <div class="sidebar-heading">
+                                <span class="section-kicker">Vendors</span>
+                                <h2 class="sidebar-title">Filter by kitchen</h2>
+                            </div>
+                            <div class="vendor-filter-list" id="vendorFilterList"></div>
+                        </div>
+                    </aside>
+
+                    <section class="menu-main">
+                        <div class="menu-toolbar">
+                            <form class="menu-search" id="menuSearchForm">
+                                <i class="fas fa-magnifying-glass"></i>
+                                <input type="search" id="menuSearchInput"
+                                    placeholder="Search burgers, pasta, sushi, tacos...">
+                            </form>
+                            <div class="menu-toolbar-meta">
+                                <span class="results-pill" id="resultsSummary">Showing all items</span>
+                            </div>
+                        </div>
+
+                        <div class="menu-grid" id="menuGrid"></div>
+                    </section>
+                </div>
+            </section>
+        </main>
+
+        <div id="globalFooter"></div>
+    </div>
+
+    <div class="notif-panel" id="notifPanel">
+        <div class="notif-header">
+            <h3>Notifications</h3>
+            <button class="notif-clear-btn" id="notifClearAll">Clear All</button>
+        </div>
+        <div class="notif-list" id="notifList"></div>
+    </div>
+
+    <script src="js/quickbite-config.js"></script>
+    <a href="#" id="authLoginOpener" data-auth-open="login" style="display:none"></a>
+    <script src="../src/js/shared/layout.js"></script>
+    <script src="../src/js/pages/menu.js"></script>
+    <script src="js/auth-modal.js"></script>
+    <script src="../src/js/components/cart.js"></script>
+
+    <div class="auth-modal" id="authModal" aria-hidden="true">
+        <div class="auth-backdrop" data-auth-close></div>
+        <div class="auth-panel">
+            <button class="auth-close" aria-label="Close" data-auth-close>&times;</button>
+            <div class="auth-grid">
+                <button class="auth-back" aria-label="Back" data-auth-back>&larr;</button>
+                <div class="auth-left">
+                    <div class="auth-heading" id="greetingText">Good Morning, Welcome To QuickBite.</div>
+
+                    <div class="auth-forms">
+                        <form id="loginForm" class="auth-form active auth-login-simple">
+                            <div class="auth-sub-title">Login</div>
+                            <p class="auth-sub-description">Enter Your Credentials before anyone does to skip the queue
+                            </p>
+                            <div class="field-wrap">
+                                <input id="loginEmail" type="email" placeholder=" " autocomplete="email">
+                                <label for="loginEmail">Email</label>
+                            </div>
+                            <div class="field-wrap has-toggle">
+                                <input id="loginPassword" type="password" placeholder=" "
+                                    autocomplete="current-password">
+                                <button type="button" class="pw-toggle" aria-label="Show password"
+                                    data-target="loginPassword"><i class="fas fa-eye"></i></button>
+                                <label for="loginPassword">Password</label>
+                            </div>
+                            <label class="remember-row">
+                                <input type="checkbox" id="rememberMe">
+                                <span class="checkmark"></span>
+                                <span class="text">Remember me</span>
+                            </label>
+                            <button type="button" class="btn btn-primary auth-submit auth-login-btn">Login</button>
+                            <p class="auth-tos">Not a member? <a href="#" data-auth-switch="register">Create an
+                                    account</a></p>
+                        </form>
+
+                        <form id="registerForm" class="auth-form">
+                            <div class="reg-steps">
+                                <div class="step">
+                                    <div class="auth-sub-title">Register</div>
+                                    <p class="auth-sub-description">Create your account to skip the queue</p>
+
+                                    <div class="field-wrap">
+                                        <input id="regEmail" type="email" placeholder=" " autocomplete="email">
+                                        <label for="regEmail">Email</label>
+                                    </div>
+                                    <div class="field-wrap">
+                                        <input id="regName" type="text" placeholder=" " autocomplete="name">
+                                        <label for="regName">Full name</label>
+                                    </div>
+                                    <div class="field-wrap">
+                                        <input id="regPhone" type="tel" placeholder=" " autocomplete="tel">
+                                        <label for="regPhone">Phone</label>
+                                    </div>
+
+                                    <button type="button" class="btn btn-primary auth-submit auth-login-btn"
+                                        data-reg-next>Next</button>
+                                    <p class="auth-tos">Already have an account?
+                                        <a href="#" data-auth-switch="login" style="color:var(--color-red);">Sign in</a>
+                                    </p>
+                                </div>
+
+                                <div class="step hidden">
+                                    <div class="auth-sub-title">Create Password</div>
+                                    <p class="auth-sub-description">Set a strong password to secure your account</p>
+
+                                    <div class="field-wrap has-toggle">
+                                        <input id="regPassword" type="password" placeholder=" "
+                                            autocomplete="new-password">
+                                        <button type="button" class="pw-toggle" aria-label="Show password"
+                                            data-target="regPassword">
+                                            <i class="fas fa-eye-slash"></i>
+                                        </button>
+                                        <label for="regPassword">Password</label>
+                                    </div>
+
+                                    <div class="field-wrap has-toggle">
+                                        <input id="regPasswordConfirm" type="password" placeholder=" "
+                                            autocomplete="new-password">
+                                        <button type="button" class="pw-toggle" aria-label="Show password"
+                                            data-target="regPasswordConfirm">
+                                            <i class="fas fa-eye-slash"></i>
+                                        </button>
+                                        <label for="regPasswordConfirm">Confirm password</label>
+                                    </div>
+
+                                    <div class="reg-controls">
+                                        <button type="button" class="btn btn-primary auth-login-btn"
+                                            style="width:100%;">Register</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <aside class="auth-right">
+                    <div class="brand-right" role="img" aria-label="QuickBite brand panel">
+                        <div class="brand-overlay"></div>
+                        <div class="brand-content">
+                            <img src="./assets/icons/app_icon_transparent_dark.png" alt="QuickBite" class="brand-logo">
+                            <h3 class="brand-title">QuickBite</h3>
+                            <p class="brand-sub">Pre-Order. Pick Up. Bite.</p>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

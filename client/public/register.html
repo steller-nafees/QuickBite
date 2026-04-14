@@ -3,186 +3,121 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vendor Details - QuickBite</title>
+    <title>QuickBite Registration</title>
     <link rel="icon" type="image/png" sizes="32x32" href="./assets/icons/app_icon_transparent.png">
-    <link rel="shortcut icon" href="./assets/icons/app_icon_transparent.png" type="image/png">
-    <link rel="apple-touch-icon" href="./assets/icons/app_icon_transparent.png">
-    <link rel="manifest" href="/favicon/site.webmanifest">
-
-    <!-- Fonts (same as landing page) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Bungee&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
-
-    <!-- Reuse SAME CSS -->
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bungee&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../src/css/landing.css">
     <link rel="stylesheet" href="../src/css/auth-modal.css">
     <link rel="stylesheet" href="../src/css/auth-modal-additions.css">
-    <link rel="stylesheet" href="../src/css/vendor.css">
+    <link rel="stylesheet" href="../src/css/register.css">
     <link rel="stylesheet" href="../src/css/cart.css">
-
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body data-page="vendor">
+<body data-page="register">
     <div class="page-shell">
         <div id="globalHeader"></div>
         <div id="globalOrderPill"></div>
 
-        <!-- ✅ Vendor Header Section -->
-        <section class="hero" style="padding-top: 1.5rem;">
-            <div class="container">
+        <section class="register-journey">
+            <div class="container register-main">
+                <header class="register-hero">
+                    <img src="./assets/icons/app_icon_transparent.png" alt="QuickBite" class="register-hero-logo">
+                    <p class="register-kicker">Account Setup</p>
+                    <h1>Create your QuickBite account</h1>
+                    <p>Secure onboarding in two steps. Pick your role, then complete your profile.</p>
+                </header>
 
-                <a href="index.html" class="btn btn-secondary" style="margin-bottom: 1rem;">
-                    ← Back to Home
-                </a>
+                <div class="register-progress" id="registerProgress"></div>
 
-                <div class="hero-grid">
-
-                    <!-- Left: Vendor Info -->
-                    <div class="hero-copy">
-
-                        <span class="hero-badge">
-                            <i class="fas fa-store"></i> Vendor Details
-                        </span>
-
-                        <h1 class="hero-title" id="vendorName">
-                            Loading...
-                        </h1>
-
-                        <p class="hero-description" id="vendorCuisine">
-                            Please wait while we load vendor information.
-                        </p>
-
-                        <div class="hero-highlights">
-                            <div class="highlight-pill">
-                                <strong id="vendorRating">--</strong>
-                                Rating
-                            </div>
-                            <div class="highlight-pill">
-                                <strong id="vendorOrders">--</strong>
-                                Orders
-                            </div>
-                            <div class="highlight-pill">
-                                <strong id="vendorETA">--</strong>
-                                Pickup
-                            </div>
+                <form id="registerJourneyForm" class="register-card" novalidate>
+                    <section class="register-step is-active" data-step="1">
+                        <h2>Select Role</h2>
+                        <p class="step-subtitle">Choose how you will use QuickBite.</p>
+                        <div class="role-grid">
+                            <label class="role-option">
+                                <input type="radio" name="role" value="customer" required>
+                                <span class="role-icon"><i class="fas fa-user"></i></span>
+                                <span class="role-title">Customer</span>
+                                <span class="role-desc">Browse menus, build platter, and pick up meals fast.</span>
+                            </label>
+                            <label class="role-option">
+                                <input type="radio" name="role" value="vendor" required>
+                                <span class="role-icon"><i class="fas fa-store"></i></span>
+                                <span class="role-title">Vendor</span>
+                                <span class="role-desc">Manage menus, incoming orders, and kitchen flow.</span>
+                            </label>
                         </div>
+                        <p class="field-error" data-error-for="role"></p>
+                    </section>
 
-                        <div class="vendor-meta-actions">
-                            <div class="vendor-tags" id="vendorTags">Loading tags...</div>
-                            <div class="vendor-actions">
-                                <button class="btn btn-primary" id="orderNow">Order Now</button>
-                                <button class="btn btn-outline" id="visitStall">Visit Stall</button>
-                            </div>
+                    <section class="register-step" data-step="2" data-role="customer">
+                        <h2>Customer Details</h2>
+                        <p class="email-note" id="emailNoteCustomer"></p>
+                        <div class="form-grid">
+                            <label><span>Full Name</span><input type="text" name="fullNameCustomer" required></label>
+                            <label><span>Phone Number</span><input type="tel" name="phoneCustomer" placeholder="+8801XXXXXXXXX" required></label>
+                            <label>
+                                <span>Password</span>
+                                <input type="password" name="passwordCustomer" id="passwordCustomer" required aria-describedby="strengthCustomer suggestionCustomer">
+                                <small id="strengthCustomer" aria-live="polite">Strength: --</small>
+                                <span class="strength-track" role="progressbar" aria-label="Password strength" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="strengthBarCustomer"></span></span>
+                                <small id="suggestionCustomer" class="strength-suggestion" aria-live="polite"></small>
+                                <ul class="password-checklist" id="checklistCustomer" aria-live="polite">
+                                    <li data-rule="length">8+ characters</li>
+                                    <li data-rule="mixedCase">Upper + lower case</li>
+                                    <li data-rule="number">At least one number</li>
+                                    <li data-rule="special">At least one special character</li>
+                                </ul>
+                            </label>
+                            <label><span>Confirm Password</span><input type="password" name="confirmPasswordCustomer" required></label>
                         </div>
+                    </section>
 
-                    </div>
-
-                    <!-- Right: Vendor Image -->
-                    <div class="hero-showcase">
-                        <div class="phone-card">
-                            <img id="vendorImage" src="" alt="Vendor Image" style="width:100%; border-radius: 20px;">
+                    <section class="register-step" data-step="2" data-role="vendor">
+                        <h2>Vendor Details</h2>
+                        <p class="email-note" id="emailNoteVendor"></p>
+                        <div class="form-grid">
+                            <label><span>Business / Stall Name</span><input type="text" name="vendorBusiness" required></label>
+                            <label><span>Phone Number</span><input type="tel" name="phoneVendor" placeholder="+8801XXXXXXXXX" required></label>
+                            <label>
+                                <span>Password</span>
+                                <input type="password" name="passwordVendor" id="passwordVendor" required aria-describedby="strengthVendor suggestionVendor">
+                                <small id="strengthVendor" aria-live="polite">Strength: --</small>
+                                <span class="strength-track" role="progressbar" aria-label="Password strength" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="strengthBarVendor"></span></span>
+                                <small id="suggestionVendor" class="strength-suggestion" aria-live="polite"></small>
+                                <ul class="password-checklist" id="checklistVendor" aria-live="polite">
+                                    <li data-rule="length">8+ characters</li>
+                                    <li data-rule="mixedCase">Upper + lower case</li>
+                                    <li data-rule="number">At least one number</li>
+                                    <li data-rule="special">At least one special character</li>
+                                </ul>
+                            </label>
+                            <label><span>Confirm Password</span><input type="password" name="confirmPasswordVendor" required></label>
                         </div>
+                    </section>
+
+                    <div class="register-actions">
+                        <button type="button" class="btn btn-secondary" id="backBtn">Back</button>
+                        <button type="button" class="btn btn-primary" id="nextBtn">Next</button>
+                        <button type="submit" class="btn btn-primary" id="createBtn">Create Account</button>
                     </div>
-
-                </div>
-            </div>
-        </section>
-
-        <!-- ✅ Menu Section -->
-        <section class="trending trending-bestsellers">
-            <div class="container">
-
-                <div class="section-header section-header-centered">
-                    <div>
-                        <span class="best-seller-kicker">Menu</span>
-                        <h2 class="best-seller-title">Available Items</h2>
-                        <p class="best-seller-subtitle">Fresh meals prepared by this vendor</p>
-                    </div>
-                </div>
-
-                <!-- Dynamic Menu -->
-                <div class="trending-grid" id="vendorMenuGrid">
-                    <!-- JS will insert items here -->
-                </div>
-
-            </div>
-        </section>
-
-        <!-- New Dish Highlight -->
-        <section class="new-dish">
-            <div class="container">
-                <div class="section-header">
-                    <div>
-                        <span class="section-kicker">New</span>
-                        <h2 class="section-title">Chef's New Dish</h2>
-                        <p class="section-subtitle">Freshly added — try it before it's gone.</p>
-                    </div>
-                </div>
-
-                <div class="new-dish-card" id="newDishCard">
-                    <img src="./assets/images/placeholder-food.jpg" alt="New Dish" id="newDishImage">
-                    <div class="new-dish-content">
-                        <h3 id="newDishName">Loading...</h3>
-                        <p id="newDishDesc">Delicious new item from this vendor.</p>
-                        <div class="new-dish-meta">
-                            <span class="price" id="newDishPrice">--</span>
-                            <button class="btn add-to-cart">Add to cart</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Reviews Section -->
-        <section class="vendor-reviews">
-            <div class="container">
-                <div class="section-header section-header-centered">
-                    <div>
-                        <span class="section-kicker">Reviews</span>
-                        <h2 class="section-title">What students say</h2>
-                        <p class="section-subtitle">Honest ratings and recent feedback from customers.</p>
-                    </div>
-                </div>
-
-                <div class="reviews-grid">
-                    <aside class="reviews-summary">
-                        <div class="rating-big">
-                            <div class="avg" id="avgRating">--</div>
-                            <div class="stars" id="avgStars">★★★★★</div>
-                            <div class="count" id="reviewsCount">-- reviews</div>
-                        </div>
-                        <div class="rating-breakdown" id="ratingBreakdown">
-                            <!-- JS can render breakdown here -->
-                        </div>
-                    </aside>
-
-                    <div class="reviews-list" id="reviewsList">
-                        <!-- Example review (JS will replace) -->
-                        <article class="review-card">
-                            <div class="review-head">
-                                <strong class="review-author">Student</strong>
-                                <span class="review-date">— today</span>
-                            </div>
-                            <div class="review-body">Great food, quick pickup.</div>
-                        </article>
-                    </div>
-                </div>
-
+                </form>
             </div>
         </section>
 
         <div id="globalFooter"></div>
-
     </div>
 
     <script src="js/quickbite-config.js"></script>
     <!-- Hidden login opener so header Sign In can open login without triggering CTA notification -->
     <a href="#" id="authLoginOpener" data-auth-open="login" style="display:none"></a>
     <script src="../src/js/shared/layout.js"></script>
-    <!-- Vendor Page Script -->
-    <script src="../src/js/pages/vendor.js"></script>
+    <script src="../src/js/pages/register.js"></script>
     <script src="js/auth-modal.js"></script>
     <script src="../src/js/components/cart.js"></script>
 
@@ -293,6 +228,7 @@
             </div>
         </div>
     </div>
-
 </body>
 </html>
+
+

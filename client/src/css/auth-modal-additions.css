@@ -1,0 +1,180 @@
+/* ── Kill browser autofill blue background ── */
+.field-wrap input:-webkit-autofill,
+.field-wrap input:-webkit-autofill:hover,
+.field-wrap input:-webkit-autofill:focus,
+.field-wrap input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 999px #fff inset !important;
+    box-shadow: 0 0 0 999px #fff inset !important;
+    -webkit-text-fill-color: #1a1a1a !important;
+    border-color: #e6c4b5 !important;
+    transition: background-color 9999s ease-in-out 0s;
+}
+
+/* ── Required asterisk ── */
+.req-star {
+    color: #7A0C06;
+    font-size: 0.75rem;
+    margin-left: 2px;
+}
+
+/* ── Invalid field border ── */
+.field-wrap input.field-invalid {
+    border-color: #8B0F08 !important;
+    box-shadow: 0 0 0 2px rgba(177, 9, 9, 0.12) !important;
+}
+
+/* ── Hide per-field text errors (banner only) ── */
+.field-error-msg {
+    display: none;
+}
+
+/* ── Remove card border/background from reg steps ── */
+.reg-steps .step {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+}
+
+/* ── Role selector spacing ── */
+.auth-role-block {
+    margin-bottom: 14px;
+}
+
+/* ── Error banner — matches notifications.css auth-error style ── */
+.auth-form-error {
+    background: rgba(177, 9, 9, 0.08);
+    border: 1px solid rgba(177, 9, 9, 0.2);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 12px;
+    margin-top: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    animation: authErrFadeIn 0.3s ease-out;
+}
+
+.auth-form-error i {
+    color: #7A0C06;
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+.auth-form-error span {
+    color: #7A0C06;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+@keyframes authErrFadeIn {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Password strength wrapper ── */
+.pw-strength {
+    margin: 6px 0 10px;
+}
+
+/* ── 4-segment bar ── */
+.strength-bar {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 5px;
+}
+
+.strength-bar .seg {
+    flex: 1;
+    height: 6px;
+    border-radius: 99px;
+    background: rgba(0, 0, 0, 0.08);
+    transition: background 0.28s ease;
+}
+
+/* Segment colours per score */
+.strength-bar.strength-1 .seg:nth-child(1)    { background: #d64545; }
+.strength-bar.strength-2 .seg:nth-child(-n+2) { background: #f0a500; }
+.strength-bar.strength-3 .seg:nth-child(-n+3) { background: #57b846; }
+.strength-bar.strength-4 .seg                 { background: #16a34a; }
+
+/* ── Strength label ── */
+.strength-label {
+    font-size: 12px;
+    font-weight: 600;
+    font-family: 'DM Sans', sans-serif;
+    min-height: 16px;
+    margin: 0 0 5px;
+    transition: color 0.2s ease;
+}
+
+/* ── Criteria checklist ── */
+.pw-criteria {
+    list-style: none;
+    padding: 0;
+    margin: 4px 0 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3px 10px;
+}
+
+.pw-criteria li {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11.5px;
+    color: #9a7b70;
+    font-family: 'DM Sans', sans-serif;
+    transition: color 0.18s ease;
+}
+
+.pw-criteria li::before {
+    content: '○';
+    color: #c9b3aa;
+    font-size: 11px;
+    transition: color 0.18s ease;
+    flex-shrink: 0;
+}
+
+.pw-criteria li.met {
+    color: #2a7a2a;
+}
+
+.pw-criteria li.met::before {
+    content: '✔';
+    color: #2a7a2a;
+}
+
+/* ── Confirm mismatch ── */
+.field-wrap input.mismatch {
+    border-color: #8B0F08 !important;
+    box-shadow: 0 0 0 2px rgba(177, 9, 9, 0.12) !important;
+}
+
+/* ── Close button repositioned to top-right of the right panel ── */
+.auth-close {
+    position: absolute;
+    right: 16px;
+    top: 12px;
+    z-index: 10;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: #fff;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.auth-close:hover {
+    background: rgba(255, 255, 255, 0.28);
+}

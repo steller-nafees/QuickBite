@@ -7,7 +7,8 @@ const vendors = [
         totalOrders: 1250,
         eta: "12 min pickup",
         badge: "Fastest pickup",
-        image: "https://images.unsplash.com/photo-1555949258-eb67b1ef0ceb?w=900&h=700&fit=crop"
+        image: "https://images.unsplash.com/photo-1555949258-eb67b1ef0ceb?w=900&h=700&fit=crop",
+        location: "NSU Main Canteen"
     },
     {
         id: 2,
@@ -17,7 +18,8 @@ const vendors = [
         totalOrders: 1480,
         eta: "10 min pickup",
         badge: "Most ordered",
-        image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=900&h=700&fit=crop"
+        image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=900&h=700&fit=crop",
+        location: "NSU Annex Canteen"
     },
     {
         id: 3,
@@ -27,7 +29,8 @@ const vendors = [
         totalOrders: 920,
         eta: "15 min pickup",
         badge: "Top rated",
-        image: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=900&h=700&fit=crop"
+        image: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=900&h=700&fit=crop",
+        location: "NSU Business Canteen"
     },
     {
         id: 4,
@@ -37,7 +40,8 @@ const vendors = [
         totalOrders: 860,
         eta: "11 min pickup",
         badge: "Student favorite",
-        image: "https://images.unsplash.com/photo-1552332386-f8dd00dc2f85?w=900&h=700&fit=crop"
+        image: "https://images.unsplash.com/photo-1552332386-f8dd00dc2f85?w=900&h=700&fit=crop",
+        location: "NSU Main Canteen"
     }
 ];
 
@@ -46,6 +50,7 @@ const menuItems = [
         id: 1,
         name: "Classic Burger",
         vendor: "Burger Hub",
+        vendor_id: 2,
         price: 5.49,
         rating: 4.8,
         delivery: "Ready in 13 min",
@@ -58,6 +63,7 @@ const menuItems = [
         id: 2,
         name: "The Big Stack",
         vendor: "Burger Hub",
+        vendor_id: 2,
         price: 7.99,
         rating: 4.7,
         delivery: "Ready in 10 min",
@@ -70,6 +76,7 @@ const menuItems = [
         id: 3,
         name: "Twin Beef Slam",
         vendor: "Grill Station",
+        vendor_id: 5,
         price: 6.99,
         rating: 4.9,
         delivery: "Ready in 15 min",
@@ -82,6 +89,7 @@ const menuItems = [
         id: 4,
         name: "The Royal Tower",
         vendor: "Burger Lab",
+        vendor_id: 6,
         price: 12.99,
         rating: 4.8,
         delivery: "Ready in 14 min",
@@ -94,6 +102,7 @@ const menuItems = [
         id: 5,
         name: "The Deluxe Wagyu",
         vendor: "Burger Lab",
+        vendor_id: 6,
         price: 9.99,
         rating: 4.9,
         delivery: "Ready in 16 min",
@@ -106,6 +115,7 @@ const menuItems = [
         id: 6,
         name: "The Triple Burger",
         vendor: "Smash Point",
+        vendor_id: 7,
         price: 8.49,
         rating: 4.7,
         delivery: "Ready in 11 min",
@@ -116,15 +126,38 @@ const menuItems = [
     }
 ];
 
+// Expose menuItems globally for cart integration
+window.menuItems = menuItems;
 document.addEventListener("DOMContentLoaded", function () {
     initializeNavigation();
     initializeSearch();
+    initializeBackToTop();
     renderVendors();
     renderTrendingItems();
     initializeAnimations();
     updateCartCount();
 });
 
+function initializeBackToTop() {
+    const backToTopButton = document.createElement("button");
+    backToTopButton.type = "button";
+    backToTopButton.className = "back-to-top";
+    backToTopButton.setAttribute("aria-label", "Back to top");
+    backToTopButton.innerHTML = '<i class="fas fa-arrow-up"></i>';
+    document.body.appendChild(backToTopButton);
+
+    function syncBackToTopVisibility() {
+        const shouldShow = window.scrollY > 320;
+        backToTopButton.classList.toggle("is-visible", shouldShow);
+    }
+
+    backToTopButton.addEventListener("click", function () {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+
+    window.addEventListener("scroll", syncBackToTopVisibility, { passive: true });
+    syncBackToTopVisibility();
+}
 function initializeNavigation() {
     const navToggle = document.getElementById("navToggle");
     const navMenu = document.getElementById("navMenu");
@@ -166,10 +199,124 @@ function initializeNavigation() {
 function initializeSearch() {
     const searchForm = document.getElementById("heroSearch");
     const searchInput = document.getElementById("searchInput");
+    const inputContainer = searchInput ? searchInput.closest(".search-input-container") : null;
+    const maxSuggestions = 6;
+    let activeIndex = -1;
+    let currentSuggestions = [];
 
-    if (!searchForm || !searchInput) {
+    if (!searchForm || !searchInput || !inputContainer) {
         return;
     }
+
+    const suggestionBox = document.createElement("div");
+    suggestionBox.className = "search-suggestions";
+    suggestionBox.setAttribute("aria-live", "polite");
+    inputContainer.appendChild(suggestionBox);
+
+    function renderSuggestions() {
+        if (currentSuggestions.length === 0) {
+            suggestionBox.classList.remove("is-visible");
+            suggestionBox.innerHTML = "";
+            activeIndex = -1;
+            return;
+        }
+
+        suggestionBox.classList.add("is-visible");
+        suggestionBox.innerHTML = currentSuggestions
+            .map(function (item, index) {
+                const isActive = index === activeIndex ? " is-active" : "";
+                return `
+                    <button type="button" class="search-suggestion-item${isActive}" data-item-id="${item.id}">
+                        <img src="${item.image}" alt="${item.name}" class="search-suggestion-image">
+                        <div class="search-suggestion-main">
+                            <span class="search-suggestion-name">${item.name}</span>
+                            <span class="search-suggestion-vendor">${item.vendor}</span>
+                        </div>
+                        <span class="search-suggestion-price">${formatCurrency(item.price)}</span>
+                    </button>
+                `;
+            })
+            .join("");
+    }
+
+    function updateSuggestions(query) {
+        const normalizedQuery = query.trim().toLowerCase();
+        if (!normalizedQuery) {
+            currentSuggestions = [];
+            renderSuggestions();
+            return;
+        }
+
+        currentSuggestions = menuItems
+            .filter(function (item) {
+                return item.name.toLowerCase().includes(normalizedQuery) || item.vendor.toLowerCase().includes(normalizedQuery);
+            })
+            .slice(0, maxSuggestions);
+        activeIndex = -1;
+        renderSuggestions();
+    }
+
+    function chooseSuggestion(item) {
+        searchInput.value = item.name;
+        currentSuggestions = [];
+        renderSuggestions();
+        showNotification(item.name + " by " + item.vendor + " selected");
+    }
+
+    searchInput.addEventListener("input", function () {
+        updateSuggestions(searchInput.value);
+    });
+
+    searchInput.addEventListener("focus", function () {
+        if (searchInput.value.trim()) {
+            updateSuggestions(searchInput.value);
+        }
+    });
+
+    searchInput.addEventListener("keydown", function (event) {
+        if (!currentSuggestions.length) {
+            return;
+        }
+
+        if (event.key === "ArrowDown") {
+            event.preventDefault();
+            activeIndex = (activeIndex + 1) % currentSuggestions.length;
+            renderSuggestions();
+        } else if (event.key === "ArrowUp") {
+            event.preventDefault();
+            activeIndex = (activeIndex - 1 + currentSuggestions.length) % currentSuggestions.length;
+            renderSuggestions();
+        } else if (event.key === "Enter" && activeIndex >= 0) {
+            event.preventDefault();
+            chooseSuggestion(currentSuggestions[activeIndex]);
+        } else if (event.key === "Escape") {
+            currentSuggestions = [];
+            renderSuggestions();
+        }
+    });
+
+    suggestionBox.addEventListener("click", function (event) {
+        const itemElement = event.target.closest(".search-suggestion-item");
+        if (!itemElement) {
+            return;
+        }
+
+        const itemId = Number(itemElement.getAttribute("data-item-id"));
+        const selectedItem = menuItems.find(function (item) {
+            return item.id === itemId;
+        });
+
+        if (selectedItem) {
+            chooseSuggestion(selectedItem);
+        }
+    });
+
+    document.addEventListener("click", function (event) {
+        if (!searchForm.contains(event.target)) {
+            currentSuggestions = [];
+            renderSuggestions();
+        }
+    });
 
     searchForm.addEventListener("submit", function (e) {
         e.preventDefault();
@@ -243,6 +390,18 @@ function renderVendors() {
         })
         .slice(0, 4);
 
+    if (topVendors.length === 0) {
+        vendorsGrid.innerHTML = `
+            <article class="vendor-card">
+                <div class="vendor-info">
+                    <h3 class="vendor-name">No vendors available</h3>
+                    <p class="vendor-cuisine">No active vendors found.</p>
+                </div>
+            </article>
+        `;
+        return;
+    }
+
     vendorsGrid.innerHTML = topVendors
         .map(function (vendor, index) {
             return `
@@ -271,20 +430,34 @@ function renderVendors() {
     vendorsGrid.querySelectorAll(".vendor-card").forEach(function (card, index) {
         card.addEventListener("click", function () {
             const vendor = topVendors[index];
-            // showNotification(vendor.name + " menu opened");
             window.location.href = `vendor.html?vendorId=${vendor.id}`;
             console.log("Clicked vendor:", vendor);
         });
     });
 }
-
 function renderTrendingItems() {
     const trendingGrid = document.getElementById("trendingGrid");
+    const carouselLeft = document.getElementById("carouselLeft");
+    const carouselRight = document.getElementById("carouselRight");
     if (!trendingGrid) {
         return;
     }
 
-    trendingGrid.innerHTML = menuItems
+    const bestSellerItems = menuItems.slice(0, 6);
+
+    if (bestSellerItems.length === 0) {
+        trendingGrid.innerHTML = `
+            <article class="food-card">
+                <div class="food-info">
+                    <h3 class="food-name">No menu available</h3>
+                    <p class="food-description">No food items are available right now.</p>
+                </div>
+            </article>
+        `;
+        return;
+    }
+
+    trendingGrid.innerHTML = bestSellerItems
         .map(function (item, index) {
             return `
                 <article class="food-card animate-fade-in-up" style="animation-delay: ${index * 0.1}s">
@@ -315,7 +488,7 @@ function renderTrendingItems() {
         button.addEventListener("click", function (e) {
             e.stopPropagation();
             const itemId = Number(this.getAttribute("data-item-id"));
-            const item = menuItems.find(function (menuItem) {
+            const item = bestSellerItems.find(function (menuItem) {
                 return menuItem.id === itemId;
             });
 
@@ -327,33 +500,36 @@ function renderTrendingItems() {
 
     trendingGrid.querySelectorAll(".food-card").forEach(function (card, index) {
         card.addEventListener("click", function () {
-            const item = menuItems[index];
+            const item = bestSellerItems[index];
             showNotification(item.name + " details previewed");
             console.log("Clicked food item:", item);
         });
     });
+
+    if (carouselLeft && carouselRight) {
+        const scrollAmount = function () {
+            const firstCard = trendingGrid.querySelector(".food-card");
+            return firstCard ? firstCard.offsetWidth + 24 : 320;
+        };
+
+        carouselLeft.addEventListener("click", function () {
+            trendingGrid.scrollBy({
+                left: -scrollAmount(),
+                behavior: "smooth"
+            });
+        });
+
+        carouselRight.addEventListener("click", function () {
+            trendingGrid.scrollBy({
+                left: scrollAmount(),
+                behavior: "smooth"
+            });
+        });
+    }
 }
 
 function addToCart(item) {
-    let cart = JSON.parse(localStorage.getItem("quickbite-cart")) || [];
-    const existingItem = cart.find(function (cartItem) {
-        return cartItem.id === item.id;
-    });
-
-    if (existingItem) {
-        existingItem.quantity += 1;
-    } else {
-        cart.push({
-            id: item.id,
-            name: item.name,
-            price: item.price,
-            quantity: 1
-        });
-    }
-
-    localStorage.setItem("quickbite-cart", JSON.stringify(cart));
-    showNotification(item.name + " added to cart");
-    updateCartCount();
+    window.QuickBiteCart.add(item);
 }
 
 function showNotification(message) {
@@ -450,6 +626,11 @@ document.addEventListener("click", function (e) {
 });
 
 document.addEventListener("click", function (e) {
+    // Don't trigger onboarding notification for cart button
+    if (e.target.closest('#headerCartBtn')) {
+        return;
+    }
+    
     if (e.target.closest(".cta .btn-primary") || e.target.closest(".nav-cta")) {
         e.preventDefault();
         showNotification("Student onboarding flow starts here");
@@ -471,3 +652,4 @@ function formatCurrency(amount) {
 }
 
 console.log("QuickBite landing page loaded");
+

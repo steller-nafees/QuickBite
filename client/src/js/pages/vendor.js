@@ -45,6 +45,7 @@ const menuItems = [
         id: 1,
         name: "Classic Burger",
         vendor: "Burger Hub",
+        vendor_id: 2,
         price: 5.49,
         rating: 4.8,
         description: "Two layers of premium beef with melted cheddar cheese.",
@@ -54,6 +55,7 @@ const menuItems = [
         id: 2,
         name: "The Big Stack",
         vendor: "Burger Hub",
+        vendor_id: 2,
         price: 7.99,
         rating: 4.7,
         description: "Double beef patty with crispy bacon and BBQ sauce.",
@@ -63,12 +65,16 @@ const menuItems = [
         id: 3,
         name: "Pasta Alfredo",
         vendor: "The Pasta Corner",
+        vendor_id: 1,
         price: 6.99,
         rating: 4.8,
         description: "Creamy alfredo pasta with parmesan cheese.",
         image: "https://images.unsplash.com/photo-1555949258-eb67b1ef0ceb?w=900&h=700&fit=crop"
     }
 ];
+
+// Expose menuItems globally for cart integration
+window.menuItems = menuItems;
 
 // 🚀 MAIN
 document.addEventListener("DOMContentLoaded", function () {
@@ -136,9 +142,14 @@ function renderVendorMenu(vendorName) {
                         <span>★ ${item.rating}</span>
                     </div>
 
-                    <button class="add-to-cart" onclick="addToCart(${item.id})">
-                        <i class="fas fa-plus"></i> Add
-                    </button>
+                    <div class="food-actions">
+                        <button class="add-to-cart" onclick="addToCart(${item.id})">
+                            <i class="fas fa-plus"></i> Add To Platter
+                        </button>
+                        <button class="eat-now" onclick="eatNow(${item.id})">
+                            <i class="fas fa-utensils"></i> Eat Now
+                        </button>
+                    </div>
                 </div>
             </div>
         </article>
@@ -146,26 +157,17 @@ function renderVendorMenu(vendorName) {
 }
 
 // ✅ Cart
-function addToCart(itemId) {
-    const item = menuItems.find(i => i.id === itemId);
-    let cart = JSON.parse(localStorage.getItem("quickbite-cart")) || [];
-
-    const existing = cart.find(c => c.id === item.id);
-
-    if (existing) {
-        existing.quantity++;
-    } else {
-        cart.push({ ...item, quantity: 1 });
-    }
-
-    localStorage.setItem("quickbite-cart", JSON.stringify(cart));
-    showNotification(item.name + " added to cart");
-
-    if (window.QuickBiteLayout && typeof window.QuickBiteLayout.updateCartCount === "function") {
-        window.QuickBiteLayout.updateCartCount();
-    }
+function addToCart(item) {
+    window.QuickBiteCart.add(item);
 }
 
+function eatNow(itemId) {
+    const item = menuItems.find(i => i.id === itemId);
+    addToCart(item);
+    if (item) {
+        showNotification(item.name + " is in your platter. Eat Now selected.");
+    }
+}
 // ✅ Notification (same style)
 function showNotification(message) {
     const notification = document.createElement("div");
@@ -195,3 +197,10 @@ function formatCurrency(amount) {
 function showError() {
     document.body.innerHTML = "<h2 style='text-align:center;margin-top:2rem;'>Vendor not found</h2>";
 }
+
+
+
+
+
+
+
