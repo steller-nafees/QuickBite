@@ -1,20 +1,29 @@
-// Load environment variables
-require('dotenv').config();
+require("dotenv").config();
 
-// Import Express
-const express = require('express');
+// Import Module and Packages
+const express = require("express");
+const cookieParser = require("cookie-parser");
+const { connectDB } = require("./config/db");
+const userRouters = require("./routers/userRouters");
+
+// Initialize App
 const app = express();
 
-// Import database connection
-// const db = require('./config/db');
+// Middlewares
+app.use(express.json());
+app.use(cookieParser());
 
-// Test route
-app.get('/', (req, res) => {
-    res.send('QuickBite Backend Running!');
-});
+// Main Function to Start the Server
+async function startServer() {
+  await connectDB();
 
-// Start server
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-    console.log(`🚀 Derver running on port ${PORT}`);
-});
+  // ---------- ROUTERS ----------
+  app.use("/api/v1/users", userRouters);
+
+  app.listen(process.env.PORT, () => {
+    console.log(`🚀 Server running on port ${process.env.PORT}`);
+  });
+}
+
+// Start the Server
+startServer();
