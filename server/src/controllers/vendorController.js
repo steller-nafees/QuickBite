@@ -1,4 +1,5 @@
 const vendorService = require("../services/vendorService");
+const foodService = require("../services/foodService");
 
 // Get all vendors (all users with role = 'vendor')
 exports.getAllVendors = async (req, res) => {
@@ -20,7 +21,7 @@ exports.getAllVendors = async (req, res) => {
   }
 };
 
-// Get single vendor by ID
+// Get single vendor by ID with their foods
 exports.getVendor = async (req, res) => {
   try {
     if (!req.params.id || isNaN(req.params.id)) {
@@ -39,9 +40,15 @@ exports.getVendor = async (req, res) => {
       });
     }
 
+    // Get all foods associated with this vendor
+    const foods = await foodService.getFoodsByVendor(req.params.id);
+
     res.status(200).json({
       status: "success",
-      data: { vendor },
+      data: { 
+        vendor,
+        foods: foods || []
+      },
     });
   } catch (error) {
     console.error("Error fetching vendor:", error);
