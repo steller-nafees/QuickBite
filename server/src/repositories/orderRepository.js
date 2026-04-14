@@ -1,0 +1,203 @@
+const db = require("../config/db");
+
+// Create order
+exports.createOrder = async (orderId, customerData) => {
+  try {
+    return orderId;
+  } catch (error) {
+    throw new Error(`Failed to create order: ${error.message}`);
+  }
+};
+
+// Get all orders placed by a customer
+exports.getCustomerOrders = async (customerId) => {
+  try {
+    const [rows] = await db.query(
+      `SELECT 
+        o.order_id, 
+        o.customer_id, 
+        o.vendor_id,
+        u.name as vendor_name,
+        o.total_amount, 
+        o.status, 
+        o.created_at, 
+        o.pickup_time,
+        o.updated_at
+       FROM \`order\` o
+       JOIN user u ON o.vendor_id = u.id
+       WHERE o.customer_id = ?
+       ORDER BY o.created_at DESC`,
+      [customerId]
+    );
+    return rows;
+  } catch (error) {
+    throw new Error(`Failed to fetch customer orders: ${error.message}`);
+  }
+};
+
+// Get all orders for a vendor
+exports.getVendorOrders = async (vendorId) => {
+  try {
+    const [rows] = await db.query(
+      `SELECT 
+        o.order_id, 
+        o.customer_id, 
+        o.vendor_id,
+        u.name as customer_name,
+        o.total_amount, 
+        o.status, 
+        o.created_at, 
+        o.pickup_time,
+        o.updated_at
+       FROM \`order\` o
+       JOIN user u ON o.customer_id = u.id
+       WHERE o.vendor_id = ?
+       ORDER BY o.created_at DESC`,
+      [vendorId]
+    );
+    return rows;
+  } catch (error) {
+    throw new Error(`Failed to fetch vendor orders: ${error.message}`);
+  }
+};
+
+// Get order by ID with order items
+exports.getOrderById = async (orderId) => {
+  try {
+    const [order] = await db.query(
+      `SELECT 
+        o.order_id, 
+        o.customer_id, 
+        o.vendor_id,
+        u.name as vendor_name,
+        o.total_amount, 
+        o.status, 
+        o.created_at, 
+        o.pickup_time,
+        o.updated_at
+       FROM \`order\` o
+       JOIN user u ON o.vendor_id = u.id
+       WHERE o.order_id = ?`,
+      [orderId]
+    );
+
+    if (order.length === 0) {
+      return null;
+    }
+
+    const [items] = await db.query(
+      `SELECT 
+        order_item_id, 
+        order_id, 
+        food_id, 
+        item_name, 
+        quantity, 
+        unit_price, 
+        total_price
+       FROM order_item
+       WHERE order_id = ?`,
+      [orderId]
+    );
+
+    return { ...order[0], items };
+  } catch (error) {
+    throw new Error(`Failed to fetch order: ${error.message}`);
+  }
+};
+
+// Create new order with items
+exports.createNewOrder = async (customerId, vendorId, totalAmount, pickupTime, items) => {
+  const connection = await db.getConnection();
+  try {
+    await connection.beginTransaction();
+
+    // Create order
+    const [orderResult] = await connection.query(
+      `INSERT INTO \`order\` (customer_id, vendor_id, total_amount, pickup_time) 
+       VALUES (?, ?, ?, ?)`,
+      [customerId, vendorId, totalAmount, pickupTime || null]
+    );
+
+    const orderId = orderResult.insertId;
+
+    // Create order items
+    for (const item of items) {
+      await connection.query(
+        `INSERT INTO order_item (order_id, food_id, item_name, quantity, unit_price, total_price) 
+         VALUES (?, ?, ?, ?, ?, ?)`,
+        [
+          orderId,
+          item.food_id,
+          item.item_name,
+          item.quantity,
+          item.unit_price,
+          item.total_price,
+        ]
+      );
+    }
+
+    await connection.commit();
+    return orderId;
+  } catch (error) {
+    await connection.rollback();
+    throw new Error(`Failed to create order: ${error.message}`);
+  } finally {
+    connection.release();
+  }
+};
+
+// Update order status (vendor can update)
+exports.updateOrderStatus = async (orderId, vendorId, newStatus) => {
+  try {
+    // Verify vendor owns this order
+    const [order] = await db.query(
+      "SELECT vendor_id FROM `order` WHERE order_id = ?",
+      [orderId]
+    );
+
+    if (order.length === 0) {
+      throw new Error("Order not found");
+    }
+
+    if (order[0].vendor_id !== vendorId) {
+      throw new Error("You can only update orders for your own foods");
+    }
+
+    await db.query(
+      "UPDATE `order` SET status = ? WHERE order_id = ? AND vendor_id = ?",
+      [newStatus, orderId, vendorId]
+    );
+  } catch (error) {
+    throw new Error(`Failed to update order status: ${error.message}`);
+  }
+};
+
+// Cancel order (customer can cancel pending orders)
+exports.cancelOrder = async (orderId, customerId) => {
+  try {
+    // Verify customer owns this order and it's still pending
+    const [order] = await db.query(
+      "SELECT status, customer_id FROM `order` WHERE order_id = ?",
+      [orderId]
+    );
+
+    if (order.length === 0) {
+      throw new Error("Order not found");
+    }
+
+    if (order[0].customer_id !== customerId) {
+      throw new Error("You can only cancel your own orders");
+    }
+
+    if (order[0].status !== "pending") {
+      throw new Error("Can only cancel pending orders");
+    }
+
+    await db.query("DELETE FROM `order` WHERE order_id = ? AND customer_id = ?", [
+      orderId,
+      customerId,
+    ]);
+  } catch (error) {
+    throw new Error(`Failed to cancel order: ${error.message}`);
+  }
+};

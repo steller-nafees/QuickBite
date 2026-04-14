@@ -7,6 +7,7 @@ const { connectDB } = require("./config/db");
 const userRouters = require("./routers/userRouters");
 const vendorRouters = require("./routers/vendorRouters");
 const foodRouters = require("./routers/foodRouters");
+const orderRouters = require("./routers/orderRouters");
 
 // Initialize App
 const app = express();
@@ -23,6 +24,7 @@ async function startServer() {
   app.use("/api/v1/users", userRouters);
   app.use("/api/v1/vendors", vendorRouters);
   app.use("/api/v1/foods", foodRouters);
+  app.use("/api/v1/orders", orderRouters);
 
   app.listen(process.env.PORT, () => {
     console.log(`🚀 Server running on port ${process.env.PORT}`);
