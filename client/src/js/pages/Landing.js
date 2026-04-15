@@ -533,28 +533,12 @@ function addToCart(item) {
 }
 
 function showNotification(message) {
-    const existing = document.querySelector(".notification");
-    if (existing && existing.parentNode) {
-        existing.parentNode.removeChild(existing);
+    if (typeof window.showToast === "function") {
+        window.showToast(message, "info");
+        return;
     }
 
-    const notification = document.createElement("div");
-    notification.className = "notification";
-    notification.textContent = message;
-    document.body.appendChild(notification);
-
-    setTimeout(function () {
-        notification.style.transform = "translateX(0)";
-    }, 50);
-
-    setTimeout(function () {
-        notification.style.transform = "translateX(120%)";
-        setTimeout(function () {
-            if (notification.parentNode) {
-                notification.parentNode.removeChild(notification);
-            }
-        }, 300);
-    }, 2500);
+    window.alert(message);
 }
 
 function updateCartCount() {

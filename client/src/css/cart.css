@@ -42,8 +42,8 @@
     align-items: center;
     justify-content: space-between;
     padding: 20px 24px 16px;
-    border-bottom: 1px solid var(--red-12);
-    background: var(--color-white);
+    border-bottom: 1px solid var(--color-cream-dark);
+    background: var(--color-red-mid);
     flex-shrink: 0;
 }
 
@@ -57,7 +57,7 @@
     font-family: var(--font-secondary);
     font-size: 20px;
     font-weight: 800;
-    color: var(--color-charcoal);
+    color: var(--color-cream-soft);
     margin: 0;
 }
 
@@ -69,8 +69,8 @@
     height: 22px;
     padding: 0 6px;
     border-radius: 999px;
-    background: var(--gradient-button-primary);
-    color: var(--color-white);
+    background: var(--color-cream-soft);
+    color: var(--color-red);
     font-size: 11px;
     font-weight: 700;
     font-family: var(--font-primary);
@@ -80,9 +80,9 @@
     width: 36px;
     height: 36px;
     border-radius: 50%;
-    border: 1px solid var(--red-12);
+    border: 1px solid var(--color-cream-soft);
     background: transparent;
-    color: var(--color-red);
+    color: var(--color-cream-soft);
     font-size: 18px;
     cursor: pointer;
     display: flex;

@@ -10,6 +10,14 @@
 
   const { useEffect, useMemo, useState } = React;
 
+  function notify(message, type) {
+    if (typeof window.showToast === "function") {
+      window.showToast(message, type === "err" ? "error" : type === "success" ? "success" : "info");
+      return;
+    }
+    window.alert(message);
+  }
+
   function formatMoney(amount) {
     const n = Number(amount || 0);
     return "৳" + n.toFixed(2);
@@ -47,18 +55,14 @@
   function writeAuthUser(user) {
     try {
       localStorage.setItem("quickbite-auth-user", JSON.stringify(user));
-    } catch (e) {
-      // ignore
-    }
+    } catch (e) {}
   }
 
   function signOut() {
     try {
       localStorage.removeItem("quickbite-auth-user");
       localStorage.removeItem("quickbite-profile");
-    } catch (e) {
-      // ignore
-    }
+    } catch (e) {}
     window.location.href = "index.html";
   }
 
@@ -69,31 +73,6 @@
       border: "1px solid currentColor",
       borderRadius: 10,
       padding: "10px 14px",
-      fontFamily: "var(--font-label)",
-      fontWeight: 700,
-      cursor: "pointer",
-    };
-  }
-
-  function primaryButtonStyle() {
-    return {
-      background: "var(--gradient-button-primary)",
-      color: "var(--color-white)",
-      border: "0",
-      borderRadius: 10,
-      padding: "10px 14px",
-      fontFamily: "var(--font-label)",
-      fontWeight: 700,
-      cursor: "pointer",
-    };
-  }
-
-  function textButtonStyle() {
-    return {
-      background: "transparent",
-      border: "0",
-      padding: 0,
-      color: "var(--color-red)",
       fontFamily: "var(--font-label)",
       fontWeight: 700,
       cursor: "pointer",
@@ -117,10 +96,7 @@
       "span",
       {
         className: "qb-pill",
-        style: {
-          background: config.bg,
-          color: config.color,
-        },
+        style: { background: config.bg, color: config.color },
       },
       s ? s.charAt(0).toUpperCase() + s.slice(1) : "—"
     );
@@ -151,6 +127,7 @@
     const currentOrders = [
       {
         order_id: "QB-10421",
+        vendor_name: "Burger Haus",
         created_at: "2026-04-13T08:42:00.000Z",
         pickup_time: "12:20 PM",
         status: "pending",
@@ -164,6 +141,7 @@
       },
       {
         order_id: "QB-10411",
+        vendor_name: "Grill Station",
         created_at: "2026-04-13T07:55:00.000Z",
         pickup_time: "12:05 PM",
         status: "preparing",
@@ -177,6 +155,7 @@
       },
       {
         order_id: "QB-10398",
+        vendor_name: "Wrap & Roll",
         created_at: "2026-04-13T06:31:00.000Z",
         pickup_time: "11:40 AM",
         status: "ready",
@@ -192,6 +171,7 @@
     const pastOrders = [
       {
         order_id: "QB-10365",
+        vendor_name: "Burger Haus",
         created_at: "2026-04-10T10:12:00.000Z",
         pickup_time: "01:10 PM",
         status: "delivered",
@@ -204,6 +184,7 @@
       },
       {
         order_id: "QB-10312",
+        vendor_name: "Grill Station",
         created_at: "2026-04-06T09:42:00.000Z",
         pickup_time: "12:30 PM",
         status: "completed",
@@ -217,6 +198,7 @@
       },
       {
         order_id: "QB-10288",
+        vendor_name: "Wrap & Roll",
         created_at: "2026-04-02T11:05:00.000Z",
         pickup_time: "01:00 PM",
         status: "delivered",
@@ -231,6 +213,7 @@
       },
       {
         order_id: "QB-10231",
+        vendor_name: "Burger Haus",
         created_at: "2026-03-29T08:36:00.000Z",
         pickup_time: "12:10 PM",
         status: "completed",
@@ -243,6 +226,7 @@
       },
       {
         order_id: "QB-10192",
+        vendor_name: "Sip & Bite",
         created_at: "2026-03-24T09:18:00.000Z",
         pickup_time: "12:40 PM",
         status: "delivered",
@@ -255,6 +239,7 @@
       },
       {
         order_id: "QB-10110",
+        vendor_name: "Wrap & Roll",
         created_at: "2026-03-18T10:52:00.000Z",
         pickup_time: "01:15 PM",
         status: "completed",
@@ -268,6 +253,7 @@
       },
       {
         order_id: "QB-10071",
+        vendor_name: "Grill Station",
         created_at: "2026-03-12T09:05:00.000Z",
         pickup_time: "12:20 PM",
         status: "delivered",
@@ -284,7 +270,167 @@
     return { currentOrders, pastOrders };
   }
 
-  function OrdersTab({ currentOrders, pastOrders, mostOrderedItem }) {
+  /* ─── Expandable Past Order Row ─── */
+  function PastOrderRow({ order }) {
+    const [expanded, setExpanded] = useState(false);
+
+    return React.createElement(
+      "div",
+      { className: "qb-past-order-group" },
+
+      /* ── Summary row (always visible) ── */
+      React.createElement(
+        "div",
+        {
+          className: "qb-row qb-row-summary" + (expanded ? " is-open" : ""),
+          onClick: () => setExpanded((v) => !v),
+          role: "button",
+          "aria-expanded": expanded,
+          tabIndex: 0,
+          onKeyDown: (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setExpanded((v) => !v); } },
+        },
+
+        /* Order ID */
+        React.createElement(
+          "div",
+          { className: "qb-col qb-strong" },
+          order.order_id
+        ),
+
+        /* Date */
+        React.createElement(
+          "div",
+          { className: "qb-col" },
+          formatDate(order.created_at)
+        ),
+
+        /* Vendor */
+        React.createElement(
+          "div",
+          { className: "qb-col qb-vendor-col" },
+          React.createElement("span", { className: "qb-vendor-pill" }, order.vendor_name || "—")
+        ),
+
+        /* Total */
+        React.createElement(
+          "div",
+          { className: "qb-col qb-total-col" },
+          formatMoney(order.total_amount)
+        ),
+
+        /* Status */
+        React.createElement(
+          "div",
+          { className: "qb-col" },
+          React.createElement(StatusPill, {
+            status: order.status === "completed" ? "completed" : "delivered",
+          })
+        ),
+
+        /* Expand chevron */
+        React.createElement(
+          "div",
+          { className: "qb-col qb-expand-col" },
+          React.createElement(
+            "span",
+            { className: "qb-chevron" + (expanded ? " is-up" : "") },
+            "▾"
+          )
+        )
+      ),
+
+      /* ── Expanded detail panel ── */
+      expanded
+        ? React.createElement(
+          "div",
+          { className: "qb-row-detail" },
+
+          /* Items list */
+          React.createElement(
+            "div",
+            { className: "qb-detail-section" },
+            React.createElement("div", { className: "qb-detail-label" }, "Items"),
+            React.createElement(
+              "ul",
+              { className: "qb-detail-items" },
+              (order.items || []).map((it, idx) =>
+                React.createElement(
+                  "li",
+                  { className: "qb-detail-item", key: idx },
+                  React.createElement(
+                    "span",
+                    { className: "qb-detail-item-name" },
+                    it.item_name,
+                    React.createElement("span", { className: "qb-detail-item-qty" }, " × " + it.quantity)
+                  ),
+                  React.createElement(
+                    "span",
+                    { className: "qb-detail-item-price" },
+                    formatMoney((it.unit_price || 0) * (it.quantity || 0))
+                  )
+                )
+              )
+            )
+          ),
+
+          /* Meta info */
+          React.createElement(
+            "div",
+            { className: "qb-detail-meta" },
+
+            React.createElement(
+              "div",
+              { className: "qb-detail-meta-block" },
+              React.createElement("span", { className: "qb-detail-meta-label" }, "Vendor"),
+              React.createElement("span", { className: "qb-detail-meta-value" }, order.vendor_name || "—")
+            ),
+
+            React.createElement(
+              "div",
+              { className: "qb-detail-meta-block" },
+              React.createElement("span", { className: "qb-detail-meta-label" }, "Pickup time"),
+              React.createElement("span", { className: "qb-detail-meta-value" }, order.pickup_time || "—")
+            ),
+
+            React.createElement(
+              "div",
+              { className: "qb-detail-meta-block" },
+              React.createElement("span", { className: "qb-detail-meta-label" }, "Payment"),
+              React.createElement(
+                "span",
+                { className: "qb-detail-meta-value" },
+                (order.payment?.method || "—") + " · " + (order.payment?.status || "—")
+              )
+            ),
+
+            React.createElement(
+              "div",
+              { className: "qb-detail-meta-block" },
+              React.createElement("span", { className: "qb-detail-meta-label" }, "Total"),
+              React.createElement("span", { className: "qb-detail-meta-value qb-detail-total" }, formatMoney(order.total_amount))
+            )
+          ),
+
+          /* Reorder button */
+          React.createElement(
+            "div",
+            { className: "qb-detail-actions" },
+            React.createElement(
+              "button",
+              {
+                type: "button",
+                className: "qb-btn qb-btn-primary",
+                onClick: (e) => { e.stopPropagation(); notify("Reorder added (mock).", "success"); },
+              },
+              "Reorder"
+            )
+          )
+        )
+        : null
+    );
+  }
+
+  function OrdersTab({ currentOrders, pastOrders, mostOrderedItem, user, onSaveUser }) {
     const [tab, setTab] = useState("current");
     const [pastLimit, setPastLimit] = useState(6);
 
@@ -294,46 +440,9 @@
 
     const shownPast = useMemo(() => sortedPast.slice(0, pastLimit), [sortedPast, pastLimit]);
 
-    const heroTitle = mostOrderedItem?.item_name || "Your Favourite Item";
-    const heroSub = mostOrderedItem
-      ? `Ordered ${mostOrderedItem.quantity} times across your past orders.`
-      : "We’ll highlight the item you order most.";
-
     return React.createElement(
       "div",
       { className: "qb-stack" },
-      React.createElement(
-        "section",
-        { className: "qb-hero-card" },
-        React.createElement(
-          "div",
-          { className: "qb-hero-left" },
-          React.createElement(
-            "div",
-            { className: "qb-badge" },
-            React.createElement("i", { className: "fa-solid fa-heart" }),
-            React.createElement("span", null, "Your Favourite")
-          ),
-          React.createElement("h2", { className: "qb-hero-title" }, heroTitle),
-          React.createElement("p", { className: "qb-hero-sub" }, heroSub),
-          React.createElement(
-            "button",
-            {
-              type: "button",
-              className: "qb-btn qb-btn-ghost",
-              onClick: function () {
-                window.alert("Reorder added (mock).");
-              },
-            },
-            "Reorder"
-          )
-        ),
-        React.createElement(
-          "div",
-          { className: "qb-hero-right" },
-          React.createElement("div", { className: "qb-hero-img", role: "img", "aria-label": "Food placeholder image" })
-        )
-      ),
       React.createElement(
         "div",
         { className: "qb-tabs" },
@@ -346,131 +455,130 @@
           "button",
           { type: "button", className: "qb-tab" + (tab === "past" ? " is-active" : ""), onClick: () => setTab("past") },
           "Past Orders"
+        ),
+        React.createElement(
+          "button",
+          { type: "button", className: "qb-tab" + (tab === "settings" ? " is-active" : ""), onClick: () => setTab("settings") },
+          "Settings"
         )
       ),
+
       tab === "current"
         ? React.createElement(
-            "section",
-            { className: "qb-section" },
-            React.createElement("h3", { className: "qb-section-title" }, "Current Orders"),
-            currentOrders.length === 0
-              ? React.createElement("p", { className: "qb-empty" }, "No active orders right now. Place an order and it will show up here.")
-              : React.createElement(
-                  "div",
-                  { className: "qb-card-row" },
-                  currentOrders.map((order) =>
-                    React.createElement(
-                      "article",
-                      { className: "qb-card", key: order.order_id },
-                      React.createElement(
-                        "div",
-                        { className: "qb-card-top" },
-                        React.createElement("div", { className: "qb-card-id" }, order.order_id),
-                        React.createElement(StatusPill, { status: order.status })
-                      ),
-                      React.createElement(
-                        "ul",
-                        { className: "qb-items" },
-                        (order.items || []).map((it, idx) =>
-                          React.createElement(
-                            "li",
-                            { className: "qb-item", key: order.order_id + ":" + idx },
-                            React.createElement("span", { className: "qb-item-name" }, it.item_name),
-                            React.createElement("span", { className: "qb-item-meta" }, "× " + it.quantity)
-                          )
-                        )
-                      ),
-                      React.createElement(
-                        "div",
-                        { className: "qb-card-meta" },
-                        React.createElement("div", null, React.createElement("span", { className: "qb-meta-k" }, "Total"), React.createElement("span", { className: "qb-meta-v" }, formatMoney(order.total_amount))),
-                        React.createElement("div", null, React.createElement("span", { className: "qb-meta-k" }, "Pickup"), React.createElement("span", { className: "qb-meta-v" }, String(order.pickup_time || "—")))
-                      )
-                    )
-                  )
-                )
-          )
-        : React.createElement(
-            "section",
-            { className: "qb-section" },
-            React.createElement("h3", { className: "qb-section-title" }, "Past Orders"),
-            React.createElement(
+          "section",
+          { className: "qb-section" },
+          React.createElement("h3", { className: "qb-section-title" }, "Current Orders"),
+          currentOrders.length === 0
+            ? React.createElement("p", { className: "qb-empty" }, "No active orders right now. Place an order and it will show up here.")
+            : React.createElement(
               "div",
-              { className: "qb-table-wrap" },
-              React.createElement(
-                "table",
-                { className: "qb-table" },
+              { className: "qb-card-row" },
+              currentOrders.map((order) =>
                 React.createElement(
-                  "thead",
-                  null,
+                  "article",
+                  { className: "qb-card", key: order.order_id },
                   React.createElement(
-                    "tr",
-                    null,
-                    React.createElement("th", null, "Order ID"),
-                    React.createElement("th", null, "Date"),
-                    React.createElement("th", null, "Items"),
-                    React.createElement("th", null, "Total"),
-                    React.createElement("th", null, "Payment"),
-                    React.createElement("th", null, "Status"),
-                    React.createElement("th", { style: { width: 90 } }, "")
-                  )
-                ),
-                React.createElement(
-                  "tbody",
-                  null,
-                  shownPast.map((order) =>
+                    "div",
+                    { className: "qb-card-top" },
                     React.createElement(
-                      "tr",
-                      { key: order.order_id },
-                      React.createElement("td", { className: "qb-td-strong" }, order.order_id),
-                      React.createElement("td", null, formatDate(order.created_at)),
+                      "div",
+                      { className: "qb-card-heading" },
+                      React.createElement("div", { className: "qb-card-eyebrow" }, order.vendor_name || "Active Order"),
+                      React.createElement("div", { className: "qb-card-id" }, order.order_id)
+                    ),
+                    React.createElement(StatusPill, { status: order.status })
+                  ),
+                  React.createElement(
+                    "div",
+                    { className: "qb-card-summary" },
+                    React.createElement(
+                      "div",
+                      { className: "qb-summary-block" },
+                      React.createElement("span", { className: "qb-summary-label" }, "Pickup"),
+                      React.createElement("strong", { className: "qb-summary-value" }, String(order.pickup_time || "—"))
+                    ),
+                    React.createElement(
+                      "div",
+                      { className: "qb-summary-block" },
+                      React.createElement("span", { className: "qb-summary-label" }, "Items"),
+                      React.createElement("strong", { className: "qb-summary-value" }, String((order.items || []).length))
+                    )
+                  ),
+                  React.createElement(
+                    "ul",
+                    { className: "qb-items" },
+                    (order.items || []).map((it, idx) =>
                       React.createElement(
-                        "td",
-                        null,
-                        (order.items || [])
-                          .slice(0, 2)
-                          .map((it) => `${it.item_name} × ${it.quantity}`)
-                          .join(", ") + ((order.items || []).length > 2 ? "…" : "")
-                      ),
-                      React.createElement("td", null, formatMoney(order.total_amount)),
-                      React.createElement("td", null, `${order.payment?.method || "—"} • ${order.payment?.status || "—"}`),
-                      React.createElement(
-                        "td",
-                        null,
-                        React.createElement(StatusPill, { status: order.status === "completed" ? "completed" : "delivered" })
-                      ),
-                      React.createElement(
-                        "td",
-                        { style: { textAlign: "right" } },
+                        "li",
+                        { className: "qb-item", key: order.order_id + ":" + idx },
                         React.createElement(
-                          "button",
-                          {
-                            type: "button",
-                            className: "qb-link",
-                            onClick: function () {
-                              window.alert("Reorder added (mock).");
-                            },
-                          },
-                          "Reorder"
-                        )
+                          "div",
+                          { className: "qb-item-main" },
+                          React.createElement("span", { className: "qb-item-dot", "aria-hidden": "true" }),
+                          React.createElement(
+                            "div",
+                            { className: "qb-item-copy" },
+                            React.createElement("span", { className: "qb-item-name" }, it.item_name),
+                            React.createElement("span", { className: "qb-item-price" }, formatMoney((it.unit_price || 0) * (it.quantity || 0)))
+                          )
+                        ),
+                        React.createElement("span", { className: "qb-item-meta" }, "x " + it.quantity)
                       )
                     )
+                  ),
+                  React.createElement(
+                    "div",
+                    { className: "qb-card-meta" },
+                    React.createElement("div", null, React.createElement("span", { className: "qb-meta-k" }, "Total"), React.createElement("span", { className: "qb-meta-v" }, formatMoney(order.total_amount))),
+                    React.createElement("div", null, React.createElement("span", { className: "qb-meta-k" }, "Pickup"), React.createElement("span", { className: "qb-meta-v" }, String(order.pickup_time || "—")))
                   )
                 )
               )
+            )
+        )
+        : tab === "past"
+          ? React.createElement(
+            "section",
+            { className: "qb-section" },
+            React.createElement("h3", { className: "qb-section-title" }, "Past Orders"),
+
+            /* Column header row */
+            React.createElement(
+              "div",
+              { className: "qb-row qb-row-header" },
+              React.createElement("div", { className: "qb-col qb-col-header" }, "Order ID"),
+              React.createElement("div", { className: "qb-col qb-col-header" }, "Date"),
+              React.createElement("div", { className: "qb-col qb-col-header" }, "Vendor"),
+              React.createElement("div", { className: "qb-col qb-col-header" }, "Total"),
+              React.createElement("div", { className: "qb-col qb-col-header" }, "Status"),
+              React.createElement("div", { className: "qb-col" })
             ),
+
+            React.createElement(
+              "div",
+              { className: "qb-table-modern" },
+              shownPast.map((order) =>
+                React.createElement(PastOrderRow, { key: order.order_id, order })
+              )
+            ),
+
             sortedPast.length > shownPast.length
               ? React.createElement(
-                  "div",
-                  { className: "qb-view-more" },
-                  React.createElement(
-                    "button",
-                    { type: "button", className: "qb-btn qb-btn-primary", onClick: () => setPastLimit((n) => Math.min(n + 4, sortedPast.length)) },
-                    "View More"
-                  )
+                "div",
+                { className: "qb-view-more" },
+                React.createElement(
+                  "button",
+                  {
+                    type: "button",
+                    className: "qb-btn qb-btn-primary",
+                    onClick: () => setPastLimit((n) => Math.min(n + 4, sortedPast.length)),
+                  },
+                  "View More"
                 )
+              )
               : null
           )
+          : React.createElement(SettingsSection, { user, onSaveUser })
     );
   }
 
@@ -481,50 +589,25 @@
     const [currentPw, setCurrentPw] = useState("");
     const [newPw, setNewPw] = useState("");
     const [confirmPw, setConfirmPw] = useState("");
-    const [toast, setToast] = useState(null);
-
-    function showToast(message, type) {
-      setToast({ message, type: type || "ok" });
-      window.setTimeout(() => setToast(null), 2200);
-    }
 
     function saveProfile() {
       const next = Object.assign({}, user || {}, { fullName: fullName.trim(), phone: phone.trim() });
       onSaveUser(next);
-      showToast("Profile saved.", "ok");
+      notify("Profile saved.", "success");
     }
 
     function changePassword() {
-      if (!currentPw || !newPw) {
-        showToast("Please fill current and new password.", "err");
-        return;
-      }
-      if (newPw.length < 8) {
-        showToast("New password must be at least 8 characters.", "err");
-        return;
-      }
-      if (newPw !== confirmPw) {
-        showToast("Passwords do not match.", "err");
-        return;
-      }
-      setCurrentPw("");
-      setNewPw("");
-      setConfirmPw("");
-      showToast("Password updated (mock).", "ok");
+      if (!currentPw || !newPw) { notify("Please fill current and new password.", "err"); return; }
+      if (newPw.length < 8) { notify("New password must be at least 8 characters.", "err"); return; }
+      if (newPw !== confirmPw) { notify("Passwords do not match.", "err"); return; }
+      setCurrentPw(""); setNewPw(""); setConfirmPw("");
+      notify("Password updated (mock).", "success");
     }
 
     return React.createElement(
       "section",
       { className: "qb-section" },
       React.createElement("h3", { className: "qb-section-title" }, "Basic Settings"),
-      toast
-        ? React.createElement(
-            "div",
-            { className: "qb-toast" + (toast.type === "err" ? " is-error" : "") },
-            React.createElement("i", { className: toast.type === "err" ? "fa-solid fa-triangle-exclamation" : "fa-solid fa-circle-check" }),
-            React.createElement("span", null, toast.message)
-          )
-        : null,
       React.createElement(
         "div",
         { className: "qb-settings-grid" },
@@ -535,24 +618,9 @@
           React.createElement(
             "div",
             { className: "qb-form" },
-            React.createElement(
-              "label",
-              { className: "qb-field" },
-              React.createElement("span", { className: "qb-label" }, "Name"),
-              React.createElement("input", { className: "qb-input", value: fullName, onChange: (e) => setFullName(e.target.value), placeholder: "Your full name" })
-            ),
-            React.createElement(
-              "label",
-              { className: "qb-field" },
-              React.createElement("span", { className: "qb-label" }, "Email"),
-              React.createElement("input", { className: "qb-input", value: email, disabled: true })
-            ),
-            React.createElement(
-              "label",
-              { className: "qb-field" },
-              React.createElement("span", { className: "qb-label" }, "Phone Number"),
-              React.createElement("input", { className: "qb-input", value: phone, onChange: (e) => setPhone(e.target.value), placeholder: "+8801XXXXXXXXX" })
-            )
+            React.createElement("label", { className: "qb-field" }, React.createElement("span", { className: "qb-label" }, "Name"), React.createElement("input", { className: "qb-input", value: fullName, onChange: (e) => setFullName(e.target.value), placeholder: "Your full name" })),
+            React.createElement("label", { className: "qb-field" }, React.createElement("span", { className: "qb-label" }, "Email"), React.createElement("input", { className: "qb-input", value: email, disabled: true })),
+            React.createElement("label", { className: "qb-field" }, React.createElement("span", { className: "qb-label" }, "Phone Number"), React.createElement("input", { className: "qb-input", value: phone, onChange: (e) => setPhone(e.target.value), placeholder: "+8801XXXXXXXXX" }))
           )
         ),
         React.createElement(
@@ -562,24 +630,9 @@
           React.createElement(
             "div",
             { className: "qb-form" },
-            React.createElement(
-              "label",
-              { className: "qb-field" },
-              React.createElement("span", { className: "qb-label" }, "Current Password"),
-              React.createElement("input", { className: "qb-input", type: "password", value: currentPw, onChange: (e) => setCurrentPw(e.target.value), placeholder: "••••••••" })
-            ),
-            React.createElement(
-              "label",
-              { className: "qb-field" },
-              React.createElement("span", { className: "qb-label" }, "New Password"),
-              React.createElement("input", { className: "qb-input", type: "password", value: newPw, onChange: (e) => setNewPw(e.target.value), placeholder: "At least 8 characters" })
-            ),
-            React.createElement(
-              "label",
-              { className: "qb-field" },
-              React.createElement("span", { className: "qb-label" }, "Confirm Password"),
-              React.createElement("input", { className: "qb-input", type: "password", value: confirmPw, onChange: (e) => setConfirmPw(e.target.value), placeholder: "Repeat new password" })
-            )
+            React.createElement("label", { className: "qb-field" }, React.createElement("span", { className: "qb-label" }, "Current Password"), React.createElement("input", { className: "qb-input", type: "password", value: currentPw, onChange: (e) => setCurrentPw(e.target.value), placeholder: "••••••••" })),
+            React.createElement("label", { className: "qb-field" }, React.createElement("span", { className: "qb-label" }, "New Password"), React.createElement("input", { className: "qb-input", type: "password", value: newPw, onChange: (e) => setNewPw(e.target.value), placeholder: "At least 8 characters" })),
+            React.createElement("label", { className: "qb-field" }, React.createElement("span", { className: "qb-label" }, "Confirm Password"), React.createElement("input", { className: "qb-input", type: "password", value: confirmPw, onChange: (e) => setConfirmPw(e.target.value), placeholder: "Repeat new password" }))
           )
         )
       )
@@ -591,15 +644,9 @@
 
     useEffect(() => {
       const u = readAuthUser();
-      if (!u) {
-        window.location.replace("index.html");
-        return;
-      }
+      if (!u) { window.location.replace("index.html"); return; }
       const role = String(u.role || "customer").toLowerCase();
-      if (role === "vendor" || role === "admin") {
-        window.location.replace("admin-dashboard.html");
-        return;
-      }
+      if (role === "vendor" || role === "admin") { window.location.replace("admin-dashboard.html"); return; }
       setUser(u);
     }, []);
 
@@ -616,9 +663,7 @@
         const prev = JSON.parse(localStorage.getItem("quickbite-profile") || "null");
         const merged = Object.assign({}, prev || {}, { fullName: nextUser.fullName, email: nextUser.email, phone: nextUser.phone, role: nextUser.role });
         localStorage.setItem("quickbite-profile", JSON.stringify(merged));
-      } catch (e) {
-        // ignore
-      }
+      } catch (e) {}
     }
 
     return React.createElement(
@@ -630,21 +675,13 @@
         React.createElement(
           "div",
           { className: "qb-nav-inner" },
-          React.createElement(
-            "a",
-            { className: "qb-brand", href: "index.html", "aria-label": "QuickBite Home" },
-            React.createElement("span", { className: "qb-brand-name" }, "QuickBite")
-          ),
+          React.createElement("a", { className: "qb-brand", href: "index.html", "aria-label": "QuickBite Home" }, React.createElement("span", { className: "qb-brand-name" }, "QuickBite")),
           React.createElement(
             "div",
             { className: "qb-nav-right" },
             React.createElement("div", { className: "qb-user-name" }, displayName),
             React.createElement("div", { className: "qb-avatar", "aria-hidden": "true" }, initials),
-            React.createElement(
-              "button",
-              { type: "button", className: "qb-btn qb-btn-ghost qb-signout", onClick: signOut, style: ghostButtonStyle() },
-              "Sign out"
-            )
+            React.createElement("button", { type: "button", className: "qb-btn qb-btn-ghost qb-signout", onClick: signOut, style: ghostButtonStyle() }, "Sign out")
           )
         )
       ),
@@ -654,8 +691,7 @@
         React.createElement(
           "div",
           { className: "qb-container" },
-          React.createElement(OrdersTab, { currentOrders: data.currentOrders, pastOrders: data.pastOrders, mostOrderedItem }),
-          React.createElement(SettingsSection, { user, onSaveUser })
+          React.createElement(OrdersTab, { currentOrders: data.currentOrders, pastOrders: data.pastOrders, mostOrderedItem, user, onSaveUser })
         )
       )
     );
@@ -663,7 +699,6 @@
 
   const rootEl = document.getElementById("customerDashboardRoot");
   if (!rootEl) return;
-
   const root = ReactDOM.createRoot(rootEl);
   root.render(React.createElement(CustomerDashboardApp));
 })();

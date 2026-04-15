@@ -1,13 +1,13 @@
 document.addEventListener('DOMContentLoaded', function () {
 
     const AUTH_API_BASE = window.QUICKBITE_AUTH_API || "http://localhost:5000/api/auth";
-    const modal        = document.getElementById('authModal');
-    const loginForm    = document.getElementById('loginForm');
+    const modal = document.getElementById('authModal');
+    const loginForm = document.getElementById('loginForm');
     const registerForm = document.getElementById('registerForm');
-    const openers      = document.querySelectorAll('[data-auth-open]');
-    const closers      = document.querySelectorAll('[data-auth-close]');
-    const switchers    = document.querySelectorAll('[data-auth-switch]');
-    const topBack      = document.querySelector('[data-auth-back]');
+    const openers = document.querySelectorAll('[data-auth-open]');
+    const closers = document.querySelectorAll('[data-auth-close]');
+    const switchers = document.querySelectorAll('[data-auth-switch]');
+    const topBack = document.querySelector('[data-auth-back]');
 
     /* ── Greeting ── */
     function setGreeting() {
@@ -20,42 +20,18 @@ document.addEventListener('DOMContentLoaded', function () {
     setGreeting();
     setInterval(setGreeting, 60000);
 
-    /* ── Toast notification (bottom-right) ── */
-    function showNotification(message, type = 'error') {
-        document.querySelectorAll('.notification').forEach(n => n.remove());
-        const n = document.createElement('div');
-        n.className = `notification notification-${type}`;
-        n.innerHTML = `
-            <div class="notification-content">
-                <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
-                <span>${message}</span>
-            </div>
-            <button class="notification-close" aria-label="Dismiss"><i class="fas fa-times"></i></button>`;
-        document.body.appendChild(n);
-        n.querySelector('.notification-close').addEventListener('click', () => n.remove());
-        setTimeout(() => n.isConnected && n.remove(), 5000);
-    }
-
-    /* ── Error banner ABOVE the submit button ── */
-    function showFormError(form, message) {
-        // Remove existing
-        form.querySelectorAll('.auth-form-error').forEach(e => e.remove());
-
-        const err = document.createElement('div');
-        err.className = 'auth-form-error';
-        err.innerHTML = `<i class="fas fa-exclamation-circle"></i><span>${message}</span>`;
-
-        // Insert just before the submit button
-        const btn = form.querySelector('.auth-login-btn, .reg-controls .btn');
-        if (btn) {
-            btn.closest('.reg-controls')
-                ? btn.closest('.reg-controls').insertAdjacentElement('beforebegin', err)
-                : btn.insertAdjacentElement('beforebegin', err);
-        } else {
-            form.appendChild(err);
+    function notify(message, type = 'error') {
+        if (typeof window.showToast === 'function') {
+            window.showToast(message, type);
+            return;
         }
 
-        setTimeout(() => err.isConnected && err.remove(), 5000);
+        window.alert(message);
+    }
+
+    function showFormError(form, message) {
+        form.querySelectorAll('.auth-form-error').forEach(e => e.remove());
+        notify(message, 'error');
     }
 
     function clearFormError(form) {
@@ -106,7 +82,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     /* ── Required asterisks ── */
-    ['loginEmail','loginPassword','regEmail','regName','regPhone','regPassword','regPasswordConfirm']
+    ['loginEmail', 'loginPassword', 'regEmail', 'regName', 'regPhone', 'regPassword', 'regPasswordConfirm']
         .forEach(id => {
             const label = modal.querySelector(`label[for="${id}"]`);
             if (!label || label.querySelector('.req-star')) return;
@@ -177,7 +153,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function validateLogin() {
         clearAll(loginForm);
         const email = document.getElementById('loginEmail');
-        const pw    = document.getElementById('loginPassword');
+        const pw = document.getElementById('loginPassword');
         let firstError = null;
 
         if (!email.value.trim()) {
@@ -203,26 +179,26 @@ document.addEventListener('DOMContentLoaded', function () {
     if (loginBtn) {
         loginBtn.addEventListener('click', async () => {
             if (!validateLogin()) return;
-            
+
             const email = document.getElementById('loginEmail').value.trim();
             const password = document.getElementById('loginPassword').value;
-            
+
             try {
                 const response = await fetch(AUTH_API_BASE + '/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password })
                 });
-                
+
                 const data = await response.json();
-                
+
                 if (!response.ok || !data.ok) {
                     throw new Error(data.message || 'Login failed');
                 }
-                
+
                 // Store user data in localStorage
                 localStorage.setItem('quickbite-auth-user', JSON.stringify(data.user));
-                
+
                 // Update profile data
                 try {
                     const prev = JSON.parse(localStorage.getItem('quickbite-profile') || 'null');
@@ -235,17 +211,16 @@ document.addEventListener('DOMContentLoaded', function () {
                 } catch (error) {
                     // ignore
                 }
-                
+
                 closeModal();
-                
+
                 // Stay on home after auth
                 setTimeout(() => {
                     stayOnHomeAfterAuth();
                 }, 800);
-                
+
             } catch (error) {
                 showFormError(loginForm, error.message);
-                showNotification(error.message, 'error');
             }
         });
     }
@@ -254,11 +229,11 @@ document.addEventListener('DOMContentLoaded', function () {
     const regContainer = registerForm.querySelector('.reg-steps');
     if (!regContainer) return;
 
-    const steps      = Array.from(regContainer.querySelectorAll('.step'));
-    const nextBtn    = regContainer.querySelector('[data-reg-next]');
-    const backBtn    = regContainer.querySelector('[data-reg-back]');
+    const steps = Array.from(regContainer.querySelectorAll('.reg-step'));
+    const nextBtn = regContainer.querySelector('[data-reg-next]');
+    const backBtn = regContainer.querySelector('[data-reg-back]');
     const registerBtn = regContainer.querySelector('.reg-controls .btn');
-    const roleInput  = document.getElementById('regRole');
+    const roleInput = document.getElementById('regRole');
     const roleButtons = Array.from(regContainer.querySelectorAll('[data-reg-role]'));
 
     let currentStep = 0;
@@ -297,7 +272,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const step0 = steps[0];
         clearAll(step0);
         const email = document.getElementById('regEmail');
-        const name  = document.getElementById('regName');
+        const name = document.getElementById('regName');
         const phone = document.getElementById('regPhone');
         let firstError = null;
 
@@ -324,7 +299,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function validateStep1() {
         const step1 = steps[1];
         clearAll(step1);
-        const pw   = document.getElementById('regPassword');
+        const pw = document.getElementById('regPassword');
         const conf = document.getElementById('regPasswordConfirm');
         let firstError = null;
 
@@ -372,13 +347,13 @@ document.addEventListener('DOMContentLoaded', function () {
     if (registerBtn) {
         registerBtn.addEventListener('click', async () => {
             if (!validateStep1()) return;
-            
+
             const email = document.getElementById('regEmail').value.trim();
             const name = document.getElementById('regName').value.trim();
             const phone = document.getElementById('regPhone').value.trim();
             const password = document.getElementById('regPassword').value;
             const role = getSelectedRole();
-            
+
             try {
                 // Check if email is available
                 const checkResponse = await fetch(AUTH_API_BASE + '/check-email', {
@@ -386,17 +361,17 @@ document.addEventListener('DOMContentLoaded', function () {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email })
                 });
-                
+
                 const checkData = await checkResponse.json();
-                
+
                 if (!checkResponse.ok || !checkData.ok) {
                     throw new Error(checkData.message || 'Email check failed');
                 }
-                
+
                 if (!checkData.available) {
                     throw new Error('Email already exists. Please login.');
                 }
-                
+
                 // Register the user
                 const response = await fetch(AUTH_API_BASE + '/register', {
                     method: 'POST',
@@ -409,16 +384,16 @@ document.addEventListener('DOMContentLoaded', function () {
                         role
                     })
                 });
-                
+
                 const data = await response.json();
-                
+
                 if (!response.ok || !data.ok) {
                     throw new Error(data.message || 'Registration failed');
                 }
-                
+
                 // Store user data
                 localStorage.setItem('quickbite-auth-user', JSON.stringify(data.user));
-                
+
                 try {
                     const prev = JSON.parse(localStorage.getItem('quickbite-profile') || 'null');
                     const merged = Object.assign({}, prev || {}, {
@@ -430,17 +405,16 @@ document.addEventListener('DOMContentLoaded', function () {
                 } catch (error) {
                     // ignore
                 }
-                
+
                 closeModal();
-                
+
                 // Stay on home after auth
                 setTimeout(() => {
                     stayOnHomeAfterAuth();
                 }, 800);
-                
+
             } catch (error) {
                 showFormError(steps[1], error.message);
-                showNotification(error.message, 'error');
             }
         });
     }
@@ -475,36 +449,36 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function scorePassword(pw) {
         let s = 0;
-        if (pw.length >= 8)           s++;
-        if (/[A-Z]/.test(pw))         s++;
-        if (/[0-9]/.test(pw))         s++;
-        if (/[^A-Za-z0-9]/.test(pw))  s++;
+        if (pw.length >= 8) s++;
+        if (/[A-Z]/.test(pw)) s++;
+        if (/[0-9]/.test(pw)) s++;
+        if (/[^A-Za-z0-9]/.test(pw)) s++;
         return s;
     }
 
     function renderStrength(pw) {
-        const bar   = document.getElementById('strengthBar');
+        const bar = document.getElementById('strengthBar');
         const label = document.getElementById('strengthLabel');
         if (!bar || !label) return;
         const score = pw.length ? scorePassword(pw) : 0;
         bar.querySelectorAll('.seg').forEach((seg, i) => seg.classList.toggle('on', i < score));
         bar.className = 'strength-bar strength-' + score;
         label.textContent = pw.length ? (STRENGTH_LABELS[score] || '') : '';
-        label.style.color  = pw.length ? (STRENGTH_COLORS[score] || '') : '';
+        label.style.color = pw.length ? (STRENGTH_COLORS[score] || '') : '';
         document.querySelectorAll('.pw-criteria [data-crit]').forEach(li => {
             const c = li.getAttribute('data-crit');
             const met =
-                c === 'length'  ? pw.length >= 8 :
-                c === 'upper'   ? /[A-Z]/.test(pw) :
-                c === 'number'  ? /[0-9]/.test(pw) :
-                c === 'special' ? /[^A-Za-z0-9]/.test(pw) : false;
+                c === 'length' ? pw.length >= 8 :
+                    c === 'upper' ? /[A-Z]/.test(pw) :
+                        c === 'number' ? /[0-9]/.test(pw) :
+                            c === 'special' ? /[^A-Za-z0-9]/.test(pw) : false;
             li.classList.toggle('met', met);
         });
     }
 
-    const pwInput   = document.getElementById('regPassword');
+    const pwInput = document.getElementById('regPassword');
     const pwConfirm = document.getElementById('regPasswordConfirm');
-    if (pwInput)   pwInput.addEventListener('input',   () => { renderStrength(pwInput.value); clearInvalid(pwInput); });
+    if (pwInput) pwInput.addEventListener('input', () => { renderStrength(pwInput.value); clearInvalid(pwInput); });
     if (pwConfirm) pwConfirm.addEventListener('input', () => {
         pwConfirm.classList.toggle('mismatch', pwConfirm.value.length > 0 && pwConfirm.value !== pwInput?.value);
         clearInvalid(pwConfirm);

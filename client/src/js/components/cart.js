@@ -881,16 +881,12 @@
        TOAST NOTIFICATION
     ───────────────────────────────────────── */
     function showCartToast(message) {
-        document.querySelectorAll('.cart-toast').forEach(t => t.remove());
-        const toast = document.createElement('div');
-        toast.className = 'notification cart-toast';
-        toast.innerHTML = `<i class="fas fa-cart-plus" style="color:var(--color-red);margin-right:8px;"></i>${message}`;
-        document.body.appendChild(toast);
-        setTimeout(() => { toast.style.transform = 'translateX(0)'; }, 30);
-        setTimeout(() => {
-            toast.style.transform = 'translateX(120%)';
-            setTimeout(() => toast.remove(), 300);
-        }, 2500);
+        if (typeof window.showToast === 'function') {
+            window.showToast(message, 'info');
+            return;
+        }
+
+        window.alert(message);
     }
 
     /* ─────────────────────────────────────────
