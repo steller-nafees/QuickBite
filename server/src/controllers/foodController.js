@@ -23,7 +23,7 @@ exports.getAllFoods = async (req, res) => {
 // Get single food by ID (authenticated users only)
 exports.getFoodById = async (req, res) => {
   try {
-    if (!req.params.id || isNaN(req.params.id)) {
+    if (!req.params.id) {
       return res.status(400).json({
         status: "fail",
         message: "Invalid food ID provided",
@@ -55,7 +55,7 @@ exports.getFoodById = async (req, res) => {
 // Get all foods by vendor (authenticated users only)
 exports.getFoodsByVendor = async (req, res) => {
   try {
-    if (!req.params.vendorId || isNaN(req.params.vendorId)) {
+    if (!req.params.vendorId) {
       return res.status(400).json({
         status: "fail",
         message: "Invalid vendor ID provided",
@@ -119,7 +119,7 @@ exports.updateFood = async (req, res) => {
   try {
     const { id } = req.params;
 
-    if (!id || isNaN(id)) {
+    if (!id) {
       return res.status(400).json({
         status: "fail",
         message: "Invalid food ID provided",
@@ -160,7 +160,7 @@ exports.deleteFood = async (req, res) => {
   try {
     const { id } = req.params;
 
-    if (!id || isNaN(id)) {
+    if (!id) {
       return res.status(400).json({
         status: "fail",
         message: "Invalid food ID provided",

@@ -4,7 +4,7 @@ const foodRepo = require("../repositories/foodRepository");
 // Get customer's orders
 exports.getCustomerOrders = async (customerId) => {
   try {
-    if (!customerId || isNaN(customerId)) {
+    if (!customerId) {
       throw new Error("Invalid customer ID");
     }
     return await orderRepo.getCustomerOrders(customerId);
@@ -16,7 +16,7 @@ exports.getCustomerOrders = async (customerId) => {
 // Get vendor's orders
 exports.getVendorOrders = async (vendorId) => {
   try {
-    if (!vendorId || isNaN(vendorId)) {
+    if (!vendorId) {
       throw new Error("Invalid vendor ID");
     }
     return await orderRepo.getVendorOrders(vendorId);
@@ -28,7 +28,7 @@ exports.getVendorOrders = async (vendorId) => {
 // Get order details
 exports.getOrderById = async (orderId) => {
   try {
-    if (!orderId || isNaN(orderId)) {
+    if (!orderId) {
       throw new Error("Invalid order ID");
     }
     return await orderRepo.getOrderById(orderId);
@@ -40,7 +40,7 @@ exports.getOrderById = async (orderId) => {
 // Create new order (students only)
 exports.createOrder = async (customerId, orderData) => {
   try {
-    if (!customerId || isNaN(customerId)) {
+    if (!customerId) {
       throw new Error("Invalid customer ID");
     }
 
@@ -111,11 +111,11 @@ exports.createOrder = async (customerId, orderData) => {
 // Update order status (vendors only)
 exports.updateOrderStatus = async (orderId, vendorId, newStatus) => {
   try {
-    if (!orderId || isNaN(orderId)) {
+    if (!orderId) {
       throw new Error("Invalid order ID");
     }
 
-    if (!vendorId || isNaN(vendorId)) {
+    if (!vendorId) {
       throw new Error("Invalid vendor ID");
     }
 
@@ -135,11 +135,11 @@ exports.updateOrderStatus = async (orderId, vendorId, newStatus) => {
 // Cancel order (customers only)
 exports.cancelOrder = async (orderId, customerId) => {
   try {
-    if (!orderId || isNaN(orderId)) {
+    if (!orderId) {
       throw new Error("Invalid order ID");
     }
 
-    if (!customerId || isNaN(customerId)) {
+    if (!customerId) {
       throw new Error("Invalid customer ID");
     }
 

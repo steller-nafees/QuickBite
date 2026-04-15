@@ -1,8 +1,11 @@
 const db = require("../config/db");
+const { generatePrefixedId } = require("../utils/idGenerator");
 
 exports.getAllUsers = async () => {
   try {
-    const [rows] = await db.query("SELECT * FROM user");
+    const [rows] = await db.query(
+      "SELECT user_id, full_name, email, role, phone, created_at, updated_at FROM user"
+    );
     return rows;
   } catch (error) {
     throw new Error(`Failed to fetch users: ${error.message}`);
@@ -24,7 +27,7 @@ exports.findByEmail = async (email) => {
 exports.getUser = async (id) => {
   try {
     const [rows] = await db.query(
-      "SELECT * FROM user WHERE id = ?",
+      "SELECT * FROM user WHERE user_id = ?",
       [id]
     );
     return rows[0];
@@ -36,7 +39,7 @@ exports.getUser = async (id) => {
 exports.findUserById = async (id) => {
   try {
     const [rows] = await db.query(
-      "SELECT * FROM user WHERE id = ?",
+      "SELECT * FROM user WHERE user_id = ?",
       [id]
     );
     return rows[0];
@@ -47,16 +50,22 @@ exports.findUserById = async (id) => {
 
 exports.create = async (user) => {
   try {
-    const { name, email, password, role, student_id, vendor_id } = user;
+    const { full_name, email, password, role, phone } = user;
+    const userId = await generatePrefixedId(db, "user", "user_id", "QBU");
 
     const [result] = await db.query(
       `INSERT INTO user
-       (name, email, password, role, student_id, vendor_id)
+       (user_id, full_name, email, password, role, phone)
        VALUES (?, ?, ?, ?, ?, ?)`,
-      [name, email, password, role, student_id, vendor_id]
+      [userId, full_name, email, password, role, phone || null]
     );
 
-    return result.insertId;
+    const [rows] = await db.query(
+      "SELECT user_id FROM user WHERE email = ?",
+      [email]
+    );
+
+    return rows[0]?.user_id || userId || result.insertId;
   } catch (error) {
     throw new Error(`Failed to create user: ${error.message}`);
   }
@@ -70,7 +79,7 @@ exports.updateUserById = async (id, fields) => {
     const setClause = keys.map(k => `${k} = ?`).join(", ");
 
     await db.query(
-      `UPDATE user SET ${setClause} WHERE id = ?`,
+      `UPDATE user SET ${setClause} WHERE user_id = ?`,
       [...values, id]
     );
   } catch (error) {
@@ -80,7 +89,7 @@ exports.updateUserById = async (id, fields) => {
 
 exports.deleteUser = async (id) => {
   try {
-    await db.query("DELETE FROM user WHERE id = ?", [id]);
+    await db.query("DELETE FROM user WHERE user_id = ?", [id]);
   } catch (error) {
     throw new Error(`Failed to delete user: ${error.message}`);
   }
