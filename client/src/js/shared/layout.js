@@ -111,6 +111,7 @@ function updateHeaderUserState() {
                 // Clear authentication data
                 localStorage.removeItem("quickbite-auth-user");
                 localStorage.removeItem("quickbite-profile");
+                localStorage.removeItem("quickbite-auth-token");
                 // Redirect to home page
                 window.location.href = "index.html";
             };
@@ -429,6 +430,7 @@ function initializeAuthSignOut() {
         event.preventDefault();
         localStorage.removeItem("quickbite-auth-user");
         localStorage.removeItem("quickbite-profile");
+        localStorage.removeItem("quickbite-auth-token");
         window.location.href = "index.html";
     });
 }

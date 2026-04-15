@@ -1,139 +1,5 @@
-const vendors = [
-    {
-        id: 1,
-        name: "The Pasta Corner",
-        cuisine: "Italian Comfort",
-        rating: 4.8,
-        totalOrders: 1250,
-        eta: "12 min pickup"
-    },
-    {
-        id: 2,
-        name: "Burger Hub",
-        cuisine: "Gourmet Burgers",
-        rating: 4.7,
-        totalOrders: 1480,
-        eta: "10 min pickup"
-    },
-    {
-        id: 3,
-        name: "Sushi Express",
-        cuisine: "Japanese Fresh",
-        rating: 4.9,
-        totalOrders: 920,
-        eta: "15 min pickup"
-    },
-    {
-        id: 4,
-        name: "Taco Fiesta",
-        cuisine: "Mexican Street",
-        rating: 4.6,
-        totalOrders: 860,
-        eta: "11 min pickup"
-    }
-];
-
-const menuItems = [
-    {
-        id: 1,
-        name: "Classic Burger",
-        vendor: "Burger Hub",
-        vendor_id: 2,
-        price: 5.49,
-        rating: 4.8,
-        badge: "1",
-        description: "Two layers of premium beef with melted cheddar cheese, tomato, and pickles.",
-        image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=900&h=700&fit=crop"
-    },
-    {
-        id: 2,
-        name: "The Big Stack",
-        vendor: "Burger Hub",
-        vendor_id: 2,
-        price: 7.99,
-        rating: 4.7,
-        badge: "2",
-        description: "Double beef patty with crispy bacon, sweet BBQ sauce, and cheddar in a soft bun.",
-        image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=900&h=700&fit=crop"
-    },
-    {
-        id: 3,
-        name: "Twin Beef Slam",
-        vendor: "Burger Hub",
-        vendor_id: 2,
-        price: 6.99,
-        rating: 4.9,
-        badge: "3",
-        description: "Two beef patties with double cheddar, fresh vegies, pickles, and smoky sauce.",
-        image: "https://images.unsplash.com/photo-1553979459-d2229ba7433b?w=900&h=700&fit=crop"
-    },
-    {
-        id: 4,
-        name: "Pasta Alfredo",
-        vendor: "The Pasta Corner",
-        vendor_id: 1,
-        price: 6.49,
-        rating: 4.8,
-        badge: "4",
-        description: "Creamy alfredo pasta with parmesan, cracked pepper, and a buttery finish.",
-        image: "https://images.unsplash.com/photo-1555949258-eb67b1ef0ceb?w=900&h=700&fit=crop"
-    },
-    {
-        id: 5,
-        name: "Arrabbiata Bowl",
-        vendor: "The Pasta Corner",
-        vendor_id: 1,
-        price: 6.89,
-        rating: 4.7,
-        badge: "5",
-        description: "Spicy tomato pasta bowl with herbs, garlic, and a clean chili kick.",
-        image: "https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=900&h=700&fit=crop"
-    },
-    {
-        id: 6,
-        name: "Salmon Sushi Box",
-        vendor: "Sushi Express",
-        vendor_id: 3,
-        price: 8.99,
-        rating: 4.9,
-        badge: "6",
-        description: "Fresh salmon rolls with wasabi, soy, and a light campus-lunch portion.",
-        image: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=900&h=700&fit=crop"
-    },
-    {
-        id: 7,
-        name: "Crispy Shrimp Roll",
-        vendor: "Sushi Express",
-        vendor_id: 3,
-        price: 8.49,
-        rating: 4.8,
-        badge: "7",
-        description: "Crunchy shrimp roll finished with sesame and a creamy spicy drizzle.",
-        image: "https://images.unsplash.com/photo-1617196034796-73dfa7b1fd56?w=900&h=700&fit=crop"
-    },
-    {
-        id: 8,
-        name: "Street Taco Trio",
-        vendor: "Taco Fiesta",
-        vendor_id: 4,
-        price: 5.99,
-        rating: 4.6,
-        badge: "8",
-        description: "Three soft tacos loaded with seasoned meat, salsa, and crunchy onions.",
-        image: "https://images.unsplash.com/photo-1552332386-f8dd00dc2f85?w=900&h=700&fit=crop"
-    },
-    {
-        id: 9,
-        name: "Loaded Nacho Box",
-        vendor: "Taco Fiesta",
-        vendor_id: 4,
-        price: 5.79,
-        rating: 4.7,
-        badge: "9",
-        description: "Crisp nachos layered with cheese, jalapenos, salsa, and smoky sauce.",
-        image: "https://images.unsplash.com/photo-1513456852971-30c0b8199d4d?w=900&h=700&fit=crop"
-    }
-];
+let vendors = [];
+let menuItems = [];
 
 window.menuItems = menuItems;
 
@@ -145,7 +11,7 @@ document.addEventListener("DOMContentLoaded", function () {
     initializeMenuPage();
 });
 
-function initializeMenuPage() {
+async function initializeMenuPage() {
     const state = {
         selectedVendor: "all",
         query: ""
@@ -156,6 +22,23 @@ function initializeMenuPage() {
     const menuSearchInput = document.getElementById("menuSearchInput");
     const menuSearchForm = document.getElementById("menuSearchForm");
     const resultsSummary = document.getElementById("resultsSummary");
+
+    try {
+        const data = await window.QuickBiteApi.getCatalog();
+        vendors = data.vendors || [];
+        menuItems = (data.foods || []).filter(function (item) {
+            return item.is_available;
+        });
+        window.menuItems = menuItems;
+    } catch (error) {
+        menuGrid.innerHTML = `
+            <article class="menu-empty">
+                <h3 class="menu-card-name">Unable to load menu</h3>
+                <p class="menu-card-desc">${error.message}</p>
+            </article>
+        `;
+        return;
+    }
 
     renderVendorFilters();
     renderMenuItems();
@@ -191,7 +74,7 @@ function initializeMenuPage() {
         ].concat(
             vendors.map(function (vendor) {
                 const count = menuItems.filter(function (item) {
-                    return item.vendor_id === vendor.id;
+                    return String(item.vendor_id) === String(vendor.id);
                 }).length;
 
                 return {
@@ -243,7 +126,7 @@ function initializeMenuPage() {
                     <article class="menu-card">
                         <div class="menu-card-media">
                             <img src="${item.image}" alt="${item.name}" class="menu-card-image">
-                            <span class="menu-card-badge">${item.badge}</span>
+                            
                         </div>
                         <div class="menu-card-body">
                             <h3 class="menu-card-name">${item.name}</h3>
@@ -257,7 +140,7 @@ function initializeMenuPage() {
                                 <button class="add-to-cart" data-item-id="${item.id}">
                                     <i class="fas fa-plus"></i> Add
                                 </button>
-                                <a class="btn menu-link-btn" href="vendor.html?vendorId=${item.vendor_id}">
+                                <a class="btn menu-link-btn" href="vendor.html?vendorId=${encodeURIComponent(item.vendor_id)}">
                                     View Vendor
                                 </a>
                             </div>
@@ -269,9 +152,9 @@ function initializeMenuPage() {
 
         menuGrid.querySelectorAll(".add-to-cart").forEach(function (button) {
             button.addEventListener("click", function () {
-                const itemId = Number(button.getAttribute("data-item-id"));
+                const itemId = button.getAttribute("data-item-id");
                 const item = menuItems.find(function (entry) {
-                    return entry.id === itemId;
+                    return String(entry.id) === String(itemId);
                 });
 
                 if (item) {

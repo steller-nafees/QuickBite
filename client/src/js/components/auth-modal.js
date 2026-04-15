@@ -1,4 +1,17 @@
 document.addEventListener('DOMContentLoaded', function () {
+    function storeSession(data) {
+        if (window.QuickBiteApi && typeof window.QuickBiteApi.setToken === "function") {
+            window.QuickBiteApi.setToken(data.token || "");
+        } else {
+            try {
+                if (data.token) {
+                    localStorage.setItem("quickbite-auth-token", data.token);
+                }
+            } catch (error) {
+                // ignore
+            }
+        }
+    }
 
     const AUTH_API_BASE = window.QUICKBITE_AUTH_API || "http://localhost:5000/api/auth";
     const modal = document.getElementById('authModal');
@@ -76,10 +89,119 @@ document.addEventListener('DOMContentLoaded', function () {
         container.querySelectorAll('.auth-form-error').forEach(e => e.remove());
     }
 
+    function isValidEmail(email) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || '').trim());
+    }
+
     // Clear red border as user types
     modal.querySelectorAll('input').forEach(inp => {
         inp.addEventListener('input', () => clearInvalid(inp));
     });
+
+    const registerEmailInput = document.getElementById('regEmail');
+    let emailCheckTimer = null;
+    let emailCheckRequestId = 0;
+    let checkedEmailValue = '';
+    let checkedEmailAvailable = null;
+
+    function resetRegisterEmailCheck() {
+        checkedEmailValue = '';
+        checkedEmailAvailable = null;
+    }
+
+    async function checkRegisterEmailAvailability(options = {}) {
+        if (!registerEmailInput) return true;
+
+        const silent = !!options.silent;
+        const showTakenToast = !!options.showTakenToast;
+        const showNetworkToast = !!options.showNetworkToast;
+        const email = registerEmailInput.value.trim().toLowerCase();
+
+        if (!email) {
+            resetRegisterEmailCheck();
+            return false;
+        }
+
+        if (!isValidEmail(email)) {
+            checkedEmailValue = email;
+            checkedEmailAvailable = false;
+            return false;
+        }
+
+        if (checkedEmailValue === email && checkedEmailAvailable !== null) {
+            if (!checkedEmailAvailable) {
+                markInvalid(registerEmailInput);
+                if (showTakenToast) {
+                    notify('Email already exists. Please login.', 'error');
+                }
+            }
+            return checkedEmailAvailable;
+        }
+
+        const requestId = ++emailCheckRequestId;
+        checkedEmailValue = email;
+        checkedEmailAvailable = null;
+
+        try {
+            const response = await fetch(AUTH_API_BASE + '/check-email', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email })
+            });
+
+            const data = await response.json();
+            if (requestId !== emailCheckRequestId) return false;
+
+            if (!response.ok || !data.ok) {
+                throw new Error(data.message || 'Email check failed');
+            }
+
+            checkedEmailAvailable = !!data.available;
+
+            if (checkedEmailAvailable) {
+                clearInvalid(registerEmailInput);
+            } else {
+                markInvalid(registerEmailInput);
+                if (showTakenToast) {
+                    notify('Email already exists. Please login.', 'error');
+                }
+            }
+
+            return checkedEmailAvailable;
+        } catch (error) {
+            if (requestId !== emailCheckRequestId) return false;
+
+            checkedEmailAvailable = null;
+            if (!silent && showNetworkToast) {
+                notify(error.message, 'error');
+            }
+            return false;
+        }
+    }
+
+    if (registerEmailInput) {
+        registerEmailInput.addEventListener('input', () => {
+            checkedEmailValue = '';
+            checkedEmailAvailable = null;
+
+            const email = registerEmailInput.value.trim();
+            if (!email || !isValidEmail(email)) {
+                return;
+            }
+
+            if (emailCheckTimer) clearTimeout(emailCheckTimer);
+            emailCheckTimer = setTimeout(() => {
+                checkRegisterEmailAvailability();
+            }, 450);
+        });
+
+        registerEmailInput.addEventListener('blur', () => {
+            if (emailCheckTimer) clearTimeout(emailCheckTimer);
+            if (registerEmailInput.value.trim()) {
+                checkRegisterEmailAvailability({ showTakenToast: true });
+            }
+        });
+    }
 
     /* ── Required asterisks ── */
     ['loginEmail', 'loginPassword', 'regEmail', 'regName', 'regPhone', 'regPassword', 'regPasswordConfirm']
@@ -120,6 +242,7 @@ document.addEventListener('DOMContentLoaded', function () {
         registerForm.classList.add('active');
         loginForm.classList.remove('active');
         clearAll(modal);
+        resetRegisterEmailCheck();
         resetRegSteps();
     }
 
@@ -196,6 +319,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     throw new Error(data.message || 'Login failed');
                 }
 
+                storeSession(data);
                 // Store user data in localStorage
                 localStorage.setItem('quickbite-auth-user', JSON.stringify(data.user));
 
@@ -255,6 +379,7 @@ document.addEventListener('DOMContentLoaded', function () {
         currentStep = 0;
         renderStep();
         clearAll(regContainer);
+        resetRegisterEmailCheck();
         renderStrength('');
         const pwConf = document.getElementById('regPasswordConfirm');
         if (pwConf) pwConf.classList.remove('mismatch');
@@ -327,8 +452,13 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     if (nextBtn) {
-        nextBtn.addEventListener('click', () => {
+        nextBtn.addEventListener('click', async () => {
             if (!validateStep0()) return;
+            const isEmailAvailable = await checkRegisterEmailAvailability({ showTakenToast: true, showNetworkToast: true });
+            if (!isEmailAvailable) {
+                showFormError(steps[0], 'Please use an email address that is not already registered.');
+                return;
+            }
             currentStep = 1;
             renderStep();
         });
@@ -348,30 +478,23 @@ document.addEventListener('DOMContentLoaded', function () {
         registerBtn.addEventListener('click', async () => {
             if (!validateStep1()) return;
 
+            const isEmailAvailable = await checkRegisterEmailAvailability({ silent: true, showTakenToast: true });
+            if (!isEmailAvailable) {
+                markInvalid(registerEmailInput);
+                currentStep = 0;
+                renderStep();
+                showFormError(steps[0], 'Please use an email address that is not already registered.');
+                return;
+            }
+
             const email = document.getElementById('regEmail').value.trim();
             const name = document.getElementById('regName').value.trim();
             const phone = document.getElementById('regPhone').value.trim();
             const password = document.getElementById('regPassword').value;
+            const passwordConfirm = document.getElementById('regPasswordConfirm').value;
             const role = getSelectedRole();
 
             try {
-                // Check if email is available
-                const checkResponse = await fetch(AUTH_API_BASE + '/check-email', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email })
-                });
-
-                const checkData = await checkResponse.json();
-
-                if (!checkResponse.ok || !checkData.ok) {
-                    throw new Error(checkData.message || 'Email check failed');
-                }
-
-                if (!checkData.available) {
-                    throw new Error('Email already exists. Please login.');
-                }
-
                 // Register the user
                 const response = await fetch(AUTH_API_BASE + '/register', {
                     method: 'POST',
@@ -381,6 +504,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         fullName: name,
                         phone,
                         password,
+                        passwordConfirm,
                         role
                     })
                 });
@@ -391,6 +515,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     throw new Error(data.message || 'Registration failed');
                 }
 
+                storeSession(data);
                 // Store user data
                 localStorage.setItem('quickbite-auth-user', JSON.stringify(data.user));
 
