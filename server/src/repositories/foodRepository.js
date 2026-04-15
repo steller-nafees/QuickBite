@@ -1,4 +1,5 @@
 const db = require("../config/db");
+const { generatePrefixedId } = require("../utils/idGenerator");
 
 // Get all foods (public for authenticated users)
 exports.getAllFoods = async () => {
@@ -78,14 +79,15 @@ exports.getFoodsByVendor = async (vendorId) => {
 exports.createFood = async (foodData) => {
   try {
     const { item_name, description, price, managed_by } = foodData;
+    const foodId = await generatePrefixedId(db, "food", "food_id", "QBF");
 
-    const [result] = await db.query(
-      `INSERT INTO food (item_name, description, price, managed_by) 
-       VALUES (?, ?, ?, ?)`,
-      [item_name, description, price, managed_by]
+    await db.query(
+      `INSERT INTO food (food_id, item_name, description, price, managed_by) 
+       VALUES (?, ?, ?, ?, ?)`,
+      [foodId, item_name, description, price, managed_by]
     );
 
-    return result.insertId;
+    return foodId;
   } catch (error) {
     throw new Error(`Failed to create food: ${error.message}`);
   }

@@ -59,7 +59,7 @@ exports.getVendorOrders = async (req, res) => {
 // Get order by ID (customer or vendor of that order)
 exports.getOrderById = async (req, res) => {
   try {
-    if (!req.params.id || isNaN(req.params.id)) {
+    if (!req.params.id) {
       return res.status(400).json({
         status: "fail",
         message: "Invalid order ID provided",
@@ -152,7 +152,7 @@ exports.updateOrderStatus = async (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
 
-    if (!id || isNaN(id)) {
+    if (!id) {
       return res.status(400).json({
         status: "fail",
         message: "Invalid order ID provided",
@@ -195,7 +195,7 @@ exports.cancelOrder = async (req, res) => {
 
     const { id } = req.params;
 
-    if (!id || isNaN(id)) {
+    if (!id) {
       return res.status(400).json({
         status: "fail",
         message: "Invalid order ID provided",

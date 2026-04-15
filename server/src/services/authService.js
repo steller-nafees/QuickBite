@@ -16,23 +16,47 @@ const signToken = (id) => {
  * Format user response with token
  */
 const formatAuthResponse = (user) => {
-  const token = signToken(user.id);
+  const token = signToken(user.user_id);
   user.password = undefined;
-  
+
   return {
     token,
-    user,
+    user: {
+      id: user.user_id,
+      userId: user.user_id,
+      fullName: user.full_name,
+      email: user.email,
+      phone: user.phone || "",
+      role: String(user.role || "").toLowerCase(),
+    },
   };
+};
+
+const normalizeRoleForDb = (role) => {
+  return String(role || "").toLowerCase() === "vendor" ? "Vendor" : "Customer";
+};
+
+exports.findUserByEmail = async (email) => {
+  return userService.findByEmail(String(email || "").trim().toLowerCase());
 };
 
 /**
  * User signup with validation
  */
 exports.signup = async (signupData) => {
-  const { name, email, password, passwordConfirm, role } = signupData;
+  const {
+    fullName,
+    full_name,
+    email,
+    phone,
+    password,
+    passwordConfirm,
+    role,
+  } = signupData;
+  const resolvedName = (fullName || full_name || "").trim();
 
   // Validation
-  if (!email || !password || !passwordConfirm || !name) {
+  if (!email || !password || !passwordConfirm || !resolvedName) {
     throw {
       statusCode: 400,
       message: "Please provide all required fields",
@@ -47,7 +71,8 @@ exports.signup = async (signupData) => {
   }
 
   // Check if user already exists
-  const existingUser = await userService.findByEmail(email);
+  const normalizedEmail = String(email || "").trim().toLowerCase();
+  const existingUser = await userService.findByEmail(normalizedEmail);
   if (existingUser) {
     throw {
       statusCode: 400,
@@ -60,13 +85,14 @@ exports.signup = async (signupData) => {
 
   // Create user
   const userId = await userService.createUser({
-    name,
-    email,
+    full_name: resolvedName,
+    email: normalizedEmail,
+    phone,
     password: hashedPassword,
-    role: role || "student",
+    role: normalizeRoleForDb(role),
   });
 
-  const user = { id: userId, name, email, role: role || "student" };
+  const user = await userService.getUser(userId);
   return formatAuthResponse(user);
 };
 
@@ -74,7 +100,8 @@ exports.signup = async (signupData) => {
  * User login with email and password validation
  */
 exports.login = async (loginData) => {
-  const { email, password } = loginData;
+  const email = String(loginData.email || "").trim().toLowerCase();
+  const { password } = loginData;
 
   // Validation
   if (!email || !password) {
@@ -184,7 +211,7 @@ exports.forgotPassword = async (email) => {
   const { resetToken, hashedToken, expiresAt } = this.generateResetToken();
 
   // Save hashed token to db
-  await userService.updateUser(user.id, {
+  await userService.updateUser(user.user_id, {
     passwordResetToken: hashedToken,
     passwordResetExpires: expiresAt,
   });
@@ -254,7 +281,7 @@ exports.resetPassword = async (token, passwordData) => {
   // Hash new password and update
   const hashedPassword = await bcrypt.hash(password, 12);
 
-  await userService.updateUser(user.id, {
+  await userService.updateUser(user.user_id, {
     password: hashedPassword,
     passwordResetToken: null,
     passwordResetExpires: null,

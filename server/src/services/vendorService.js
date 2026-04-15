@@ -10,7 +10,7 @@ exports.getAllVendors = async () => {
 
 exports.getVendor = async (id) => {
   try {
-    if (!id || isNaN(id)) {
+    if (!id) {
       throw new Error("Invalid vendor ID");
     }
     return await vendorRepo.getVendor(id);
@@ -21,7 +21,7 @@ exports.getVendor = async (id) => {
 
 exports.updateVendor = async (id, data) => {
   try {
-    if (!id || isNaN(id)) {
+    if (!id) {
       throw new Error("Invalid vendor ID");
     }
     if (!data || Object.keys(data).length === 0) {
@@ -35,7 +35,7 @@ exports.updateVendor = async (id, data) => {
 
 exports.deleteVendor = async (id) => {
   try {
-    if (!id || isNaN(id)) {
+    if (!id) {
       throw new Error("Invalid vendor ID");
     }
     return await vendorRepo.deleteVendor(id);

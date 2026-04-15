@@ -16,10 +16,38 @@ const sendTokenResponse = (authData, statusCode, res) => {
   res.cookie("jwt", token, cookieOptions);
 
   res.status(statusCode).json({
+    ok: true,
     status: "success",
     token,
+    user,
+    redirectTo: user.role === "vendor" ? "/admin-dashboard.html" : "/customer-dashboard.html",
     data: { user },
   });
+};
+
+exports.checkEmail = async (req, res) => {
+  try {
+    const email = String(req.body?.email || "").trim().toLowerCase();
+
+    if (!email) {
+      return res.status(400).json({
+        ok: false,
+        message: "Email is required",
+      });
+    }
+
+    const existingUser = await authService.findUserByEmail(email);
+
+    res.status(200).json({
+      ok: true,
+      available: !existingUser,
+    });
+  } catch (error) {
+    res.status(500).json({
+      ok: false,
+      message: error.message || "Failed to check email",
+    });
+  }
 };
 
 /**
@@ -32,6 +60,7 @@ exports.signup = async (req, res) => {
   } catch (error) {
     const statusCode = error.statusCode || 500;
     res.status(statusCode).json({
+      ok: false,
       status: "fail",
       message: error.message || "Signup failed",
     });
@@ -48,6 +77,7 @@ exports.login = async (req, res) => {
   } catch (error) {
     const statusCode = error.statusCode || 500;
     res.status(statusCode).json({
+      ok: false,
       status: "fail",
       message: error.message || "Login failed",
     });
@@ -61,11 +91,15 @@ exports.protect = async (req, res, next) => {
   try {
     const token = authService.extractToken(req);
     const user = await authService.verifyToken(token);
-    req.user = user;
+    req.user = {
+      ...user,
+      id: user.user_id,
+    };
     next();
   } catch (error) {
     const statusCode = error.statusCode || 401;
     res.status(statusCode).json({
+      ok: false,
       status: "fail",
       message: error.message || "Authentication failed",
     });
@@ -81,6 +115,7 @@ exports.forgotPassword = async (req, res) => {
 
     if (!email) {
       return res.status(400).json({
+        ok: false,
         status: "fail",
         message: "Please provide email address",
       });
@@ -96,12 +131,14 @@ exports.forgotPassword = async (req, res) => {
     // });
 
     res.status(200).json({
+      ok: true,
       status: "success",
       message: "Password reset token sent to email!",
     });
   } catch (error) {
     const statusCode = error.statusCode || 500;
     res.status(statusCode).json({
+      ok: false,
       status: "fail",
       message: error.message || "Failed to process password reset",
     });
@@ -118,6 +155,7 @@ exports.resetPassword = async (req, res) => {
   } catch (error) {
     const statusCode = error.statusCode || 500;
     res.status(statusCode).json({
+      ok: false,
       status: "fail",
       message: error.message || "Password reset failed",
     });
@@ -134,6 +172,7 @@ exports.updatePassword = async (req, res) => {
   } catch (error) {
     const statusCode = error.statusCode || 500;
     res.status(statusCode).json({
+      ok: false,
       status: "fail",
       message: error.message || "Password update failed",
     });

@@ -1,4 +1,5 @@
 const db = require("../config/db");
+const { generatePrefixedId } = require("../utils/idGenerator");
 
 // Create order
 exports.createOrder = async (orderId, customerData) => {
@@ -110,22 +111,23 @@ exports.createNewOrder = async (customerId, vendorId, totalAmount, pickupTime, i
   const connection = await db.getConnection();
   try {
     await connection.beginTransaction();
+    const orderId = await generatePrefixedId(connection, "order", "order_id", "QB");
 
     // Create order
-    const [orderResult] = await connection.query(
-      `INSERT INTO \`order\` (customer_id, vendor_id, total_amount, pickup_time) 
-       VALUES (?, ?, ?, ?)`,
-      [customerId, vendorId, totalAmount, pickupTime || null]
+    await connection.query(
+      `INSERT INTO \`order\` (order_id, customer_id, vendor_id, total_amount, pickup_time) 
+       VALUES (?, ?, ?, ?, ?)`,
+      [orderId, customerId, vendorId, totalAmount, pickupTime || null]
     );
-
-    const orderId = orderResult.insertId;
 
     // Create order items
     for (const item of items) {
+      const orderItemId = await generatePrefixedId(connection, "order_item", "order_item_id", "QBI");
       await connection.query(
-        `INSERT INTO order_item (order_id, food_id, item_name, quantity, unit_price, total_price) 
-         VALUES (?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO order_item (order_item_id, order_id, food_id, item_name, quantity, unit_price, total_price) 
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
         [
+          orderItemId,
           orderId,
           item.food_id,
           item.item_name,
