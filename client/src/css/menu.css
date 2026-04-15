@@ -142,8 +142,14 @@
 }
 
 .menu-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
     overflow: hidden;
     padding: 1rem;
+    font-family: var(--font-secondary);
+    font-size: 1rem;
+    border: 1px solid var(--color-red-soft);
     background: linear-gradient(180deg, #fffef8 0%, #f7ecdf 100%);
 }
 
@@ -179,6 +185,9 @@
 }
 
 .menu-card-body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
     padding: 0.9rem 0.3rem 0.25rem;
     text-align: center;
 }
@@ -220,12 +229,18 @@
 .menu-card-actions {
     display: flex;
     gap: 0.7rem;
-    margin-top: 0.95rem;
+    margin-top: auto;
+    padding-top: 0.95rem;
 }
 
 .menu-card-actions .btn,
 .menu-card-actions .add-to-cart {
     flex: 1;
+}
+.add-to-cart {
+    background: var(--color-red-soft);
+    color: var(--color-cream);
+    padding: 10px 20px
 }
 
 .menu-link-btn {

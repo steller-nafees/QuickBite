@@ -62,6 +62,7 @@
     try {
       localStorage.removeItem("quickbite-auth-user");
       localStorage.removeItem("quickbite-profile");
+      localStorage.removeItem("quickbite-auth-token");
     } catch (e) {}
     window.location.href = "index.html";
   }
@@ -419,7 +420,7 @@
               "button",
               {
                 type: "button",
-                className: "qb-btn qb-btn-primary",
+                className: "reorder-btn",
                 onClick: (e) => { e.stopPropagation(); notify("Reorder added (mock).", "success"); },
               },
               "Reorder"
@@ -590,18 +591,34 @@
     const [newPw, setNewPw] = useState("");
     const [confirmPw, setConfirmPw] = useState("");
 
-    function saveProfile() {
-      const next = Object.assign({}, user || {}, { fullName: fullName.trim(), phone: phone.trim() });
-      onSaveUser(next);
-      notify("Profile saved.", "success");
+    async function saveProfile() {
+      try {
+        const result = await window.QuickBiteApi.updateProfile({
+          fullName: fullName.trim(),
+          phone: phone.trim()
+        });
+        onSaveUser(result.user);
+        notify("Profile saved.", "success");
+      } catch (error) {
+        notify(error.message, "err");
+      }
     }
 
-    function changePassword() {
+    async function changePassword() {
       if (!currentPw || !newPw) { notify("Please fill current and new password.", "err"); return; }
       if (newPw.length < 8) { notify("New password must be at least 8 characters.", "err"); return; }
       if (newPw !== confirmPw) { notify("Passwords do not match.", "err"); return; }
-      setCurrentPw(""); setNewPw(""); setConfirmPw("");
-      notify("Password updated (mock).", "success");
+      try {
+        await window.QuickBiteApi.updatePassword({
+          currentPassword: currentPw,
+          newPassword: newPw,
+          confirmPassword: confirmPw
+        });
+        setCurrentPw(""); setNewPw(""); setConfirmPw("");
+        notify("Password updated.", "success");
+      } catch (error) {
+        notify(error.message, "err");
+      }
     }
 
     return React.createElement(
@@ -641,6 +658,7 @@
 
   function CustomerDashboardApp() {
     const [user, setUser] = useState(readAuthUser());
+    const [data, setData] = useState(buildMockData());
 
     useEffect(() => {
       const u = readAuthUser();
@@ -648,9 +666,19 @@
       const role = String(u.role || "customer").toLowerCase();
       if (role === "vendor" || role === "admin") { window.location.replace("admin-dashboard.html"); return; }
       setUser(u);
+
+      window.QuickBiteApi.getMyOrders()
+        .then(function (result) {
+          setData({
+            currentOrders: result.currentOrders || [],
+            pastOrders: result.pastOrders || []
+          });
+        })
+        .catch(function (error) {
+          notify(error.message, "err");
+        });
     }, []);
 
-    const data = useMemo(() => buildMockData(), []);
     const mostOrderedItem = useMemo(() => deriveMostOrderedItem(data.pastOrders), [data.pastOrders]);
 
     const displayName = user?.fullName || user?.name || (user?.email ? user.email.split("@")[0] : "Customer");

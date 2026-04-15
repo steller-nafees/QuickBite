@@ -1,4 +1,18 @@
 document.addEventListener("DOMContentLoaded", function () {
+    function storeSession(data) {
+        if (window.QuickBiteApi && typeof window.QuickBiteApi.setToken === "function") {
+            window.QuickBiteApi.setToken(data.token || "");
+            return;
+        }
+        try {
+            if (data.token) {
+                localStorage.setItem("quickbite-auth-token", data.token);
+            }
+        } catch (error) {
+            // ignore
+        }
+    }
+
     // Check if user is already logged in
     try {
         const user = JSON.parse(localStorage.getItem("quickbite-auth-user"));
@@ -299,9 +313,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 fullName,
                 phone,
                 password,
+                passwordConfirm: confirmPassword,
                 role: selectedRole
             });
 
+            storeSession(result);
             localStorage.setItem("quickbite-auth-user", JSON.stringify(result.user));
             try {
                 const prev = JSON.parse(localStorage.getItem("quickbite-profile") || "null");

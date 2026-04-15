@@ -1,137 +1,26 @@
-const vendors = [
-    {
-        id: 1,
-        name: "The Pasta Corner",
-        cuisine: "Italian Comfort",
-        rating: 4.8,
-        totalOrders: 1250,
-        eta: "12 min pickup",
-        badge: "Fastest pickup",
-        image: "https://images.unsplash.com/photo-1555949258-eb67b1ef0ceb?w=900&h=700&fit=crop",
-        location: "NSU Main Canteen"
-    },
-    {
-        id: 2,
-        name: "Burger Hub",
-        cuisine: "Gourmet Burgers",
-        rating: 4.7,
-        totalOrders: 1480,
-        eta: "10 min pickup",
-        badge: "Most ordered",
-        image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=900&h=700&fit=crop",
-        location: "NSU Annex Canteen"
-    },
-    {
-        id: 3,
-        name: "Sushi Express",
-        cuisine: "Japanese Fresh",
-        rating: 4.9,
-        totalOrders: 920,
-        eta: "15 min pickup",
-        badge: "Top rated",
-        image: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=900&h=700&fit=crop",
-        location: "NSU Business Canteen"
-    },
-    {
-        id: 4,
-        name: "Taco Fiesta",
-        cuisine: "Mexican Street",
-        rating: 4.6,
-        totalOrders: 860,
-        eta: "11 min pickup",
-        badge: "Student favorite",
-        image: "https://images.unsplash.com/photo-1552332386-f8dd00dc2f85?w=900&h=700&fit=crop",
-        location: "NSU Main Canteen"
-    }
-];
+let vendors = [];
+let menuItems = [];
 
-const menuItems = [
-    {
-        id: 1,
-        name: "Classic Burger",
-        vendor: "Burger Hub",
-        vendor_id: 2,
-        price: 5.49,
-        rating: 4.8,
-        delivery: "Ready in 13 min",
-        category: "Best seller",
-        badge: "1",
-        description: "Two layers of premium beef with melted cheddar cheese, tomato, and pickles.",
-        image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=900&h=700&fit=crop"
-    },
-    {
-        id: 2,
-        name: "The Big Stack",
-        vendor: "Burger Hub",
-        vendor_id: 2,
-        price: 7.99,
-        rating: 4.7,
-        delivery: "Ready in 10 min",
-        category: "Best seller",
-        badge: "2",
-        description: "Double beef patty with crispy bacon, sweet BBQ sauce, and cheddar in a soft bun.",
-        image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=900&h=700&fit=crop"
-    },
-    {
-        id: 3,
-        name: "Twin Beef Slam",
-        vendor: "Grill Station",
-        vendor_id: 5,
-        price: 6.99,
-        rating: 4.9,
-        delivery: "Ready in 15 min",
-        category: "Best seller",
-        badge: "3",
-        description: "Two beef patties with double cheddar, fresh vegies, pickles, and smoky sauce.",
-        image: "https://images.unsplash.com/photo-1553979459-d2229ba7433b?w=900&h=700&fit=crop"
-    },
-    {
-        id: 4,
-        name: "The Royal Tower",
-        vendor: "Burger Lab",
-        vendor_id: 6,
-        price: 12.99,
-        rating: 4.8,
-        delivery: "Ready in 14 min",
-        category: "Best seller",
-        badge: "4",
-        description: "Four layers of premium beef, blue cheese, smoked bacon, truffle sauce, and tomatoes.",
-        image: "https://images.unsplash.com/photo-1586190848861-99aa4a171e90?w=900&h=700&fit=crop"
-    },
-    {
-        id: 5,
-        name: "The Deluxe Wagyu",
-        vendor: "Burger Lab",
-        vendor_id: 6,
-        price: 9.99,
-        rating: 4.9,
-        delivery: "Ready in 16 min",
-        category: "Best seller",
-        badge: "5",
-        description: "Juicy wagyu patty with brie cheese, truffle mayo, arugula, and caramelized onion.",
-        image: "https://images.unsplash.com/photo-1572802419224-296b0aeee0d9?w=900&h=700&fit=crop"
-    },
-    {
-        id: 6,
-        name: "The Triple Burger",
-        vendor: "Smash Point",
-        vendor_id: 7,
-        price: 8.49,
-        rating: 4.7,
-        delivery: "Ready in 11 min",
-        category: "Best seller",
-        badge: "6",
-        description: "Three layers of premium beef patty with mixed cheese, bacon, and spicy jalapenos.",
-        image: "https://images.unsplash.com/photo-1550547660-d9450f859349?w=900&h=700&fit=crop"
-    }
-];
-
-// Expose menuItems globally for cart integration
 window.menuItems = menuItems;
-document.addEventListener("DOMContentLoaded", function () {
+
+document.addEventListener("DOMContentLoaded", async function () {
     initializeNavigation();
-    initializeSearch();
     initializeBackToTop();
+
+    try {
+        const data = await window.QuickBiteApi.getCatalog();
+        vendors = data.vendors || [];
+        menuItems = (data.foods || []).filter(function (item) {
+            return item.is_available;
+        });
+        window.menuItems = menuItems;
+    } catch (error) {
+        vendors = [];
+        menuItems = [];
+        window.menuItems = menuItems;
+    }
+
+    initializeSearch();
     renderVendors();
     renderTrendingItems();
     initializeAnimations();
@@ -158,6 +47,7 @@ function initializeBackToTop() {
     window.addEventListener("scroll", syncBackToTopVisibility, { passive: true });
     syncBackToTopVisibility();
 }
+
 function initializeNavigation() {
     const navToggle = document.getElementById("navToggle");
     const navMenu = document.getElementById("navMenu");
@@ -301,9 +191,9 @@ function initializeSearch() {
             return;
         }
 
-        const itemId = Number(itemElement.getAttribute("data-item-id"));
+        const itemId = itemElement.getAttribute("data-item-id");
         const selectedItem = menuItems.find(function (item) {
-            return item.id === itemId;
+            return String(item.id) === String(itemId);
         });
 
         if (selectedItem) {
@@ -324,7 +214,6 @@ function initializeSearch() {
 
         if (searchTerm) {
             showNotification('Showing results for "' + searchTerm + '"');
-            console.log("Searching for:", searchTerm);
             searchInput.value = "";
         }
     });
@@ -430,11 +319,11 @@ function renderVendors() {
     vendorsGrid.querySelectorAll(".vendor-card").forEach(function (card, index) {
         card.addEventListener("click", function () {
             const vendor = topVendors[index];
-            window.location.href = `vendor.html?vendorId=${vendor.id}`;
-            console.log("Clicked vendor:", vendor);
+            window.location.href = "vendor.html?vendorId=" + encodeURIComponent(vendor.id);
         });
     });
 }
+
 function renderTrendingItems() {
     const trendingGrid = document.getElementById("trendingGrid");
     const carouselLeft = document.getElementById("carouselLeft");
@@ -463,7 +352,6 @@ function renderTrendingItems() {
                 <article class="food-card animate-fade-in-up" style="animation-delay: ${index * 0.1}s">
                     <div class="food-image-wrap">
                         <img src="${item.image}" alt="${item.name}" class="food-image">
-                        <span class="food-badge">${item.badge}</span>
                     </div>
                     <div class="food-info">
                         <h3 class="food-name">${item.name}</h3>
@@ -487,9 +375,9 @@ function renderTrendingItems() {
     trendingGrid.querySelectorAll(".add-to-cart").forEach(function (button) {
         button.addEventListener("click", function (e) {
             e.stopPropagation();
-            const itemId = Number(this.getAttribute("data-item-id"));
+            const itemId = button.getAttribute("data-item-id");
             const item = bestSellerItems.find(function (menuItem) {
-                return menuItem.id === itemId;
+                return String(menuItem.id) === String(itemId);
             });
 
             if (item) {
@@ -502,7 +390,6 @@ function renderTrendingItems() {
         card.addEventListener("click", function () {
             const item = bestSellerItems[index];
             showNotification(item.name + " details previewed");
-            console.log("Clicked food item:", item);
         });
     });
 
@@ -596,7 +483,6 @@ document.addEventListener("click", function (e) {
         const categoryItem = e.target.closest(".category-item");
         const category = categoryItem.querySelector(".category-label").textContent;
         showNotification(category + " collection coming up");
-        console.log("Selected category:", category);
     }
 });
 
@@ -605,16 +491,14 @@ document.addEventListener("click", function (e) {
         e.preventDefault();
         const link = e.target.textContent.trim();
         showNotification(link + " page is not connected yet");
-        console.log("Footer link clicked:", link);
     }
 });
 
 document.addEventListener("click", function (e) {
-    // Don't trigger onboarding notification for cart button
     if (e.target.closest('#headerCartBtn')) {
         return;
     }
-    
+
     if (e.target.closest(".cta .btn-primary") || e.target.closest(".nav-cta")) {
         e.preventDefault();
         showNotification("Student onboarding flow starts here");
@@ -634,6 +518,3 @@ function formatCurrency(amount) {
         currency: "BDT"
     }).format(amount);
 }
-
-console.log("QuickBite landing page loaded");
-

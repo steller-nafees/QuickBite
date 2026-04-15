@@ -10,11 +10,12 @@
     /* ─────────────────────────────────────────
        CONSTANTS & STATE
     ───────────────────────────────────────── */
-    const CART_KEY    = 'quickbite-cart';
-    const ORDERS_KEY  = 'quickbite-orders';
-    const AUTH_KEY    = 'quickbite-auth-user';
+    const CART_KEY = 'quickbite-cart';
+    const ORDERS_KEY = 'quickbite-orders';
+    const AUTH_KEY = 'quickbite-auth-user';
 
     let checkoutPaymentMethod = null; // 'bkash' | 'nagad' | 'card'
+    let selectedPickupTime = "";
 
     /* ─────────────────────────────────────────
        CART STORAGE HELPERS
@@ -44,13 +45,13 @@
             existing.quantity += 1;
         } else {
             cart.push({
-                id        : item.id,
-                name      : item.name,
-                price     : item.price,
-                image     : item.image || '',
-                vendor    : item.vendor || item.managed_by || '',
-                vendor_id : item.vendor_id || null,
-                quantity  : 1,
+                id: item.id,
+                name: item.name,
+                price: item.price,
+                image: item.image || '',
+                vendor: item.vendor || item.managed_by || '',
+                vendor_id: item.vendor_id || null,
+                quantity: 1,
             });
         }
         saveCart(cart);
@@ -60,7 +61,7 @@
 
     function updateQty(itemId, delta) {
         const cart = getCart();
-        const idx  = cart.findIndex(c => c.id === itemId);
+        const idx = cart.findIndex(c => c.id === itemId);
         if (idx === -1) return;
         cart[idx].quantity += delta;
         if (cart[idx].quantity <= 0) cart.splice(idx, 1);
@@ -131,10 +132,10 @@
        RENDER CART DRAWER CONTENTS
     ───────────────────────────────────────── */
     function renderCartDrawer() {
-        const cart   = getCart();
-        const body   = document.getElementById('cartBody');
+        const cart = getCart();
+        const body = document.getElementById('cartBody');
         const footer = document.getElementById('cartFooter');
-        const badge  = document.getElementById('cartCountBadge');
+        const badge = document.getElementById('cartCountBadge');
         if (!body) return;
 
         const count = cartItemCount(cart);
@@ -191,7 +192,7 @@
 
         const total = cartTotal(cart);
         document.getElementById('cartSubtotal').textContent = formatCurrency(total);
-        document.getElementById('cartTotal').textContent    = formatCurrency(total);
+        document.getElementById('cartTotal').textContent = formatCurrency(total);
         if (footer) footer.style.display = 'block';
 
         // Qty controls
@@ -222,11 +223,180 @@
         document.body.style.overflow = '';
     }
 
+    function createPickupTimeSelector(mountId) {
+        const slots = [
+            "9:35 AM",
+            "11:15 AM",
+            "12:55 PM",
+            "2:35 PM",
+            "4:15 PM",
+            "5:55 PM"
+        ];
+
+        function parse12HourMinutes(value) {
+            const [time, meridiem] = String(value || "").split(" ");
+            if (!time || !meridiem) return Number.NaN;
+
+            let [hours, minutes] = time.split(":").map(Number);
+            if (Number.isNaN(hours) || Number.isNaN(minutes)) return Number.NaN;
+            if (meridiem === "PM" && hours !== 12) hours += 12;
+            if (meridiem === "AM" && hours === 12) hours = 0;
+            return (hours * 60) + minutes;
+        }
+
+        function getNowMinutes() {
+            const now = new Date();
+            return (now.getHours() * 60) + now.getMinutes();
+        }
+
+        const mount = document.getElementById(mountId);
+        if (!mount) return;
+
+        mount.innerHTML = "";
+
+        const wrap = document.createElement("section");
+        wrap.className = "pickup-time-picker";
+        wrap.setAttribute("aria-label", "Pickup time selector");
+
+        const header = document.createElement("div");
+        header.className = "pickup-time-picker__header";
+
+        const eyebrow = document.createElement("span");
+        eyebrow.className = "pickup-time-picker__eyebrow";
+        eyebrow.textContent = "Today";
+
+        const title = document.createElement("h3");
+        title.className = "pickup-time-picker__title";
+        title.textContent = "Choose your pickup time";
+
+        const helper = document.createElement("p");
+        helper.className = "pickup-time-picker__helper";
+        helper.textContent = "Freshly prepared. Pick the slot that fits your schedule.";
+
+        header.appendChild(eyebrow);
+        header.appendChild(title);
+        header.appendChild(helper);
+
+        const preview = document.createElement("div");
+        preview.className = "pickup-time-picker__preview";
+        preview.innerHTML = `
+            <span class="pickup-time-picker__preview-label">Selected Time</span>
+            <strong class="pickup-time-picker__preview-value">Choose a slot</strong>
+        `;
+
+        const previewValue = preview.querySelector(".pickup-time-picker__preview-value");
+
+        const grid = document.createElement("div");
+        grid.className = "pickup-time-picker__grid";
+        grid.setAttribute("role", "listbox");
+        grid.setAttribute("aria-label", "Available pickup times");
+
+        const slotButtons = [];
+        const nowMinutes = getNowMinutes();
+
+        function updateSelectedSlot(slot, focusButton) {
+            selectedPickupTime = slot;
+            slotButtons.forEach((button) => {
+                const isActive = button.dataset.value === slot;
+                button.classList.toggle("active", isActive);
+                button.setAttribute("aria-selected", isActive ? "true" : "false");
+                button.tabIndex = isActive ? 0 : -1;
+                if (isActive && focusButton) {
+                    button.focus();
+                }
+            });
+            previewValue.textContent = slot || "Choose a slot";
+        }
+
+        function moveFocus(currentIndex, direction) {
+            if (!slotButtons.length) return;
+            let nextIndex = currentIndex;
+
+            do {
+                nextIndex = (nextIndex + direction + slotButtons.length) % slotButtons.length;
+                if (!slotButtons[nextIndex].disabled) {
+                    slotButtons[nextIndex].focus();
+                    return;
+                }
+            } while (nextIndex !== currentIndex);
+        }
+
+        slots.forEach((slot, index) => {
+            const button = document.createElement("button");
+            const isPast = parse12HourMinutes(slot) < nowMinutes;
+
+            button.type = "button";
+            button.className = "time-slot premium-time-slot";
+            button.dataset.value = slot;
+            button.setAttribute("role", "option");
+            button.setAttribute("aria-selected", "false");
+            button.tabIndex = -1;
+            button.disabled = isPast;
+
+            if (isPast) {
+                button.classList.add("disabled");
+                button.setAttribute("aria-disabled", "true");
+            }
+
+            button.innerHTML = `
+                <span class="premium-time-slot__glow" aria-hidden="true"></span>
+                <span class="premium-time-slot__label">${slot}</span>
+                <span class="premium-time-slot__meta">${isPast ? "Passed" : "Available"}</span>
+            `;
+
+            button.addEventListener("click", () => {
+                if (button.disabled) return;
+                updateSelectedSlot(slot, false);
+            });
+
+            button.addEventListener("keydown", (event) => {
+                if (event.key === "ArrowRight" || event.key === "ArrowDown") {
+                    event.preventDefault();
+                    moveFocus(index, 1);
+                }
+                if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
+                    event.preventDefault();
+                    moveFocus(index, -1);
+                }
+                if (event.key === " " || event.key === "Enter") {
+                    event.preventDefault();
+                    if (!button.disabled) {
+                        updateSelectedSlot(slot, true);
+                    }
+                }
+            });
+
+            slotButtons.push(button);
+            grid.appendChild(button);
+        });
+
+        const firstAvailableSlot = slots.find((slot) => parse12HourMinutes(slot) >= nowMinutes) || "";
+        if (firstAvailableSlot) {
+            updateSelectedSlot(firstAvailableSlot, false);
+        } else {
+            previewValue.textContent = "No slots available today";
+        }
+
+        const note = document.createElement("p");
+        note.className = "pickup-time-picker__note";
+        note.textContent = firstAvailableSlot
+            ? "Unavailable slots are already in the past."
+            : "All pickup slots for today have passed.";
+
+        wrap.appendChild(header);
+        wrap.appendChild(preview);
+        wrap.appendChild(grid);
+        wrap.appendChild(note);
+
+        mount.appendChild(wrap);
+
+        window.getPickupTime = () => selectedPickupTime;
+    }
     /* ─────────────────────────────────────────
        BUILD CHECKOUT MODAL HTML
     ───────────────────────────────────────── */
     function buildCheckoutHTML() {
-        const cart  = getCart();
+        const cart = getCart();
         const total = cartTotal(cart);
 
         const itemRows = cart.map(item => `
@@ -238,15 +408,11 @@
                 <span class="checkout-order-item-price">${formatCurrency(item.price * item.quantity)}</span>
             </div>`).join('');
 
-        // Default pickup = 30 minutes from now
-        const pickupDefault = new Date(Date.now() + 30 * 60 * 1000);
-        const pickupStr     = pickupDefault.toISOString().slice(0, 16);
-
         return `
         <div class="checkout-backdrop" id="checkoutBackdrop"></div>
         <div class="checkout-panel" role="dialog" aria-modal="true" aria-label="Checkout">
             <div class="checkout-panel-header">
-                <h2><i class="fas fa-receipt" style="color:var(--color-red);margin-right:8px;font-size:16px;"></i>Checkout</h2>
+                <h2><i class="fas fa-receipt" style="color:var(--color-cream-soft);margin-right:8px;font-size:16px;"></i>Checkout</h2>
                 <button class="checkout-close-btn" id="checkoutCloseBtn" aria-label="Close checkout">
                     <i class="fas fa-times"></i>
                 </button>
@@ -260,10 +426,7 @@
                 <!-- Pickup time -->
                 <div class="checkout-pickup-section">
                     <p class="checkout-section-title">Pickup Time</p>
-                    <div class="checkout-field-wrap">
-                        <label class="checkout-field-label" for="checkoutPickupTime">Preferred pickup time</label>
-                        <input type="datetime-local" id="checkoutPickupTime" value="${pickupStr}" min="${pickupStr}">
-                    </div>
+                    <div id="pickupTimeMount"></div>
                 </div>
 
                 <!-- Payment method -->
@@ -343,14 +506,18 @@
     ───────────────────────────────────────── */
     function openCheckout() {
         closeCart();
+        selectedPickupTime = "";
         let modal = document.getElementById('checkoutModal');
         if (!modal) {
             modal = document.createElement('div');
             modal.className = 'checkout-modal';
-            modal.id        = 'checkoutModal';
+            modal.id = 'checkoutModal';
             document.body.appendChild(modal);
         }
         modal.innerHTML = buildCheckoutHTML();
+        setTimeout(() => {
+            createPickupTimeSelector("pickupTimeMount");
+        }, 0);
         checkoutPaymentMethod = null;
 
         requestAnimationFrame(() => modal.classList.add('is-open'));
@@ -389,12 +556,12 @@
         });
 
         const walletWrap = document.getElementById('walletInputWrap');
-        const cardWrap   = document.getElementById('cardInputWrap');
+        const cardWrap = document.getElementById('cardInputWrap');
 
         // Show wallet form for bkash/nagad, card form for card
         const isWallet = (method === 'bkash' || method === 'nagad');
         if (walletWrap) walletWrap.classList.toggle('is-visible', isWallet);
-        if (cardWrap)   cardWrap.classList.toggle('is-visible',   method === 'card');
+        if (cardWrap) cardWrap.classList.toggle('is-visible', method === 'card');
 
         // Update wallet label based on selected provider
         if (isWallet) {
@@ -424,7 +591,7 @@
     /* ─────────────────────────────────────────
        PLACE ORDER — wired to schema
     ───────────────────────────────────────── */
-    function placeOrder() {
+    async function placeOrder() {
         const cart = getCart();
         if (cart.length === 0) return;
 
@@ -436,75 +603,63 @@
                 return;
             }
         } else if (checkoutPaymentMethod === 'card') {
-            const cardNum  = document.getElementById('cardNumber')?.value.replace(/\s/g, '');
-            const expiry   = document.getElementById('cardExpiry')?.value;
-            const cvv      = document.getElementById('cardCvv')?.value;
+            const cardNum = document.getElementById('cardNumber')?.value.replace(/\s/g, '');
+            const expiry = document.getElementById('cardExpiry')?.value;
+            const cvv = document.getElementById('cardCvv')?.value;
             const cardName = document.getElementById('cardName')?.value.trim();
             if (!cardNum || cardNum.length < 16) { shakeField('cardNumber', 'Enter a valid card number'); return; }
-            if (!expiry || expiry.length < 5)    { shakeField('cardExpiry', 'Enter expiry');              return; }
-            if (!cvv   || cvv.length < 3)        { shakeField('cardCvv',    'Enter CVV');                 return; }
-            if (!cardName)                        { shakeField('cardName',   'Enter name on card');        return; }
+            if (!expiry || expiry.length < 5) { shakeField('cardExpiry', 'Enter expiry'); return; }
+            if (!cvv || cvv.length < 3) { shakeField('cardCvv', 'Enter CVV'); return; }
+            if (!cardName) { shakeField('cardName', 'Enter name on card'); return; }
         }
 
-        const pickupTime = document.getElementById('checkoutPickupTime')?.value || '';
-        const user       = getAuthUser();
-        const orderId    = generateOrderId();
-        const total      = cartTotal(cart);
+        const user = getAuthUser();
+        if (!user || !user.email) {
+            showCartToast('Please sign in before placing an order.');
+            return;
+        }
 
-        // Build ORDER object (matches schema)
-        const order = {
-            order_id     : orderId,
-            customer_id  : user?.user_id || null,
-            vendor_id    : cart[0]?.vendor_id || null,
-            vendor       : cart[0]?.vendor || "QuickBite Vendor",
-            total_amount : total,
-            status       : 'pending',
-            created_at   : new Date().toISOString(),
-            pickup_time  : pickupTime,
-            items        : cart.map(item => ({
-                order_item_id : generateOrderId(),
-                order_id      : orderId,
-                food_id       : item.id,
-                item_name     : item.name,
-                quantity      : item.quantity,
-                unit_price    : item.price,
-                total_price   : item.price * item.quantity,
-            })),
-            payment: {
-                payment_id : generateOrderId(),
-                order_id   : orderId,
-                method     : checkoutPaymentMethod,
-                status     : 'pending',
-                amount     : total,
-                paid_at    : null,
-                transaction_id: null,
+        try {
+            const pickupTime = window.getPickupTime?.() || "";
+            if (!pickupTime) {
+                showCartToast('Please choose a pickup time.');
+                return;
             }
-        };
 
-        // Save order to localStorage (replace with API call)
-        const orders = JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]');
-        orders.unshift(order);
-        localStorage.setItem(ORDERS_KEY, JSON.stringify(orders));
+            const response = await window.QuickBiteApi.placeOrder({
+                pickup_time: pickupTime,
+                payment_method: checkoutPaymentMethod,
+                items: cart.map(function (item) {
+                    return {
+                        food_id: item.id,
+                        quantity: item.quantity
+                    };
+                })
+            });
 
-        clearCart();
-        closeCheckout();
-        
-        // Show payment processing simulation
-        openPaymentProcessing(order);
+            const order = response.order;
+            const orders = JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]');
+            orders.unshift(order);
+            localStorage.setItem(ORDERS_KEY, JSON.stringify(orders));
 
-        console.log('Order placed:', order);
+            clearCart();
+            closeCheckout();
+            openPaymentSuccess(order);
+        } catch (error) {
+            showCartToast(error.message || 'Failed to place order');
+        }
     }
 
     function shakeField(id, message) {
         const el = document.getElementById(id);
         if (!el) return;
         el.style.borderColor = 'var(--color-red-mid)';
-        el.style.boxShadow   = '0 0 0 3px var(--red-12)';
+        el.style.boxShadow = '0 0 0 3px var(--red-12)';
         el.setAttribute('placeholder', message);
         el.classList.add('field-shake');
         setTimeout(() => {
             el.style.borderColor = '';
-            el.style.boxShadow   = '';
+            el.style.boxShadow = '';
             el.classList.remove('field-shake');
         }, 1800);
     }
@@ -517,7 +672,7 @@
         if (!modal) {
             modal = document.createElement('div');
             modal.className = 'payment-processing-modal';
-            modal.id        = 'paymentProcessingModal';
+            modal.id = 'paymentProcessingModal';
             document.body.appendChild(modal);
         }
 
@@ -532,9 +687,9 @@
     function buildPaymentProcessingHTML(order) {
         const method = order.payment?.method || 'wallet';
         const methodIcon = method === 'card' ? 'fa-credit-card' : 'fa-mobile-screen-button';
-        const methodLabel = method === 'card' ? 'Card Payment' : 
-                           method === 'bkash' ? 'bKash Payment' : 
-                           method === 'nagad' ? 'Nagad Payment' : 'Wallet Payment';
+        const methodLabel = method === 'card' ? 'Card Payment' :
+            method === 'bkash' ? 'bKash Payment' :
+                method === 'nagad' ? 'Nagad Payment' : 'Wallet Payment';
 
         return `
         <div class="payment-processing-backdrop" id="paymentProcessingBackdrop"></div>
@@ -582,7 +737,7 @@
         });
 
         const progressFill = document.getElementById('paymentProgressFill');
-        
+
         // Step 1: Securing connection (0-33%)
         setTimeout(() => {
             if (progressFill) progressFill.style.width = '33%';
@@ -609,7 +764,7 @@
         setTimeout(() => {
             document.getElementById('payStep3')?.classList.remove('is-active');
             document.getElementById('payStep3')?.classList.add('is-done');
-            
+
             // Generate transaction ID
             const transactionId = 'TXN' + Date.now() + Math.random().toString(36).substr(2, 6).toUpperCase();
             order.payment.transaction_id = transactionId;
@@ -645,7 +800,7 @@
         if (!modal) {
             modal = document.createElement('div');
             modal.className = 'payment-success-modal';
-            modal.id        = 'paymentSuccessModal';
+            modal.id = 'paymentSuccessModal';
             document.body.appendChild(modal);
         }
 
@@ -665,7 +820,7 @@
     function buildPaymentSuccessHTML(order) {
         const transactionId = order.payment?.transaction_id || 'N/A';
         const payMethod = order.payment?.method?.toUpperCase() || 'WALLET';
-        const paidAt = order.payment?.paid_at 
+        const paidAt = order.payment?.paid_at
             ? new Date(order.payment.paid_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
             : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
@@ -731,14 +886,14 @@
     ───────────────────────────────────────── */
     const ORDER_STEPS = ['pending', 'preparing', 'ready', 'completed'];
     const STEP_LABELS = ['Placed', 'Preparing', 'Ready', 'Done'];
-    const STEP_ICONS  = ['fa-check', 'fa-fire', 'fa-bell', 'fa-bag-shopping'];
+    const STEP_ICONS = ['fa-check', 'fa-fire', 'fa-bell', 'fa-bag-shopping'];
 
     function openOrderStatus(order) {
         let modal = document.getElementById('orderStatusModal');
         if (!modal) {
             modal = document.createElement('div');
             modal.className = 'order-status-modal';
-            modal.id        = 'orderStatusModal';
+            modal.id = 'orderStatusModal';
             document.body.appendChild(modal);
         }
 
@@ -754,15 +909,15 @@
     }
 
     function buildOrderStatusHTML(order) {
-        const tokenNum   = String(order.order_id).slice(-4);
-        const activeIdx  = ORDER_STEPS.indexOf(order.status);
+        const tokenNum = String(order.order_id).slice(-4);
+        const activeIdx = ORDER_STEPS.indexOf(order.status);
 
         // Build stepper
         let stepperHTML = '';
         ORDER_STEPS.forEach((step, i) => {
-            const isDone   = i < activeIdx;
+            const isDone = i < activeIdx;
             const isActive = i === activeIdx;
-            const cls      = isDone ? 'is-done' : isActive ? 'is-active' : '';
+            const cls = isDone ? 'is-done' : isActive ? 'is-active' : '';
             stepperHTML += `<div class="order-step ${cls}">
                 <div class="order-step-dot"><i class="fas ${STEP_ICONS[i]}"></i></div>
                 <span class="order-step-label">${STEP_LABELS[i]}</span>
@@ -837,7 +992,7 @@
 
             // Update saved order
             const orders = JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]');
-            const order  = orders.find(o => o.order_id === orderId);
+            const order = orders.find(o => o.order_id === orderId);
             if (order) {
                 order.status = newStatus;
                 localStorage.setItem(ORDERS_KEY, JSON.stringify(orders));
@@ -853,9 +1008,9 @@
 
             let stepperHTML = '';
             ORDER_STEPS.forEach((step, i) => {
-                const isDone   = i < currentIdx;
+                const isDone = i < currentIdx;
                 const isActive = i === currentIdx;
-                const cls      = isDone ? 'is-done' : isActive ? 'is-active' : '';
+                const cls = isDone ? 'is-done' : isActive ? 'is-active' : '';
                 stepperHTML += `<div class="order-step ${cls}">
                     <div class="order-step-dot"><i class="fas ${STEP_ICONS[i]}"></i></div>
                     <span class="order-step-label">${STEP_LABELS[i]}</span>
@@ -911,7 +1066,7 @@
     function init() {
         // Mount drawer
         const mount = document.createElement('div');
-        mount.id    = 'cartMount';
+        mount.id = 'cartMount';
         mount.innerHTML = buildDrawerHTML();
         document.body.appendChild(mount);
 
@@ -960,7 +1115,7 @@
 
             // Try to find item in global data sources
             const itemId = Number(btn.getAttribute('data-item-id'));
-            const item   = findItemGlobally(itemId);
+            const item = findItemGlobally(itemId);
             if (item) addToCartGlobal(item);
         });
     }
@@ -979,12 +1134,12 @@
        EXPOSE PUBLIC API
     ───────────────────────────────────────── */
     window.QuickBiteCart = {
-        add        : addToCartGlobal,
-        open       : openCart,
-        close      : closeCart,
-        getCart    : getCart,
-        clearCart  : clearCart,
-        syncBadge  : syncCartBadge,
+        add: addToCartGlobal,
+        open: openCart,
+        close: closeCart,
+        getCart: getCart,
+        clearCart: clearCart,
+        syncBadge: syncCartBadge,
     };
 
     // Auto-init on DOM ready

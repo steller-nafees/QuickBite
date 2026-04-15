@@ -431,7 +431,7 @@ function setAvail(on) {
   $("fiAvailLabel").textContent = on ? "Available" : "Unavailable";
 }
 
-function saveFoodFromModal() {
+async function saveFoodFromModal() {
   const name = $("fiName").value.trim();
   const description = $("fiDesc").value.trim();
   const category = $("fiCategory").value.trim();
@@ -442,17 +442,23 @@ function saveFoodFromModal() {
 
   if (!name || !category || !vendor_id || !(price >= 0)) return;
 
-  if (!state.editingFoodId) {
-    state.foods.unshift({ food_id: uid("f"), vendor_id, name, category, price, is_available, description, image: imageFile });
-  } else {
-    const idx = state.foods.findIndex((f) => f.food_id === state.editingFoodId);
-    if (idx >= 0) {
-      state.foods[idx] = { ...state.foods[idx], vendor_id, name, category, price, is_available, description, image: imageFile || state.foods[idx].image };
+  try {
+    if (!state.editingFoodId) {
+      const result = await window.QuickBiteApi.createFood({ vendor_id, name, category, price, is_available, description, image: imageFile });
+      state.foods.unshift(result.food);
+    } else {
+      await window.QuickBiteApi.updateFood(state.editingFoodId, { vendor_id, name, category, price, is_available, description, image: imageFile });
+      const idx = state.foods.findIndex((f) => f.food_id === state.editingFoodId);
+      if (idx >= 0) {
+        state.foods[idx] = { ...state.foods[idx], vendor_id, name, category, price, is_available, description, image: imageFile || state.foods[idx].image };
+      }
     }
-  }
 
-  closeFoodModal();
-  renderAll();
+    closeFoodModal();
+    renderAll();
+  } catch (error) {
+    alert(error.message);
+  }
 }
 
 /* ===========================
@@ -488,7 +494,7 @@ function wireEvents() {
   });
 
   // Table actions (delegated)
-  $("foodBody").addEventListener("click", (e) => {
+  $("foodBody").addEventListener("click", async (e) => {
     const el = e.target.closest("[data-action]");
     if (!el) return;
     const action = el.dataset.action;
@@ -496,19 +502,29 @@ function wireEvents() {
     if (action === "toggleFood") {
       const f = state.foods.find((x) => x.food_id === id);
       if (!f) return;
-      f.is_available = !f.is_available;
-      renderMenu();
-      renderOverview();
+      try {
+        await window.QuickBiteApi.updateFood(id, { ...f, is_available: !f.is_available });
+        f.is_available = !f.is_available;
+        renderMenu();
+        renderOverview();
+      } catch (error) {
+        alert(error.message);
+      }
       return;
     }
     if (action === "editFood") return openFoodModal("edit", id);
     if (action === "deleteFood") {
-      state.foods = state.foods.filter((x) => x.food_id !== id);
-      renderAll();
+      try {
+        await window.QuickBiteApi.deleteFood(id);
+        state.foods = state.foods.filter((x) => x.food_id !== id);
+        renderAll();
+      } catch (error) {
+        alert(error.message);
+      }
     }
   });
 
-  $("ordersBody").addEventListener("change", (e) => {
+  $("ordersBody").addEventListener("change", async (e) => {
     const sel = e.target.closest("[data-action='setOrderStatus']");
     if (!sel) return;
     const orderId = sel.dataset.id;
@@ -517,17 +533,20 @@ function wireEvents() {
     const o = state.orders.find((x) => x.order_id === orderId);
     if (!o) return;
     if (state.isVendorSession && state.sessionVendorId && o.vendor_id !== state.sessionVendorId) return;
-    o.status = status;
-
-    if (status === "completed" || status === "delivered") {
-      const pay = state.payments.find((p) => p.order_id === orderId);
-      if (pay && pay.status !== "completed") {
-        pay.status = "completed";
-        pay.paid_at = new Date().toISOString();
+    try {
+      await window.QuickBiteApi.updateOrderStatus(orderId, { status });
+      o.status = status;
+      if (status === "completed" || status === "delivered") {
+        const pay = state.payments.find((p) => p.order_id === orderId);
+        if (pay && pay.status !== "completed") {
+          pay.status = "completed";
+          pay.paid_at = new Date().toISOString();
+        }
       }
+      renderAll();
+    } catch (error) {
+      alert(error.message);
     }
-
-    renderAll();
   });
 
   // Modal
@@ -622,15 +641,37 @@ function init() {
     if (sidebarUserName) sidebarUserName.textContent = "Admin";
   }
 
-  // Fill static selects for menu filters/modal
-  $("menuVendorFilter").innerHTML = `<option value="">All Vendors</option>${vendorOptionsHtml()}`;
-  $("menuCategoryFilter").innerHTML = categoryOptionsHtml("All Categories");
-  $("fiVendor").innerHTML = vendorOptionsHtml();
-
   wireEvents();
-  renderHeader();
-  renderAll();
-  startLiveFeed();
+  window.QuickBiteApi.getAdminDashboard()
+    .then((result) => {
+      state.users = result.users || [];
+      state.foods = result.foods || [];
+      state.orders = result.orders || [];
+      state.payments = result.payments || [];
+
+      if (state.isVendorSession && state.sessionVendorId) {
+        state.menuVendor = state.sessionVendorId;
+      } else if (!state.isVendorSession && state.users.length) {
+        state.menuVendor = "";
+      }
+
+      const sidebarSubline = $("sidebarSubline");
+      const sidebarUserName = $("sidebarUserName");
+      if (state.isVendorSession && state.sessionVendorId) {
+        const vendorName = userName(state.sessionVendorId);
+        if (sidebarSubline) sidebarSubline.textContent = vendorName;
+        if (sidebarUserName) sidebarUserName.textContent = vendorName;
+      }
+
+      renderHeader();
+      renderAll();
+    })
+    .catch((error) => {
+      renderHeader();
+      renderAll();
+      alert(error.message);
+      startLiveFeed();
+    });
 }
 
 document.addEventListener("DOMContentLoaded", init);
