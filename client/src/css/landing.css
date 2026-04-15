@@ -1447,17 +1447,27 @@ img {
 
 .featured-vendor-copy p,
 .mini-card p,
-.vendor-cuisine,
 .food-vendor,
 .section-subtitle,
-.step-description,
-.experience-card p,
-.testimonial-meta,
+
 .footer-description,
 .footer-links a,
 .footer-bottom,
 .stat-label {
     color: var(--color-gray);
+}
+.testimonial-meta {
+    color: var(--color-cream-soft);
+}
+
+.vendor-cuisine {
+    color: var(--color-cream-soft);
+}
+.step-description {
+    color: var(--color-cream-soft);
+}
+.experience-card p {
+    color: var(--color-cream-soft);
 }
 
 .mini-cards {
@@ -1475,10 +1485,19 @@ img {
 .vendor-card,
 .food-card,
 .testimonial-card {
-    border-radius: 28px;
-    background: var(--color-white);
+    border-radius: 28px 10px 28px 10px; 
+    background: var(--color-red-soft);
     box-shadow: var(--shadow-soft);
-    border: 1px solid var(--red-12);
+    border: 1px solid var(--color-cream-soft);
+}
+.star-rating {
+    display: flex;
+    gap: 0.25rem;
+    align-items: center;
+}
+.star-rating i {
+    color: var(--color-cream-soft);
+    font-size: 1.2rem;
 }
 
 .mini-card {
@@ -1488,8 +1507,8 @@ img {
     gap: 0.8rem;
     align-items: center;
     padding: 1rem;
-    background: linear-gradient(160deg, #ffffff 0%, #f8f2ed 100%);
-    border-color: rgba(157, 36, 22, 0.12);
+    background: var(--color-cream);
+    border-color: var(--color-cream-soft);
 }
 
 .mini-card>div {
@@ -1502,7 +1521,7 @@ img {
     margin: 0;
     font-size: 1.05rem;
     line-height: 1.1;
-    color: #222;
+    color: var(--color-black);
 }
 
 .mini-card p {
@@ -1521,8 +1540,8 @@ img {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: var(--gradient-icon);
-    color: var(--color-red-dark);
+    background: var(--color-cream-soft);
+    color: var(--color-red-soft);
     flex-shrink: 0;
     box-shadow: inset 0 0 0 1px rgba(157, 36, 22, 0.08);
 }
@@ -1590,6 +1609,9 @@ section {
     display: grid;
     gap: 1.2rem;
 }
+.vendor-orders {
+    color: var(--color-cream-soft);
+}
 
 /* Categories Section */
 .category-grid {
@@ -1604,7 +1626,7 @@ section {
     padding: 1.1rem 1.15rem;
     text-decoration: none;
     color: var(--color-black);
-    background: linear-gradient(180deg, #fdf7f5 0%, #f7ece8 100%);
+    background: var(--color-cream-soft);
     border: 1px solid rgba(124, 22, 22, 0.12);
     box-shadow: 0 8px 20px rgba(44, 11, 11, 0.12);
     min-height: 5.2rem;
@@ -1622,7 +1644,7 @@ section {
 .category-item small {
     font-size: 0.76rem;
     line-height: 1.35;
-    color: rgba(20, 20, 20, 0.78);
+    color: var(--color-gray);
 }
 
 /* Stats Section */
@@ -1639,7 +1661,7 @@ section {
 }
 
 .stat-item {
-    background: linear-gradient(180deg, #ffffff 0%, #f8f8f8 100%);
+    background: var(--color-cream-soft);
     border: 1px solid rgba(124, 22, 22, 0.14);
     box-shadow: 0 10px 24px rgba(33, 10, 10, 0.14);
 }
@@ -1700,6 +1722,7 @@ section {
     font-family: var(--font-secondary);
     font-size: 1.8rem;
     line-height: 0.95;
+    color: var(--color-cream-soft);
 }
 
 /* How It Works Section */
@@ -1710,8 +1733,8 @@ section {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, var(--color-cream-muted), var(--color-red-soft));
-    color: var(--color-white);
+    background: var(--color-cream-soft);
+    color: var(--color-red-soft);
     font-family: var(--font-secondary);
     font-size: 1.2rem;
 }
@@ -1778,7 +1801,7 @@ section {
     padding: 0.4rem 0.65rem;
     border-radius: 999px;
     background: var(--color-black);
-    color: var(--color-white);
+    color: var(--color-cream-soft);
     font-size: 0.7rem;
     font-weight: 700;
 }
@@ -1792,7 +1815,7 @@ section {
 .food-meta {
     justify-content: center;
     flex-wrap: wrap;
-    color: var(--color-gray);
+    color: var(--color-cream-soft);
     font-size: 0.88rem;
 }
 
@@ -1802,6 +1825,7 @@ section {
     font-family: var(--font-secondary);
     font-size: 1.6rem;
     line-height: 0.95;
+    color: var(--color-cream-soft);
 }
 
 .vendor-stats,
@@ -1835,8 +1859,12 @@ section {
 }
 
 .vendor-rating,
-.food-rating,
 .food-price {
+    font-family: var(--font-secondary);
+    color: var(--color-cream-soft);
+}
+.food-rating {
+    color: var(--color-red-soft);
     font-family: var(--font-secondary);
 }
 
@@ -1947,7 +1975,7 @@ section {
 .food-description {
     max-width: 26ch;
     margin: 0.45rem auto 0;
-    color: var(--color-gray);
+    color: var(--color-charcoal);
     font-size: 0.83rem;
     line-height: 1.35;
 }
@@ -1965,7 +1993,7 @@ section {
 .trending-bestsellers .food-vendor {
     margin-top: 0;
     font-weight: 700;
-    color: var(--color-gray);
+    color: var(--color-red-soft);
 }
 
 .trending-bestsellers .add-to-cart {
@@ -1985,6 +2013,7 @@ section {
 /* Testimonials Section */
 .testimonial-card p {
     font-size: 1.04rem;
+    color: var(--color-cream-soft);
 }
 
 /* CTA Section */
@@ -2301,6 +2330,23 @@ section {
         width: 9rem;
         height: 9rem;
     }
+}
+.menu-cta-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.menu-cta-button {
+    margin-top: 1.5rem ;
+    background-color: var(--color-cream-soft);
+    padding: 0.75rem 1.5rem;
+    border-radius: 999px;
+    color: var(--color-red);
+    text-decoration: none;
+    font-family: var(--font-primary);
+    font-style: normal;
+    font-weight: 700;
+    font-size: 0.88rem;
 }
 
 /* Focus States */

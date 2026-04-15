@@ -170,19 +170,12 @@ function eatNow(itemId) {
 }
 // ✅ Notification (same style)
 function showNotification(message) {
-    const notification = document.createElement("div");
-    notification.className = "notification";
-    notification.textContent = message;
+    if (typeof window.showToast === "function") {
+        window.showToast(message, "info");
+        return;
+    }
 
-    document.body.appendChild(notification);
-
-    setTimeout(() => {
-        notification.style.transform = "translateX(0)";
-    }, 50);
-
-    setTimeout(() => {
-        notification.remove();
-    }, 2500);
+    window.alert(message);
 }
 
 // ✅ Currency

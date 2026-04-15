@@ -10,7 +10,6 @@
         (function () {
             try {
                 const user = JSON.parse(localStorage.getItem("quickbite-auth-user")) || {};
-                const role = (user.role || "customer").toLowerCase();
                 const role = String((user && user.role) || "").toLowerCase();
                 window.location.replace(role === "vendor" ? "admin-dashboard.html" : "customer-dashboard.html#overview");
             } catch (error) {
