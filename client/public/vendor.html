@@ -29,149 +29,160 @@
         <div id="globalHeader"></div>
         <div id="globalOrderPill"></div>
 
-        <!-- ✅ Vendor Header Section -->
-        <section class="hero" style="padding-top: 1.5rem;">
-            <div class="container">
+        <main class="vendor-page">
+            <section class="vendor-hero">
+                <div class="container">
+                    <a href="index.html" class="vendor-back-link">
+                        <i class="fas fa-arrow-left"></i>
+                        Back to Home
+                    </a>
 
-                <a href="index.html" class="btn btn-secondary" style="margin-bottom: 1rem;">
-                    ← Back to Home
-                </a>
+                    <div class="vendor-hero-grid">
+                        <div class="vendor-hero-copy">
+                            <span class="vendor-kicker">
+                                <i class="fas fa-store"></i>
+                                Campus Vendor
+                            </span>
 
-                <div class="hero-grid">
+                            <h1 class="vendor-hero-title" id="vendorName">Loading...</h1>
+                            <p class="vendor-hero-description" id="vendorCuisine">
+                                Please wait while we load vendor information.
+                            </p>
 
-                    <!-- Left: Vendor Info -->
-                    <div class="hero-copy">
-
-                        <span class="hero-badge">
-                            <i class="fas fa-store"></i> Vendor Details
-                        </span>
-
-                        <h1 class="hero-title" id="vendorName">
-                            Loading...
-                        </h1>
-
-                        <p class="hero-description" id="vendorCuisine">
-                            Please wait while we load vendor information.
-                        </p>
-
-                        <div class="hero-highlights">
-                            <div class="highlight-pill">
-                                <strong id="vendorRating">--</strong>
-                                Rating
-                            </div>
-                            <div class="highlight-pill">
-                                <strong id="vendorOrders">--</strong>
-                                Orders
-                            </div>
-                            <div class="highlight-pill">
-                                <strong id="vendorETA">--</strong>
-                                Pickup
-                            </div>
-                        </div>
-
-                        <div class="vendor-meta-actions">
                             <div class="vendor-tags" id="vendorTags">Loading tags...</div>
-                            <div class="vendor-actions">
-                                <button class="btn btn-primary" id="orderNow">Order Now</button>
-                                <button class="btn btn-outline" id="visitStall">Visit Stall</button>
+
+                            <div class="vendor-stats-grid">
+                                <article class="vendor-stat-card">
+                                    <span class="vendor-stat-label">Rating</span>
+                                    <strong id="vendorRating">--</strong>
+                                </article>
+                                <article class="vendor-stat-card">
+                                    <span class="vendor-stat-label">Orders served</span>
+                                    <strong id="vendorOrders">--</strong>
+                                </article>
+                                <article class="vendor-stat-card">
+                                    <span class="vendor-stat-label">Pickup time</span>
+                                    <strong id="vendorETA">--</strong>
+                                </article>
+                            </div>
+
+                            <div class="vendor-hero-actions">
+                                <button class="order-best" id="orderNow">
+                                    <i class="fas fa-bowl-food"></i>
+                                    Order Best Seller
+                                </button>
+                                <button class="view-stall" id="visitStall">
+                                    <i class="fas fa-location-dot"></i>
+                                    View Stall Info
+                                </button>
                             </div>
                         </div>
 
-                    </div>
+                        <div class="vendor-hero-visual">
+                            <article class="vendor-showcase-card">
+                                <div class="vendor-showcase-media">
+                                    <img id="vendorImage" src="" alt="Vendor Image">
+                                    <span class="vendor-photo-badge" id="vendorBadgeText">Open now</span>
+                                </div>
 
-                    <!-- Right: Vendor Image -->
-                    <div class="hero-showcase">
-                        <div class="phone-card">
-                            <img id="vendorImage" src="" alt="Vendor Image" style="width:100%; border-radius: 20px;">
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-        </section>
-
-        <!-- ✅ Menu Section -->
-        <section class="trending trending-bestsellers">
-            <div class="container">
-
-                <div class="section-header section-header-centered">
-                    <div>
-                        <span class="best-seller-kicker">Menu</span>
-                        <h2 class="best-seller-title">Available Items</h2>
-                        <p class="best-seller-subtitle">Fresh meals prepared by this vendor</p>
-                    </div>
-                </div>
-
-                <!-- Dynamic Menu -->
-                <div class="trending-grid" id="vendorMenuGrid">
-                    <!-- JS will insert items here -->
-                </div>
-
-            </div>
-        </section>
-
-        <!-- New Dish Highlight -->
-        <section class="new-dish">
-            <div class="container">
-                <div class="section-header">
-                    <div>
-                        <span class="section-kicker">New</span>
-                        <h2 class="section-title">Chef's New Dish</h2>
-                        <p class="section-subtitle">Freshly added — try it before it's gone.</p>
-                    </div>
-                </div>
-
-                <div class="new-dish-card" id="newDishCard">
-                    <img src="./assets/images/placeholder-food.jpg" alt="New Dish" id="newDishImage">
-                    <div class="new-dish-content">
-                        <h3 id="newDishName">Loading...</h3>
-                        <p id="newDishDesc">Delicious new item from this vendor.</p>
-                        <div class="new-dish-meta">
-                            <span class="price" id="newDishPrice">--</span>
-                            <button class="btn add-to-cart">Add to cart</button>
+                                <div class="vendor-showcase-content">
+                                    <div>
+                                        <p class="vendor-showcase-label">QuickBite Spotlight</p>
+                                        <h2 class="vendor-showcase-title">Fresh dishes, fast pickup, zero guesswork.</h2>
+                                    </div>
+                                    <div class="vendor-quick-meta">
+                                        <span id="vendorLocationText">
+                                            <i class="fas fa-location-dot"></i>
+                                            Campus pickup
+                                        </span>
+                                        <span id="vendorStatusText">
+                                            <i class="fas fa-bolt"></i>
+                                            Ready for your next order
+                                        </span>
+                                    </div>
+                                </div>
+                            </article>
                         </div>
                     </div>
                 </div>
-            </div>
-        </section>
+            </section>
 
-        <!-- Reviews Section -->
-        <section class="vendor-reviews">
-            <div class="container">
-                <div class="section-header section-header-centered">
-                    <div>
-                        <span class="section-kicker">Reviews</span>
-                        <h2 class="section-title">What students say</h2>
-                        <p class="section-subtitle">Honest ratings and recent feedback from customers.</p>
-                    </div>
-                </div>
-
-                <div class="reviews-grid">
-                    <aside class="reviews-summary">
-                        <div class="rating-big">
-                            <div class="avg" id="avgRating">--</div>
-                            <div class="stars" id="avgStars">★★★★★</div>
-                            <div class="count" id="reviewsCount">-- reviews</div>
+            <section class="vendor-menu-section">
+                <div class="container">
+                    <div class="vendor-section-heading">
+                        <div>
+                            <span class="vendor-section-kicker">Menu</span>
+                            <h2 class="vendor-section-title">Popular picks from this kitchen</h2>
+                            <p class="vendor-section-subtitle" id="vendorMenuSummary">Fresh meals prepared by this vendor.</p>
                         </div>
-                        <div class="rating-breakdown" id="ratingBreakdown">
-                            <!-- JS can render breakdown here -->
+                    </div>
+
+                    <div class="vendor-menu-grid" id="vendorMenuGrid"></div>
+                </div>
+            </section>
+
+            <section class="vendor-feature-strip">
+                <div class="container vendor-feature-layout">
+                    <article class="vendor-feature-card" id="newDishCard">
+                        <div class="vendor-feature-copy">
+                            <span class="vendor-section-kicker-f">Featured dish</span>
+                            <h2 class="vendor-feature-title" id="newDishName">Loading...</h2>
+                            <p class="vendor-feature-description" id="newDishDesc">Delicious new item from this vendor.</p>
+                            <div class="vendor-feature-meta">
+                                <span class="vendor-feature-price" id="newDishPrice">--</span>
+                                <button class="btn btn-primary" id="featuredDishAction">Add to cart</button>
+                            </div>
+                        </div>
+                        <div class="vendor-feature-media">
+                            <img alt="Featured dish" id="newDishImage">
+                        </div>
+                    </article>
+
+                    <aside class="vendor-insight-panel">
+                        <span class="vendor-section-kicker-f">Why students return</span>
+                        <div class="vendor-insight-list">
+                            <article class="vendor-insight-item">
+                                <strong>Fast pickup flow</strong>
+                                <p>Designed for short campus breaks and easy pre-orders.</p>
+                            </article>
+                            <article class="vendor-insight-item">
+                                <strong>Reliable favorites</strong>
+                                <p>Top dishes stay easy to spot and reorder from one clean page.</p>
+                            </article>
+                            <article class="vendor-insight-item">
+                                <strong>Clear menu choices</strong>
+                                <p>Ratings, pricing, and descriptions are visible before you commit.</p>
+                            </article>
                         </div>
                     </aside>
+                </div>
+            </section>
 
-                    <div class="reviews-list" id="reviewsList">
-                        <!-- Example review (JS will replace) -->
-                        <article class="review-card">
-                            <div class="review-head">
-                                <strong class="review-author">Student</strong>
-                                <span class="review-date">— today</span>
+            <section class="vendor-reviews">
+                <div class="container">
+                    <div class="vendor-section-heading vendor-section-heading-center">
+                        <div>
+                            <span class="vendor-section-kicker">Reviews</span>
+                            <h2 class="vendor-section-title">What students are saying</h2>
+                            <p class="vendor-section-subtitle">A quick snapshot of how this vendor is performing right now.</p>
+                        </div>
+                    </div>
+
+                    <div class="reviews-grid">
+                        <aside class="reviews-summary">
+                            <div class="rating-big">
+                                <div class="avg" id="avgRating">--</div>
+                                <div class="stars" id="avgStars">★★★★★</div>
+                                <div class="count" id="reviewsCount">-- reviews</div>
                             </div>
-                            <div class="review-body">Great food, quick pickup.</div>
-                        </article>
+                            <div class="rating-breakdown" id="ratingBreakdown"></div>
+                        </aside>
+
+                        <div class="reviews-list" id="reviewsList"></div>
                     </div>
                 </div>
-
-            </div>
-        </section>
+            </section>
+        </main>
 
         <div id="globalFooter"></div>
 
@@ -211,11 +222,14 @@
                                 <button type="button" class="pw-toggle" aria-label="Show password" data-target="loginPassword"><i class="fas fa-eye"></i></button>
                                 <label for="loginPassword">Password</label>
                             </div>
-                            <label class="remember-row">
-                                <input type="checkbox" id="rememberMe">
-                                <span class="checkmark"></span>
-                                <span class="text">Remember me</span>
-                            </label>
+                            <div class="auth-login-meta">
+                                <label class="remember-row">
+                                    <input type="checkbox" id="rememberMe">
+                                    <span class="checkmark"></span>
+                                    <span class="text">Remember me</span>
+                                </label>
+                                <a href="#" class="auth-meta-link" data-auth-forgot>Forgot password?</a>
+                            </div>
                             <button type="button" class="btn btn-primary auth-submit auth-login-btn">Login</button>
                             <p class="auth-tos">Not a member? <a href="#" data-auth-switch="register">Create an account</a></p>
                         </form>

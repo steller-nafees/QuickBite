@@ -233,162 +233,115 @@
             "5:55 PM"
         ];
 
-        function parse12HourMinutes(value) {
-            const [time, meridiem] = String(value || "").split(" ");
-            if (!time || !meridiem) return Number.NaN;
-
-            let [hours, minutes] = time.split(":").map(Number);
-            if (Number.isNaN(hours) || Number.isNaN(minutes)) return Number.NaN;
-            if (meridiem === "PM" && hours !== 12) hours += 12;
-            if (meridiem === "AM" && hours === 12) hours = 0;
-            return (hours * 60) + minutes;
+        function pad(value) {
+            return String(value).padStart(2, "0");
         }
 
-        function getNowMinutes() {
-            const now = new Date();
-            return (now.getHours() * 60) + now.getMinutes();
+        function formatForInput(date) {
+            return `${pad(date.getHours())}:${pad(date.getMinutes())}`;
+        }
+
+        function formatForDatabase(date) {
+            return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:00`;
+        }
+
+        function normalizeFutureDate(date) {
+            const value = new Date(date);
+            value.setSeconds(0, 0);
+            if (value.getTime() <= Date.now()) {
+                value.setDate(value.getDate() + 1);
+            }
+            return value;
+        }
+
+        function parseSlotDate(label) {
+            const [time, mod] = label.split(" ");
+            let [hours, minutes] = time.split(":").map(Number);
+            if (mod === "PM" && hours !== 12) hours += 12;
+            if (mod === "AM" && hours === 12) hours = 0;
+
+            const slotDate = new Date();
+            slotDate.setHours(hours, minutes, 0, 0);
+            return normalizeFutureDate(slotDate);
+        }
+
+        function parseCustomDate(value) {
+            if (!value) return null;
+            const [hours, minutes] = value.split(":").map(Number);
+            if (Number.isNaN(hours) || Number.isNaN(minutes)) return null;
+
+            const customDate = new Date();
+            customDate.setHours(hours, minutes, 0, 0);
+            return normalizeFutureDate(customDate);
+        }
+
+        function getDefaultPickupDate() {
+            const defaultDate = new Date(Date.now() + 30 * 60 * 1000);
+            defaultDate.setSeconds(0, 0);
+            return defaultDate;
         }
 
         const mount = document.getElementById(mountId);
         if (!mount) return;
 
-        mount.innerHTML = "";
+        const wrap = document.createElement("div");
+        wrap.className = "pickup-wrapper";
 
-        const wrap = document.createElement("section");
-        wrap.className = "pickup-time-picker";
-        wrap.setAttribute("aria-label", "Pickup time selector");
+        const slotBox = document.createElement("div");
+        slotBox.style.display = "flex";
+        slotBox.style.flexWrap = "wrap";
+        slotBox.style.gap = "10px";
+        slotBox.style.marginBottom = "10px";
 
-        const header = document.createElement("div");
-        header.className = "pickup-time-picker__header";
+        const label = document.createElement("label");
+        label.innerText = "Or choose custom time";
 
-        const eyebrow = document.createElement("span");
-        eyebrow.className = "pickup-time-picker__eyebrow";
-        eyebrow.textContent = "Today";
+        const custom = document.createElement("input");
+        custom.type = "time";
+        custom.style.width = "100%";
+        custom.style.padding = "10px";
+        custom.style.border = "1px solid #ddd";
+        custom.style.borderRadius = "10px";
 
-        const title = document.createElement("h3");
-        title.className = "pickup-time-picker__title";
-        title.textContent = "Choose your pickup time";
+        function setSelection(date, activeButton) {
+            const normalizedDate = normalizeFutureDate(date);
+            selectedPickupTime = formatForDatabase(normalizedDate);
+            custom.value = formatForInput(normalizedDate);
 
-        const helper = document.createElement("p");
-        helper.className = "pickup-time-picker__helper";
-        helper.textContent = "Freshly prepared. Pick the slot that fits your schedule.";
-
-        header.appendChild(eyebrow);
-        header.appendChild(title);
-        header.appendChild(helper);
-
-        const preview = document.createElement("div");
-        preview.className = "pickup-time-picker__preview";
-        preview.innerHTML = `
-            <span class="pickup-time-picker__preview-label">Selected Time</span>
-            <strong class="pickup-time-picker__preview-value">Choose a slot</strong>
-        `;
-
-        const previewValue = preview.querySelector(".pickup-time-picker__preview-value");
-
-        const grid = document.createElement("div");
-        grid.className = "pickup-time-picker__grid";
-        grid.setAttribute("role", "listbox");
-        grid.setAttribute("aria-label", "Available pickup times");
-
-        const slotButtons = [];
-        const nowMinutes = getNowMinutes();
-
-        function updateSelectedSlot(slot, focusButton) {
-            selectedPickupTime = slot;
-            slotButtons.forEach((button) => {
-                const isActive = button.dataset.value === slot;
-                button.classList.toggle("active", isActive);
-                button.setAttribute("aria-selected", isActive ? "true" : "false");
-                button.tabIndex = isActive ? 0 : -1;
-                if (isActive && focusButton) {
-                    button.focus();
-                }
-            });
-            previewValue.textContent = slot || "Choose a slot";
+            wrap.querySelectorAll(".time-slot")
+                .forEach(button => button.classList.toggle("active", button === activeButton));
         }
 
-        function moveFocus(currentIndex, direction) {
-            if (!slotButtons.length) return;
-            let nextIndex = currentIndex;
+        slots.forEach(t => {
+            const btn = document.createElement("button");
+            btn.innerText = t;
+            btn.className = "time-slot";
 
-            do {
-                nextIndex = (nextIndex + direction + slotButtons.length) % slotButtons.length;
-                if (!slotButtons[nextIndex].disabled) {
-                    slotButtons[nextIndex].focus();
-                    return;
-                }
-            } while (nextIndex !== currentIndex);
-        }
+            const slotDate = parseSlotDate(t);
+            btn.onclick = () => {
+                setSelection(slotDate, btn);
+            };
 
-        slots.forEach((slot, index) => {
-            const button = document.createElement("button");
-            const isPast = parse12HourMinutes(slot) < nowMinutes;
-
-            button.type = "button";
-            button.className = "time-slot premium-time-slot";
-            button.dataset.value = slot;
-            button.setAttribute("role", "option");
-            button.setAttribute("aria-selected", "false");
-            button.tabIndex = -1;
-            button.disabled = isPast;
-
-            if (isPast) {
-                button.classList.add("disabled");
-                button.setAttribute("aria-disabled", "true");
-            }
-
-            button.innerHTML = `
-                <span class="premium-time-slot__glow" aria-hidden="true"></span>
-                <span class="premium-time-slot__label">${slot}</span>
-                <span class="premium-time-slot__meta">${isPast ? "Passed" : "Available"}</span>
-            `;
-
-            button.addEventListener("click", () => {
-                if (button.disabled) return;
-                updateSelectedSlot(slot, false);
-            });
-
-            button.addEventListener("keydown", (event) => {
-                if (event.key === "ArrowRight" || event.key === "ArrowDown") {
-                    event.preventDefault();
-                    moveFocus(index, 1);
-                }
-                if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
-                    event.preventDefault();
-                    moveFocus(index, -1);
-                }
-                if (event.key === " " || event.key === "Enter") {
-                    event.preventDefault();
-                    if (!button.disabled) {
-                        updateSelectedSlot(slot, true);
-                    }
-                }
-            });
-
-            slotButtons.push(button);
-            grid.appendChild(button);
+            slotBox.appendChild(btn);
         });
 
-        const firstAvailableSlot = slots.find((slot) => parse12HourMinutes(slot) >= nowMinutes) || "";
-        if (firstAvailableSlot) {
-            updateSelectedSlot(firstAvailableSlot, false);
-        } else {
-            previewValue.textContent = "No slots available today";
-        }
+        custom.min = formatForInput(new Date());
+        custom.onchange = () => {
+            const customDate = parseCustomDate(custom.value);
+            if (!customDate) {
+                selectedPickupTime = "";
+                return;
+            }
+            setSelection(customDate, null);
+        };
 
-        const note = document.createElement("p");
-        note.className = "pickup-time-picker__note";
-        note.textContent = firstAvailableSlot
-            ? "Unavailable slots are already in the past."
-            : "All pickup slots for today have passed.";
-
-        wrap.appendChild(header);
-        wrap.appendChild(preview);
-        wrap.appendChild(grid);
-        wrap.appendChild(note);
+        wrap.appendChild(slotBox);
+        wrap.appendChild(label);
+        wrap.appendChild(custom);
 
         mount.appendChild(wrap);
+
+        setSelection(getDefaultPickupDate(), null);
 
         window.getPickupTime = () => selectedPickupTime;
     }
