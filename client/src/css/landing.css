@@ -838,7 +838,7 @@ img {
 
 .order-pill:hover {
     transform: translateY(-2px);
-    box-shadow: 0 22px 40px var(--color-red-dark)
+    box-shadow: 0 22px 40px var(--color-red-dark);
 }
 
 .order-main {
@@ -2181,6 +2181,7 @@ section {
     color: var(--color-gray);
     line-height: 1.4;
     display: -webkit-box;
+    line-clamp: 2;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
