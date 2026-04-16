@@ -29,31 +29,49 @@
 
         <main class="menu-page">
             <section class="menu-shell-section">
-                <div class="container menu-shell">
-                    <aside class="menu-sidebar">
-                        <div class="sidebar-card">
-                            <div class="sidebar-heading">
-                                <span class="section-kicker">Vendors</span>
-                                <h2 class="sidebar-title">Filter by kitchen</h2>
-                            </div>
-                            <div class="vendor-filter-list" id="vendorFilterList"></div>
+                <div class="container">
+                    <section class="menu-hero">
+                        <div class="menu-hero-copy">
+                            <span class="menu-kicker">
+                                <i class="fas fa-utensils"></i>
+                                Campus menu
+                            </span>
+                            <h1 class="menu-hero-title">Find something good without the visual clutter.</h1>
+                            <p class="menu-hero-description">
+                                Browse meals, jump between vendors, and get to the right dish faster with a cleaner layout.
+                            </p>
                         </div>
-                    </aside>
-
-                    <section class="menu-main">
-                        <div class="menu-toolbar">
-                            <form class="menu-search" id="menuSearchForm">
-                                <i class="fas fa-magnifying-glass"></i>
-                                <input type="search" id="menuSearchInput"
-                                    placeholder="Search burgers, pasta, sushi, tacos...">
-                            </form>
-                            <div class="menu-toolbar-meta">
-                                <span class="results-pill" id="resultsSummary">Showing all items</span>
-                            </div>
-                        </div>
-
-                        <div class="menu-grid" id="menuGrid"></div>
                     </section>
+
+                    <div class="menu-shell">
+                        <aside class="menu-sidebar">
+                            <div class="sidebar-card">
+                                <div class="sidebar-heading">
+                                    <span class="section-kicker">Vendors</span>
+                                    <h2 class="sidebar-title">Pick a kitchen</h2>
+                                    <p class="sidebar-subtitle">Switch between all campus vendors without losing your search.</p>
+                                </div>
+                                <div class="vendor-filter-list" id="vendorFilterList"></div>
+                            </div>
+                        </aside>
+
+                        <section class="menu-main">
+                            <div class="menu-toolbar">
+                                <div class="menu-toolbar-copy">
+                                    <span class="menu-toolbar-kicker">Search</span>
+                                    <h2 class="menu-toolbar-title">Explore dishes</h2>
+                                </div>
+
+                                <form class="menu-search" id="menuSearchForm">
+                                    <i class="fas fa-magnifying-glass"></i>
+                                    <input type="search" id="menuSearchInput"
+                                        placeholder="Search burgers, pasta, sushi, tacos...">
+                                </form>
+                            </div>
+
+                            <div class="menu-grid" id="menuGrid"></div>
+                        </section>
+                    </div>
                 </div>
             </section>
         </main>
@@ -103,11 +121,14 @@
                                     data-target="loginPassword"><i class="fas fa-eye"></i></button>
                                 <label for="loginPassword">Password</label>
                             </div>
-                            <label class="remember-row">
-                                <input type="checkbox" id="rememberMe">
-                                <span class="checkmark"></span>
-                                <span class="text">Remember me</span>
-                            </label>
+                            <div class="auth-login-meta">
+                                <label class="remember-row">
+                                    <input type="checkbox" id="rememberMe">
+                                    <span class="checkmark"></span>
+                                    <span class="text">Remember me</span>
+                                </label>
+                                <a href="#" class="auth-meta-link" data-auth-forgot>Forgot password?</a>
+                            </div>
                             <button type="button" class="btn btn-primary auth-submit auth-login-btn">Login</button>
                             <p class="auth-tos">Not a member? <a href="#" data-auth-switch="register">Create an
                                     account</a></p>

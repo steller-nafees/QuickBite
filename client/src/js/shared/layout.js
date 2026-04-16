@@ -59,6 +59,18 @@ function updateHeaderUserState() {
     const user = getAuthUserFromStorage();
     const btn = document.getElementById("headerUserBtn");
     if (!btn) return;
+
+    function setUserDropdownOpenState(isOpen) {
+        const dropdown = document.getElementById("userDropdown");
+        if (!dropdown || !btn.classList.contains("signed-in")) {
+            return;
+        }
+
+        dropdown.classList.toggle("show", isOpen);
+        btn.classList.toggle("is-open", isOpen);
+        btn.setAttribute("aria-expanded", String(isOpen));
+    }
+
     if (user && (user.fullName || user.name || user.email)) {
         const role = String(user.role || "customer").toLowerCase();
         const fullName = user.fullName || user.name || user.email.split("@")[0];
@@ -83,9 +95,12 @@ function updateHeaderUserState() {
             e.stopPropagation();
             const dropdown = document.getElementById("userDropdown");
             if (dropdown) {
-                dropdown.classList.toggle("show");
+                const shouldOpen = !dropdown.classList.contains("show");
+                setUserDropdownOpenState(shouldOpen);
             }
         };
+
+        setUserDropdownOpenState(false);
         
         // Add click handler for Notifications in dropdown
         const notifLink = document.getElementById("dropdownNotif");
@@ -94,11 +109,7 @@ function updateHeaderUserState() {
                 e.preventDefault();
                 e.stopPropagation();
                 toggleNotifications();
-                // Close the dropdown
-                const dropdown = document.getElementById("userDropdown");
-                if (dropdown) {
-                    dropdown.classList.remove("show");
-                }
+                setUserDropdownOpenState(false);
             };
         }
         
@@ -120,6 +131,7 @@ function updateHeaderUserState() {
         // show a clear Sign In button when logged out
         btn.className = "btn btn-signin";
         btn.setAttribute("aria-label", "Sign in");
+        btn.setAttribute("aria-expanded", "false");
         btn.textContent = "Sign In";
         btn.onclick = function (e) {
             e.preventDefault();
@@ -211,10 +223,10 @@ function getGlobalHeaderMarkup() {
                     </div>
                 </div>
                 <div class="nav-menu" id="navMenu">
-                    <a href="${getHomeLink("#vendors")}" class="nav-link">Vendors</a>
-                    <a href="menu.html" class="nav-link">Our Menu</a>
+                    <a href="vendors.html" class="nav-link">Vendors</a>
+                    <a href="menu.html" class="nav-link">Menu</a>
                     <a href="${getHomeLink("#menu")}" class="nav-link">Best Picks</a>
-                    <a href="${getHomeLink("#experience")}" class="nav-link">About Us</a>
+                    <a href="${getHomeLink("#experience")}" class="nav-link">About QuickBite</a>
                 </div>
 
                 <div class="nav-utilities">
@@ -285,7 +297,7 @@ function getGlobalFooterMarkup() {
                         <h4 class="footer-title">Platform</h4>
                         <div class="footer-links">
                             <a href="${getHomeLink("#discover")}">Discover</a>
-                            <a href="${getHomeLink("#vendors")}">Vendors</a>
+                            <a href="vendors.html">Vendors</a>
                             <a href="${getHomeLink("#menu")}">Top Picks</a>
                             <a href="${getHomeLink("#pricing")}">Launch</a>
                         </div>
@@ -303,7 +315,7 @@ function getGlobalFooterMarkup() {
                         <h4 class="footer-title">Built For</h4>
                         <div class="footer-links">
                             <a href="${getHomeLink("#experience")}">Students</a>
-                            <a href="${getHomeLink("#vendors")}">Campus Vendors</a>
+                            <a href="vendors.html">Campus Vendors</a>
                             <a href="${getHomeLink("#pricing")}">Universities</a>
                         </div>
                     </div>
@@ -442,6 +454,8 @@ function initializeUserDropdown() {
         const dropdown = document.getElementById("userDropdown");
         if (dropdown && userBtn && !userBtn.contains(event.target)) {
             dropdown.classList.remove("show");
+            userBtn.classList.remove("is-open");
+            userBtn.setAttribute("aria-expanded", "false");
         }
     });
 }
@@ -490,11 +504,12 @@ function initializeNotifications() {
     function toggleNotifications() {
         var panel = document.getElementById('notifPanel');
         if (!panel) return;
-        
-        panel.classList.toggle('open');
+
+        var willOpen = !panel.classList.contains('open');
+        panel.classList.toggle('open', willOpen);
         
         // Mark all as read when opened
-        if (panel.classList.contains('open')) {
+        if (willOpen) {
             notifications.forEach(function(n) { n.read = true; });
             renderNotifications();
         }
@@ -521,7 +536,15 @@ function initializeNotifications() {
     // Close notifications when clicking outside
     document.addEventListener('click', function(e) {
         var panel = document.getElementById('notifPanel');
-        if (panel && !panel.contains(e.target)) {
+        var notifBtn = document.getElementById('notifBtn');
+        var dropdownNotif = document.getElementById('dropdownNotif');
+        if (
+            panel &&
+            panel.classList.contains('open') &&
+            !panel.contains(e.target) &&
+            !(notifBtn && notifBtn.contains(e.target)) &&
+            !(dropdownNotif && dropdownNotif.contains(e.target))
+        ) {
             panel.classList.remove('open');
         }
     });

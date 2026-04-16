@@ -3,125 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QuickBite Registration</title>
+    <title>Campus Vendors - QuickBite</title>
     <link rel="icon" type="image/png" sizes="32x32" href="./assets/icons/app_icon_transparent.png">
+    <link rel="shortcut icon" href="./assets/icons/app_icon_transparent.png" type="image/png">
+    <link rel="apple-touch-icon" href="./assets/icons/app_icon_transparent.png">
+    <link rel="manifest" href="/favicon/site.webmanifest">
+    <meta name="description" content="Explore every QuickBite campus vendor, compare pickup times, and jump into the kitchens that match your cravings.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bungee&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Bungee&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../src/css/landing.css">
+    <link rel="stylesheet" href="../src/css/vendors.css">
     <link rel="stylesheet" href="../src/css/auth-modal.css">
-    <link rel="stylesheet" href="../src/css/register.css">
+    <link rel="stylesheet" href="../src/css/notifications.css">
     <link rel="stylesheet" href="../src/css/cart.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body data-page="register">
+<body data-page="vendors">
     <div class="page-shell">
         <div id="globalHeader"></div>
         <div id="globalOrderPill"></div>
 
-        <section class="register-journey">
-            <div class="container register-main">
-                <header class="register-hero">
-                    <img src="./assets/icons/app_icon_transparent.png" alt="QuickBite" class="register-hero-logo">
-                    <p class="register-kicker">Account Setup</p>
-                    <h1>Create your QuickBite account</h1>
-                    <p>Secure onboarding in two steps. Pick your role, then complete your profile.</p>
-                </header>
+        <main class="vendors-page">
+            <section class="vendors-hero">
+                <div class="container vendors-hero-layout">
+                    <div class="vendors-hero-copy">
+                        <span class="vendors-kicker">
+                            <i class="fas fa-store"></i>
+                            Campus vendor directory
+                        </span>
+                        <h1 class="vendors-title">Find every kitchen on campus from one clean page.</h1>
+                        <p class="vendors-subtitle">
+                            Browse all QuickBite vendors, compare pickup speed, and jump straight into the stalls that match your mood.
+                        </p>
 
-                <div class="register-progress" id="registerProgress"></div>
-
-                <form id="registerJourneyForm" class="register-card" novalidate>
-                    <section class="register-step is-active" data-step="1">
-                        <h2>Select Role</h2>
-                        <p class="step-subtitle">Choose how you will use QuickBite.</p>
-                        <div class="role-grid">
-                            <label class="role-option">
-                                <input type="radio" name="role" value="customer" required>
-                                <span class="role-icon"><i class="fas fa-user"></i></span>
-                                <span class="role-title">Customer</span>
-                                <span class="role-desc">Browse menus, build platter, and pick up meals fast.</span>
-                            </label>
-                            <label class="role-option">
-                                <input type="radio" name="role" value="vendor" required>
-                                <span class="role-icon"><i class="fas fa-store"></i></span>
-                                <span class="role-title">Vendor</span>
-                                <span class="role-desc">Manage menus, incoming orders, and kitchen flow.</span>
-                            </label>
+                        <div class="vendors-stat-row" id="vendorsStatRow">
+                            <article class="vendors-stat">
+                                <span class="vendors-stat-label">Active vendors</span>
+                                <strong id="vendorsCount">0</strong>
+                            </article>
+                            <article class="vendors-stat">
+                                <span class="vendors-stat-label">Available dishes</span>
+                                <strong id="vendorsFoodCount">0</strong>
+                            </article>
+                            <article class="vendors-stat">
+                                <span class="vendors-stat-label">Pickup zone</span>
+                                <strong id="vendorsLocationLabel">NSU Main Canteen</strong>
+                            </article>
                         </div>
-                        <p class="field-error" data-error-for="role"></p>
-                    </section>
-
-                    <section class="register-step" data-step="2" data-role="customer">
-                        <h2>Customer Details</h2>
-                        <p class="email-note" id="emailNoteCustomer"></p>
-                        <div class="form-grid">
-                            <label><span>Full Name</span><input type="text" name="fullNameCustomer" required></label>
-                            <label><span>Phone Number</span><input type="tel" name="phoneCustomer" placeholder="+8801XXXXXXXXX" required></label>
-                            <label>
-                                <span>Password</span>
-                                <input type="password" name="passwordCustomer" id="passwordCustomer" required aria-describedby="strengthCustomer suggestionCustomer">
-                                <small id="strengthCustomer" aria-live="polite">Strength: --</small>
-                                <span class="strength-track" role="progressbar" aria-label="Password strength" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="strengthBarCustomer"></span></span>
-                                <small id="suggestionCustomer" class="strength-suggestion" aria-live="polite"></small>
-                                <ul class="password-checklist" id="checklistCustomer" aria-live="polite">
-                                    <li data-rule="length">8+ characters</li>
-                                    <li data-rule="mixedCase">Upper + lower case</li>
-                                    <li data-rule="number">At least one number</li>
-                                    <li data-rule="special">At least one special character</li>
-                                </ul>
-                            </label>
-                            <label><span>Confirm Password</span><input type="password" name="confirmPasswordCustomer" required></label>
-                        </div>
-                    </section>
-
-                    <section class="register-step" data-step="2" data-role="vendor">
-                        <h2>Vendor Details</h2>
-                        <p class="email-note" id="emailNoteVendor"></p>
-                        <div class="form-grid">
-                            <label><span>Business / Stall Name</span><input type="text" name="vendorBusiness" required></label>
-                            <label><span>Phone Number</span><input type="tel" name="phoneVendor" placeholder="+8801XXXXXXXXX" required></label>
-                            <label>
-                                <span>Password</span>
-                                <input type="password" name="passwordVendor" id="passwordVendor" required aria-describedby="strengthVendor suggestionVendor">
-                                <small id="strengthVendor" aria-live="polite">Strength: --</small>
-                                <span class="strength-track" role="progressbar" aria-label="Password strength" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="strengthBarVendor"></span></span>
-                                <small id="suggestionVendor" class="strength-suggestion" aria-live="polite"></small>
-                                <ul class="password-checklist" id="checklistVendor" aria-live="polite">
-                                    <li data-rule="length">8+ characters</li>
-                                    <li data-rule="mixedCase">Upper + lower case</li>
-                                    <li data-rule="number">At least one number</li>
-                                    <li data-rule="special">At least one special character</li>
-                                </ul>
-                            </label>
-                            <label><span>Confirm Password</span><input type="password" name="confirmPasswordVendor" required></label>
-                        </div>
-                    </section>
-
-                    <div class="register-actions">
-                        <button type="button" class="btn btn-secondary" id="backBtn">Back</button>
-                        <button type="button" class="btn btn-primary" id="nextBtn">Next</button>
-                        <button type="submit" class="btn btn-primary" id="createBtn">Create Account</button>
                     </div>
-                </form>
-            </div>
-        </section>
+
+                    <aside class="vendors-hero-panel">
+                        <p class="vendors-panel-label">QuickBite flow</p>
+                        <h2 class="vendors-panel-title">Search a vendor, open its menu, and order without the queue drama.</h2>
+                        <div class="vendors-panel-points">
+                            <span><i class="fas fa-bolt"></i> Fast pickup-first browsing</span>
+                            <span><i class="fas fa-fire"></i> Crowd-loved kitchens highlighted</span>
+                            <span><i class="fas fa-location-dot"></i> Built around your selected canteen</span>
+                        </div>
+                    </aside>
+                </div>
+            </section>
+
+            <section class="vendors-browser">
+                <div class="container">
+                    <div class="vendors-toolbar">
+                        <div class="vendors-toolbar-copy">
+                            <span class="vendors-section-kicker">Browse vendors</span>
+                            <h2 class="vendors-section-title">Every campus vendor in one place</h2>
+                            <p class="vendors-section-subtitle" id="vendorsResultsSummary">Loading vendor directory...</p>
+                        </div>
+
+                        <form class="vendors-search" id="vendorsSearchForm">
+                            <label class="sr-only" for="vendorsSearchInput">Search vendors</label>
+                            <i class="fas fa-magnifying-glass" aria-hidden="true"></i>
+                            <input id="vendorsSearchInput" type="search" placeholder="Search by vendor name or cuisine">
+                        </form>
+                    </div>
+
+                    <div class="vendors-filter-row" id="vendorsCuisineFilters"></div>
+                    <div class="vendors-grid" id="vendorsGrid"></div>
+                </div>
+            </section>
+        </main>
 
         <div id="globalFooter"></div>
     </div>
 
     <script src="js/quickbite-config.js"></script>
     <script src="../src/js/shared/api.js"></script>
-    <!-- Hidden login opener so header Sign In can open login without triggering CTA notification -->
     <a href="#" id="authLoginOpener" data-auth-open="login" style="display:none"></a>
     <script src="../src/js/shared/layout.js"></script>
-    <script src="../src/js/pages/register.js"></script>
+    <script src="../src/js/pages/vendors.js"></script>
     <script src="../src/js/components/auth-modal.js"></script>
     <script src="../src/js/components/cart.js"></script>
+    <script src="../src/js/shared/toast.js"></script>
 
-    <!-- Auth Modal -->
     <div class="auth-modal" id="authModal" aria-hidden="true">
         <div class="auth-backdrop" data-auth-close></div>
         <div class="auth-panel">
@@ -183,7 +160,7 @@
                                         </div>
                                         <input type="hidden" id="regRole" value="customer">
                                     </div>
-  
+
                                     <button type="button" class="btn btn-primary auth-submit auth-login-btn" data-reg-next>Next</button>
                                     <p class="auth-tos">Already have an account?
                                         <a href="#" data-auth-switch="login" style="color:var(--color-red);">Sign in</a>
