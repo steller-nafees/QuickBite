@@ -247,231 +247,184 @@ function syncOrderPillState() {
 
 /* ─── VENDORS ─── */
 function renderVendors() {
-    const vendorsGrid = document.getElementById("vendorsGrid");
-    const carouselDots = document.getElementById("vendorsCarouselDots");
-    const carouselWrapper = document.getElementById("vendorsCarouselWrapper");
-    if (!vendorsGrid) return;
+    const track = document.getElementById("vendorsGrid");
+    const dotsWrap = document.getElementById("vendorsCarouselDots");
+    const prevBtn = document.getElementById("vendorPrev");
+    const nextBtn = document.getElementById("vendorNext");
+    if (!track) return;
 
     const topVendors = vendors
         .slice()
-        .sort(function (a, b) { return b.totalOrders - a.totalOrders; });
-
-    function getVisibleVendorCount() {
-        if (window.innerWidth <= 820) return 1;
-        if (window.innerWidth <= 1080) return 2;
-        return 3;
-    }
-
-    function getVendorCardWidth() {
-        const firstCard = vendorsGrid.querySelector(".vendor-card");
-        if (!firstCard) return 320;
-        const gap = parseFloat(getComputedStyle(vendorsGrid).gap) || 20;
-        return firstCard.offsetWidth + gap;
-    }
-
-    function getVendorPageSize() {
-        return getVendorCardWidth() * getVisibleVendorCount();
-    }
-
-    function getVendorPageCount() {
-        const pageSize = getVendorPageSize();
-        if (!pageSize) return 1;
-        return Math.max(Math.round(vendorsGrid.scrollWidth / pageSize), 1);
-    }
-
-    function syncVendorCarouselState() {
-        if (!carouselWrapper) return;
-
-        const scrollLeft = vendorsGrid.scrollLeft;
-        const maxScroll = vendorsGrid.scrollWidth - vendorsGrid.clientWidth;
-        const atStart = scrollLeft <= 4;
-        const atEnd = scrollLeft >= maxScroll - 4;
-
-        carouselWrapper.classList.toggle("at-start", atStart);
-        carouselWrapper.classList.toggle("at-end", atEnd);
-
-        if (carouselDots) {
-            const totalPages = Math.max(carouselDots.querySelectorAll(".carousel-dot").length, 1);
-            const activeIndex = Math.min(
-                Math.max(Math.round(scrollLeft / getVendorPageSize()), 0),
-                totalPages - 1
-            );
-            carouselDots.querySelectorAll(".carousel-dot").forEach(function (dot, index) {
-                dot.classList.toggle("is-active", index === activeIndex);
-            });
-        }
-    }
-
-    function setVendorCarouselVisibility(showDots) {
-        if (carouselDots) carouselDots.style.display = showDots ? "flex" : "none";
-    }
-
-    function scrollToVendorPage(pageIndex, behavior) {
-        const totalDots = carouselDots ? carouselDots.querySelectorAll(".carousel-dot").length : 0;
-        if (!totalDots) return;
-
-        const normalizedIndex = (pageIndex + totalDots) % totalDots;
-        vendorsGrid.scrollTo({
-            left: normalizedIndex * getVendorPageSize(),
-            behavior: behavior || "smooth"
-        });
-    }
-
-    function renderVendorDots() {
-        if (!carouselDots) return;
-
-        const totalDots = getVendorPageCount();
-        carouselDots.innerHTML = Array.from({ length: totalDots }, function (_, i) {
-            return `<button class="carousel-dot${i === 0 ? " is-active" : ""}" aria-label="Go to vendor slide ${i + 1}" data-dot="${i}"></button>`;
-        }).join("");
-
-        carouselDots.querySelectorAll(".carousel-dot").forEach(function (dot) {
-            dot.addEventListener("click", function () {
-                const dotIndex = parseInt(dot.getAttribute("data-dot"), 10);
-                scrollToVendorPage(dotIndex, "smooth");
-            });
-        });
-    }
+        .sort((a, b) => b.totalOrders - a.totalOrders);
 
     if (topVendors.length === 0) {
-        vendorsGrid.classList.add("vendors-grid-empty");
-        vendorsGrid.classList.add("vendors-carousel-track-empty");
-        setVendorCarouselVisibility(false);
-        vendorsGrid.innerHTML = `
-            <article class="vendor-card vendor-card-empty">
-                <div class="vendor-info">
-                    <h3 class="vendor-name">No vendors available</h3>
-                    <p class="vendor-cuisine">No active vendors found.</p>
-                </div>
-            </article>
-        `;
+        track.parentElement.innerHTML = `
+            <div class="vslider-empty">
+                <i class="fas fa-store" style="font-size:2rem;opacity:0.3;"></i>
+                <span>No vendors available right now</span>
+            </div>`;
         return;
     }
 
-    vendorsGrid.classList.remove("vendors-grid-empty");
-    vendorsGrid.classList.remove("vendors-carousel-track-empty");
-    vendorsGrid.innerHTML = topVendors
-        .map(function (vendor, index) {
-            return `
-                <article class="vendor-card animate-fade-in-up" style="animation-delay: ${index * 0.1}s">
-                    <div class="vendor-image-wrap">
-                        <img src="${vendor.image}" alt="${vendor.name}" class="vendor-image">
-                        <span class="vendor-badge"><i class="fas fa-bolt"></i> ${vendor.badge}</span>
-                    </div>
-                    <div class="vendor-info">
-                        <div class="vendor-meta">
-                            <span><i class="fas fa-store"></i> ${vendor.cuisine}</span>
-                            <span><i class="fas fa-clock"></i> ${vendor.eta}</span>
-                        </div>
-                        <h3 class="vendor-name">${vendor.name}</h3>
-                        <p class="vendor-cuisine">High-energy meals with reliable prep and crowd-loved flavor.</p>
-                        <div class="vendor-stats">
-                            <span class="vendor-rating">★ ${vendor.rating}</span>
-                            <span class="vendor-orders">${vendor.totalOrders}+ orders</span>
-                        </div>
-                    </div>
-                </article>
-            `;
-        })
-        .join("");
-
-    renderVendorDots();
-
-    let autoplayTimer = null;
-    let isPointerDown = false;
-    let isDragging = false;
+    let current = 0;
+    let autoTimer = null;
     let dragStartX = 0;
-    let dragStartScrollLeft = 0;
+    let dragStarted = false;
+    let isDragging = false;
 
-    function shouldShowVendorDots() {
-        return getVendorPageCount() > 1;
-    }
+    // Render cards
+    track.innerHTML = topVendors.map((v, i) => `
+        <div class="vslider-card" data-index="${i}">
+            <div class="vslider-img-panel">
+                <img src="${v.image}" alt="${v.name}" class="vslider-img" loading="${i === 0 ? 'eager' : 'lazy'}">
+                <div class="vslider-img-overlay"></div>
+                <div class="vslider-rank">#${i + 1}</div>
+                <div class="vslider-progress" id="vsliderProgress${i}" style="width:0%"></div>
+            </div>
+            <div class="vslider-content">
+                <div>
+                    <div class="vslider-meta">
+                        <span class="vslider-tag"><i class="fas fa-store"></i> ${v.cuisine}</span>
+                        <span class="vslider-tag"><i class="fas fa-clock"></i> ${v.eta}</span>
+                        <span class="vslider-tag"><i class="fas fa-bolt"></i> ${v.badge}</span>
+                    </div>
+                    <h3 class="vslider-name" style="margin-top:0.7rem;">${v.name}</h3>
+                    <p class="vslider-desc" style="margin-top:0.6rem;">High-energy meals with reliable prep and crowd-loved flavor.</p>
+                </div>
+                <div class="vslider-stats">
+                    <div class="vslider-stat">
+                        <span class="vslider-stat-val">★ ${v.rating}</span>
+                        <span class="vslider-stat-label">Rating</span>
+                    </div>
+                    <div class="vslider-stat">
+                        <span class="vslider-stat-val">${v.totalOrders}+</span>
+                        <span class="vslider-stat-label">Orders</span>
+                    </div>
+                </div>
+                <a
+                    class="vendors-link-btn vslider-cta"
+                    href="vendor.html?vendorId=${encodeURIComponent(v.id)}"
+                    data-vendor-id="${String(v.id)}"
+                >View vendor</a>
+            </div>
+        </div>
+    `).join("");
 
-    function stopAutoplay() {
-        if (autoplayTimer) {
-            clearInterval(autoplayTimer);
-            autoplayTimer = null;
-        }
-    }
-
-    function startAutoplay() {
-        stopAutoplay();
-        if (!shouldShowVendorDots() || !carouselDots || carouselDots.querySelectorAll(".carousel-dot").length < 2) return;
-
-        autoplayTimer = window.setInterval(function () {
-            const currentIndex = Math.round(vendorsGrid.scrollLeft / getVendorPageSize());
-            scrollToVendorPage(currentIndex + 1, "smooth");
-        }, 3800);
-    }
-
-    setVendorCarouselVisibility(shouldShowVendorDots());
-    vendorsGrid.addEventListener("scroll", syncVendorCarouselState, { passive: true });
-    syncVendorCarouselState();
-    startAutoplay();
-
-    vendorsGrid.addEventListener("pointerdown", function (event) {
-        if (event.pointerType === "mouse" && event.button !== 0) return;
-        isPointerDown = true;
-        isDragging = false;
-        dragStartX = event.clientX;
-        dragStartScrollLeft = vendorsGrid.scrollLeft;
-        vendorsGrid.classList.add("is-dragging");
-        stopAutoplay();
-        vendorsGrid.setPointerCapture(event.pointerId);
-    });
-
-    vendorsGrid.addEventListener("pointermove", function (event) {
-        if (!isPointerDown) return;
-        const deltaX = event.clientX - dragStartX;
-        if (Math.abs(deltaX) > 8) {
-            isDragging = true;
-        }
-        vendorsGrid.scrollLeft = dragStartScrollLeft - deltaX;
-    });
-
-    function finishVendorDrag(event) {
-        if (!isPointerDown) return;
-        isPointerDown = false;
-        vendorsGrid.classList.remove("is-dragging");
-        if (event && vendorsGrid.hasPointerCapture && vendorsGrid.hasPointerCapture(event.pointerId)) {
-            vendorsGrid.releasePointerCapture(event.pointerId);
-        }
-
-        const targetIndex = Math.round(vendorsGrid.scrollLeft / getVendorPageSize());
-        scrollToVendorPage(targetIndex, "smooth");
-
-        window.setTimeout(function () {
-            isDragging = false;
-        }, 120);
-
-        startAutoplay();
-    }
-
-    vendorsGrid.addEventListener("pointerup", finishVendorDrag);
-    vendorsGrid.addEventListener("pointercancel", finishVendorDrag);
-    vendorsGrid.addEventListener("mouseleave", function () {
-        if (!isPointerDown) {
-            startAutoplay();
-        }
-    });
-    vendorsGrid.addEventListener("mouseenter", stopAutoplay);
-    vendorsGrid.addEventListener("touchstart", stopAutoplay, { passive: true });
-    vendorsGrid.addEventListener("touchend", startAutoplay, { passive: true });
-
-    vendorsGrid.querySelectorAll(".vendor-card").forEach(function (card, index) {
-        card.addEventListener("click", function () {
-            if (isDragging) return;
-            const vendor = topVendors[index];
-            window.location.href = "vendor.html?vendorId=" + encodeURIComponent(vendor.id);
+    // Render dots
+    if (dotsWrap) {
+        dotsWrap.innerHTML = topVendors.map((_, i) =>
+            `<button class="vslider-dot${i === 0 ? " is-active" : ""}" aria-label="Go to vendor ${i + 1}" data-dot="${i}"></button>`
+        ).join("");
+        dotsWrap.querySelectorAll(".vslider-dot").forEach(dot => {
+            dot.addEventListener("click", () => goTo(parseInt(dot.dataset.dot)));
         });
+    }
+
+    function goTo(index, skipAutoReset = false) {
+        current = (index + topVendors.length) % topVendors.length;
+        track.style.transform = `translateX(-${current * 100}%)`;
+
+        // Dots
+        dotsWrap && dotsWrap.querySelectorAll(".vslider-dot").forEach((d, i) => {
+            d.classList.toggle("is-active", i === current);
+        });
+
+        // Arrows
+        if (prevBtn) prevBtn.disabled = false;
+        if (nextBtn) nextBtn.disabled = false;
+
+        // Progress bar restart on active card
+        document.querySelectorAll(".vslider-progress").forEach((bar, i) => {
+            bar.style.transition = "none";
+            bar.style.width = "0%";
+            if (i === current) {
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        bar.style.transition = "width 3.8s linear";
+                        bar.style.width = "100%";
+                    });
+                });
+            }
+        });
+
+        if (!skipAutoReset) resetAutoplay();
+    }
+
+    function resetAutoplay() {
+        clearInterval(autoTimer);
+        autoTimer = setInterval(() => goTo(current + 1, true), 3800);
+    }
+
+    // Arrows
+    prevBtn && prevBtn.addEventListener("click", () => goTo(current - 1));
+    nextBtn && nextBtn.addEventListener("click", () => goTo(current + 1));
+
+    // Keyboard
+    document.addEventListener("keydown", e => {
+        const root = document.getElementById("vendorsSliderRoot");
+        if (!root) return;
+        if (e.key === "ArrowLeft") goTo(current - 1);
+        if (e.key === "ArrowRight") goTo(current + 1);
     });
 
-    window.addEventListener("resize", function () {
-        renderVendorDots();
-        setVendorCarouselVisibility(shouldShowVendorDots());
-        syncVendorCarouselState();
-        startAutoplay();
+    // Drag / swipe
+    track.addEventListener("pointerdown", e => {
+        if (e.button !== 0) return;
+        if (e.target.closest("a, button")) return;
+        dragStartX = e.clientX;
+        dragStarted = true;
+        isDragging = false;
+        track.classList.add("is-dragging");
+        track.setPointerCapture(e.pointerId);
+        clearInterval(autoTimer);
     });
+
+    track.addEventListener("pointermove", e => {
+        if (!dragStarted) return;
+        if (Math.abs(e.clientX - dragStartX) > 8) isDragging = true;
+    });
+
+    track.addEventListener("pointerup", e => {
+        if (!dragStarted) return;
+        dragStarted = false;
+        track.classList.remove("is-dragging");
+        if (track.hasPointerCapture(e.pointerId)) {
+            track.releasePointerCapture(e.pointerId);
+        }
+        const delta = e.clientX - dragStartX;
+        if (Math.abs(delta) > 50) {
+            goTo(delta < 0 ? current + 1 : current - 1);
+        } else {
+            resetAutoplay();
+        }
+        setTimeout(() => { isDragging = false; }, 80);
+    });
+
+    track.addEventListener("pointercancel", e => {
+        dragStarted = false;
+        track.classList.remove("is-dragging");
+        if (track.hasPointerCapture(e.pointerId)) {
+            track.releasePointerCapture(e.pointerId);
+        }
+        resetAutoplay();
+    });
+
+    // CTA click
+    track.addEventListener("click", e => {
+        if (isDragging) return;
+        const btn = e.target.closest(".vslider-cta");
+        if (btn) {
+            e.stopPropagation();
+            window.location.href = "vendor.html?vendorId=" + encodeURIComponent(btn.dataset.vendorId);
+        }
+    });
+
+    // Pause on hover
+    const root = document.getElementById("vendorsSliderRoot");
+    root && root.addEventListener("mouseenter", () => clearInterval(autoTimer));
+    root && root.addEventListener("mouseleave", resetAutoplay);
+
+    goTo(0);
 }
 
 /* ─── TRENDING ITEMS + INDUSTRY CAROUSEL ─── */

@@ -32,6 +32,11 @@ document.addEventListener("DOMContentLoaded", async function () {
         renderFeaturedDish();
         renderReviews(vendor);
         bindHeroActions();
+
+        const pill = document.getElementById("globalOrderPill");
+        if (pill && typeof getGlobalOrderPillMarkup === "function") {
+            pill.innerHTML = getGlobalOrderPillMarkup();
+        }
     } catch (error) {
         showError(error.message);
     }

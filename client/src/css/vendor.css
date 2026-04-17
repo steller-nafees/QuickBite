@@ -110,7 +110,9 @@
 .vendor-back-link:hover,
 .vendor-back-link:focus-visible {
     transform: translateY(-2px);
-    background: rgba(122, 12, 6, 0.14);
+    background: none;
+    border : 1px solid var(--color-cream-soft);
+    color: var(--color-cream-soft);
 }
 
 .vendor-hero-grid,

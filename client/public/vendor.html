@@ -107,20 +107,6 @@
                 </div>
             </section>
 
-            <section class="vendor-menu-section">
-                <div class="container">
-                    <div class="vendor-section-heading">
-                        <div>
-                            <span class="vendor-section-kicker">Menu</span>
-                            <h2 class="vendor-section-title">Popular picks from this kitchen</h2>
-                            <p class="vendor-section-subtitle" id="vendorMenuSummary">Fresh meals prepared by this vendor.</p>
-                        </div>
-                    </div>
-
-                    <div class="vendor-menu-grid" id="vendorMenuGrid"></div>
-                </div>
-            </section>
-
             <section class="vendor-feature-strip">
                 <div class="container vendor-feature-layout">
                     <article class="vendor-feature-card" id="newDishCard">
@@ -158,6 +144,22 @@
                 </div>
             </section>
 
+            <section class="vendor-menu-section">
+                <div class="container">
+                    <div class="vendor-section-heading">
+                        <div>
+                            <span class="vendor-section-kicker">Menu</span>
+                            <h2 class="vendor-section-title">Popular picks from this kitchen</h2>
+                            <p class="vendor-section-subtitle" id="vendorMenuSummary">Fresh meals prepared by this vendor.</p>
+                        </div>
+                    </div>
+
+                    <div class="vendor-menu-grid" id="vendorMenuGrid"></div>
+                </div>
+            </section>
+
+            
+
             <section class="vendor-reviews">
                 <div class="container">
                     <div class="vendor-section-heading vendor-section-heading-center">
@@ -193,11 +195,13 @@
     <!-- Hidden login opener so header Sign In can open login without triggering CTA notification -->
     <a href="#" id="authLoginOpener" data-auth-open="login" style="display:none"></a>
     <script src="../src/js/shared/layout.js"></script>
+    
     <!-- Vendor Page Script -->
     <script src="../src/js/pages/vendor.js"></script>
     <script src="../src/js/components/auth-modal.js"></script>
     <script src="../src/js/components/cart.js"></script>
     <script src="../src/js/shared/toast.js"></script>
+
 
     <!-- Auth Modal -->
     <div class="auth-modal" id="authModal" aria-hidden="true">
@@ -309,6 +313,6 @@
             </div>
         </div>
     </div>
-
+<script src="../src/js/shared/layout.js"></script>
 </body>
 </html>
