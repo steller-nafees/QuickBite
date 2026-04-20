@@ -805,7 +805,7 @@ img {
     width: min(1160px, calc(100% - 2rem));
     display: flex;
     justify-content: center;
-    z-index: 999;
+    z-index: 1001;
     pointer-events: none;
     transition: top 0.32s ease, width 0.32s ease;
 }

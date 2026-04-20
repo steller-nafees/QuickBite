@@ -1,8 +1,83 @@
+:root {
+    /* Typography */
+    --font-primary: "DM Sans", sans-serif;
+    --font-secondary: "Baloo 2", cursive;
+    --font-title: "Bungee", cursive;
+    --font-body: var(--font-primary);
+    --font-description: var(--font-primary);
+    --font-label: var(--font-secondary);
+    --font-accent: var(--font-secondary);
+    --font-display: var(--font-title);
+
+    /* Base colors: one variable per color */
+    --color-red: #7A0C06;
+    --color-red-dark: #5A0502;
+    --color-red-mid: #8B0F08;
+    --color-red-soft: #8B0F08;
+    --color-red-deep: #5A0502;
+    --color-cream-muted: #EADDC8;
+    --color-cream-soft: #F2E8D5;
+    --color-cream: #F2E8D5;
+    --color-cream-dark: #EADDC8;
+    --color-cream-light: #FFFBE9;
+    --color-white: #FFFFFF;
+    --color-black: #1A1A1A;
+    --color-charcoal: #2A2A2A;
+    --color-gray: #4A4A4A;
+
+    /* Transparent versions */
+    --white-08: rgba(255, 255, 255, 0.08);
+    --white-20: rgba(255, 255, 255, 0.2);
+    --white-26: rgba(255, 255, 255, 0.26);
+    --white-28: rgba(255, 255, 255, 0.28);
+    --white-30: rgba(255, 255, 255, 0.3);
+    --white-35: rgba(255, 255, 255, 0.35);
+    --white-40: rgba(255, 255, 255, 0.4);
+    --white-45: rgba(255, 255, 255, 0.45);
+    --white-50: rgba(255, 255, 255, 0.5);
+    --white-72: rgba(255, 255, 255, 0.72);
+    --white-75: rgba(255, 255, 255, 0.75);
+    --white-80: rgba(255, 255, 255, 0.8);
+    --white-88: rgba(255, 255, 255, 0.88);
+    --white-90: rgba(255, 255, 255, 0.9);
+    --red-90: rgba(122, 12, 6, 0.9);
+    --cream-soft-72: rgba(242, 232, 213, 0.72);
+    --cream-muted-82: rgba(234, 221, 200, 0.82);
+    --cream-65: rgba(242, 232, 213, 0.65);
+    --red-12: rgba(122, 12, 6, 0.12);
+    --red-25: rgba(122, 12, 6, 0.25);
+    --red-85: rgba(122, 12, 6, 0.85);
+    --black-08: rgba(0, 0, 0, 0.08);
+    --black-75: rgba(26, 26, 26, 0.75);
+    --red-shadow-soft: rgba(122, 12, 6, 0.16);
+
+    /* Gradients */
+    --gradient-page: linear-gradient(180deg, var(--color-red) 0%, var(--color-red-mid) 55%, var(--color-red-dark) 100%);
+    --gradient-hero-bg: linear-gradient(90deg, var(--color-red) 0%, var(--color-red-mid) 50%, var(--color-red-dark) 100%);
+    --gradient-hero-card: linear-gradient(180deg, rgba(122, 12, 6, 0.92), rgba(90, 5, 2, 0.98));
+    --gradient-showcase: linear-gradient(180deg, var(--cream-soft-72), var(--cream-muted-82));
+    --gradient-button-primary: linear-gradient(135deg, var(--color-red-mid), var(--color-red-dark));
+    --gradient-icon: linear-gradient(135deg, var(--color-cream-dark), var(--color-cream));
+    --gradient-order-card: linear-gradient(135deg, var(--color-red-mid), var(--color-red-dark));
+    --gradient-cta: linear-gradient(135deg, var(--color-cream-dark), var(--color-cream) 60%, var(--color-white) 100%);
+
+    /* Shadows */
+    --shadow: 0 26px 45px var(--red-25);
+    --shadow-soft: 0 16px 30px var(--black-08);
+
+    /* Scrollbar */
+    --scrollbar-track: var(--color-cream-dark);
+    --scrollbar-thumb: var(--color-red);
+    --scrollbar-thumb-hover: var(--color-red-dark);
+
+    /* Carousel */
+    --carousel-gap: 1.25rem;
+    --card-transition: all 0.38s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+
 .vendors-page {
-    background:
-        radial-gradient(circle at top left, rgba(255, 214, 153, 0.34), transparent 24%),
-        radial-gradient(circle at 86% 18%, rgba(122, 12, 6, 0.12), transparent 24%),
-        linear-gradient(180deg, #fff8eb 0%, #f7ede0 48%, #fffaf1 100%);
+    background:var(--color-red-soft);
 }
 
 .vendors-hero,
@@ -16,7 +91,7 @@
 
 .vendors-hero-layout {
     display: grid;
-    grid-template-columns: minmax(0, 1.15fr) minmax(18rem, 0.85fr);
+    grid-template-columns: 1fr;
     gap: 1.35rem;
     align-items: stretch;
 }
@@ -30,13 +105,16 @@
     box-shadow: 0 18px 40px rgba(62, 20, 11, 0.08);
 }
 
+
 .vendors-hero-copy {
     position: relative;
     overflow: hidden;
     padding: 2rem;
     border-radius: 34px;
-    background: linear-gradient(135deg, rgba(122, 12, 6, 0.97), rgba(90, 5, 2, 0.94));
-    color: var(--color-white);
+    background: var(--gradient-hero-bg);
+    border: 1px solid var(--color-cream-soft);
+    color: var(--color-cream-soft);
+    width: 100%;
 }
 
 .vendors-hero-copy::after {
@@ -163,7 +241,7 @@
 }
 
 .vendors-section-kicker {
-    color: var(--color-red-dark);
+    color: var(--color-cream-soft);
 }
 
 .vendors-section-title {
@@ -171,13 +249,13 @@
     font-family: var(--font-secondary);
     font-size: clamp(2.2rem, 4vw, 3.6rem);
     line-height: 0.95;
-    color: var(--color-red-dark);
+    color: var(--color-cream-soft);
 }
 
 .vendors-section-subtitle {
     max-width: 46rem;
     margin-top: 0.65rem;
-    color: rgba(30, 30, 30, 0.72);
+    color: var(--color-cream-soft);
     line-height: 1.6;
 }
 

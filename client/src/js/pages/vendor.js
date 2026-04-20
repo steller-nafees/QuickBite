@@ -16,6 +16,8 @@ document.addEventListener("DOMContentLoaded", async function () {
         return;
     }
 
+    showLoadingSkeleton();
+
     try {
         const data = await window.QuickBiteApi.getVendor(vendorId);
         const vendor = data.vendor;
@@ -27,6 +29,8 @@ document.addEventListener("DOMContentLoaded", async function () {
         });
         window.menuItems = menuItems;
 
+        hideLoadingSkeleton();
+
         renderVendorInfo(vendor);
         renderVendorMenu(vendor.name);
         renderFeaturedDish();
@@ -35,12 +39,314 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         const pill = document.getElementById("globalOrderPill");
         if (pill && typeof getGlobalOrderPillMarkup === "function") {
-            pill.innerHTML = getGlobalOrderPillMarkup();
+            if (!pill.innerHTML || !pill.innerHTML.trim()) {
+                pill.innerHTML = getGlobalOrderPillMarkup();
+                if (typeof initializeSharedOrderPill === "function") {
+                    try {
+                        initializeSharedOrderPill();
+                    } catch (e) {
+                        console.warn('initializeSharedOrderPill failed to run', e);
+                    }
+                }
+            }
         }
     } catch (error) {
+        hideLoadingSkeleton();
         showError(error.message);
     }
 });
+
+/* ─── Loading Skeleton ──────────────────────────────────────────────────── */
+
+function showLoadingSkeleton() {
+    const vendorPage = document.querySelector(".vendor-page");
+    if (!vendorPage) return;
+
+    vendorPage.innerHTML = `
+        <section class="vendor-hero vendor-hero--skeleton">
+            <div class="container">
+                <div class="vendor-back-link">
+                    <span class="sk-pill sk-back"></span>
+                </div>
+                <div class="vendor-hero-grid">
+                    <div class="vendor-hero-copy">
+                        <span class="sk-block sk-kicker"></span>
+                        <span class="sk-block sk-title"></span>
+                        <span class="sk-block sk-line sk-line--80"></span>
+                        <span class="sk-block sk-line sk-line--60"></span>
+                        <div class="sk-tags">
+                            <span class="sk-block sk-tag"></span>
+                            <span class="sk-block sk-tag sk-tag--lg"></span>
+                            <span class="sk-block sk-tag sk-tag--sm"></span>
+                        </div>
+                        <div class="sk-stats">
+                            <span class="sk-block sk-stat"></span>
+                            <span class="sk-block sk-stat"></span>
+                            <span class="sk-block sk-stat"></span>
+                        </div>
+                        <div class="sk-actions">
+                            <span class="sk-block sk-btn"></span>
+                            <span class="sk-block sk-btn sk-btn--sm"></span>
+                        </div>
+                    </div>
+                    <div class="vendor-showcase-card">
+                        <div class="vendor-showcase-media sk-block"></div>
+                        <div class="vendor-showcase-content">
+                            <div>
+                                <span class="sk-block sk-line sk-line--55"></span>
+                                <span class="sk-block sk-showcase-title"></span>
+                            </div>
+                            <div class="sk-meta-pills">
+                                <span class="sk-block sk-meta-pill"></span>
+                                <span class="sk-block sk-meta-pill"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="vendor-feature-strip">
+            <div class="container vendor-feature-layout">
+                <div class="vendor-feature-card vendor-feature-card--skeleton">
+                    <span class="sk-block sk-line sk-line--40"></span>
+                    <span class="sk-block sk-feature-title"></span>
+                    <span class="sk-block sk-line sk-line--90"></span>
+                    <span class="sk-block sk-line sk-line--70"></span>
+                    <div class="sk-actions">
+                        <span class="sk-block sk-price"></span>
+                        <span class="sk-block sk-btn"></span>
+                    </div>
+                </div>
+                <div class="vendor-insight-panel">
+                    <span class="sk-block sk-line sk-line--50"></span>
+                    <div class="sk-insight-list">
+                        <span class="sk-block sk-insight-item"></span>
+                        <span class="sk-block sk-insight-item"></span>
+                        <span class="sk-block sk-insight-item"></span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="vendor-menu-section">
+            <div class="container">
+                <div class="vendor-section-heading">
+                    <div>
+                        <span class="sk-block sk-line sk-line--30"></span>
+                        <span class="sk-block sk-section-title"></span>
+                        <span class="sk-block sk-line sk-line--45"></span>
+                    </div>
+                </div>
+                <div class="vendor-menu-grid">
+                    ${[0, 1, 2].map(function () {
+                        return `
+                        <div class="vendor-menu-card">
+                            <div class="vendor-menu-media sk-block"></div>
+                            <div class="vendor-menu-body">
+                                <div class="sk-card-topline">
+                                    <span class="sk-block sk-card-name"></span>
+                                    <span class="sk-block sk-card-price"></span>
+                                </div>
+                                <span class="sk-block sk-line sk-line--100"></span>
+                                <span class="sk-block sk-line sk-line--80"></span>
+                                <div class="sk-actions sk-card-actions">
+                                    <span class="sk-block sk-btn"></span>
+                                    <span class="sk-block sk-btn"></span>
+                                </div>
+                            </div>
+                        </div>`;
+                    }).join("")}
+                </div>
+            </div>
+        </section>
+    `;
+}
+
+function hideLoadingSkeleton() {
+    const vendorPage = document.querySelector(".vendor-page");
+    if (!vendorPage) return;
+
+    vendorPage.innerHTML = `
+        <section class="vendor-hero">
+            <div class="container">
+                <a href="index.html" class="vendor-back-link">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to Home
+                </a>
+                <div class="vendor-hero-grid">
+                    <div class="vendor-hero-copy">
+                        <span class="vendor-kicker">
+                            <i class="fas fa-store"></i>
+                            Campus Vendor
+                        </span>
+                        <h1 class="vendor-hero-title" id="vendorName"></h1>
+                        <p class="vendor-hero-description" id="vendorCuisine"></p>
+                        <div class="vendor-tags" id="vendorTags"></div>
+                        <div class="vendor-stats-grid">
+                            <article class="vendor-stat-card">
+                                <span class="vendor-stat-label">Rating</span>
+                                <strong id="vendorRating">--</strong>
+                            </article>
+                            <article class="vendor-stat-card">
+                                <span class="vendor-stat-label">Orders served</span>
+                                <strong id="vendorOrders">--</strong>
+                            </article>
+                            <article class="vendor-stat-card">
+                                <span class="vendor-stat-label">Pickup time</span>
+                                <strong id="vendorETA">--</strong>
+                            </article>
+                        </div>
+                        <div class="vendor-hero-actions">
+                            <button class="order-best" id="orderNow">
+                                <i class="fas fa-bowl-food"></i>
+                                Order Best Seller
+                            </button>
+                            <button class="view-stall" id="visitStall">
+                                <i class="fas fa-location-dot"></i>
+                                View Stall Info
+                            </button>
+                        </div>
+                    </div>
+                    <div class="vendor-hero-visual">
+                        <article class="vendor-showcase-card">
+                            <div class="vendor-showcase-media">
+                                <img id="vendorImage" src="" alt="Vendor Image">
+                                <span class="vendor-photo-badge" id="vendorBadgeText">Open now</span>
+                            </div>
+                            <div class="vendor-showcase-content">
+                                <div>
+                                    <p class="vendor-showcase-label">QuickBite Spotlight</p>
+                                    <h2 class="vendor-showcase-title">Fresh dishes, fast pickup, zero guesswork.</h2>
+                                </div>
+                                <div class="vendor-quick-meta">
+                                    <span id="vendorLocationText">
+                                        <i class="fas fa-location-dot"></i>
+                                        Campus pickup
+                                    </span>
+                                    <span id="vendorStatusText">
+                                        <i class="fas fa-bolt"></i>
+                                        Ready for your next order
+                                    </span>
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="vendor-feature-strip">
+            <div class="container vendor-feature-layout">
+                <article class="vendor-feature-card" id="newDishCard">
+                    <div class="vendor-feature-copy">
+                        <span class="vendor-section-kicker-f">Featured dish</span>
+                        <h2 class="vendor-feature-title" id="newDishName">Loading...</h2>
+                        <p class="vendor-feature-description" id="newDishDesc">Delicious new item from this vendor.</p>
+                        <div class="vendor-feature-meta">
+                            <span class="vendor-feature-price" id="newDishPrice">--</span>
+                            <button class="btn btn-primary" id="featuredDishAction">Add to cart</button>
+                        </div>
+                    </div>
+                    <div class="vendor-feature-media">
+                        <img alt="Featured dish" id="newDishImage">
+                    </div>
+                </article>
+                <aside class="vendor-insight-panel">
+                    <span class="vendor-section-kicker-f">Why students return</span>
+                    <div class="vendor-insight-list">
+                        <article class="vendor-insight-item">
+                            <strong>Fast pickup flow</strong>
+                            <p>Designed for short campus breaks and easy pre-orders.</p>
+                        </article>
+                        <article class="vendor-insight-item">
+                            <strong>Reliable favorites</strong>
+                            <p>Top dishes stay easy to spot and reorder from one clean page.</p>
+                        </article>
+                        <article class="vendor-insight-item">
+                            <strong>Clear menu choices</strong>
+                            <p>Ratings, pricing, and descriptions are visible before you commit.</p>
+                        </article>
+                    </div>
+                </aside>
+            </div>
+        </section>
+
+        <section class="vendor-menu-section">
+            <div class="container">
+                <div class="vendor-section-heading">
+                    <div>
+                        <span class="vendor-section-kicker">Menu</span>
+                        <h2 class="vendor-section-title">Popular picks from this kitchen</h2>
+                        <p class="vendor-section-subtitle" id="vendorMenuSummary">Fresh meals prepared by this vendor.</p>
+                    </div>
+                </div>
+                <div class="vendor-menu-grid" id="vendorMenuGrid"></div>
+            </div>
+        </section>
+
+        <section class="vendor-reviews">
+            <div class="container">
+                <div class="vendor-section-heading vendor-section-heading-center">
+                    <div>
+                        <span class="vendor-section-kicker">Reviews</span>
+                        <h2 class="vendor-section-title">What students are saying</h2>
+                        <p class="vendor-section-subtitle">A quick snapshot of how this vendor is performing right now.</p>
+                    </div>
+                </div>
+                <div class="reviews-grid">
+                    <aside class="reviews-summary">
+                        <div class="rating-big">
+                            <div class="avg" id="avgRating">--</div>
+                            <div class="stars" id="avgStars">★★★★★</div>
+                            <div class="count" id="reviewsCount">-- reviews</div>
+                        </div>
+                        <div class="rating-breakdown" id="ratingBreakdown"></div>
+                    </aside>
+                    <div class="reviews-list" id="reviewsList"></div>
+                </div>
+            </div>
+        </section>
+    `;
+}
+
+/* ─── Error / Not-found state ───────────────────────────────────────────── */
+
+function showError(message) {
+    const vendorPage = document.querySelector(".vendor-page");
+    const target = vendorPage || document.body;
+
+    const isNoId = !message;
+    const heading = isNoId ? "No vendor selected" : "This stall seems to have packed up";
+    const description = isNoId
+        ? "Please select a vendor. Head back to the home page and tap a vendor to view their menu."
+        : "The vendor you're looking for may have moved, closed, or the link might be incorrect. Try browsing our active vendors instead.";
+
+    target.innerHTML = `
+        <div class="vendor-error-shell">
+            <div class="vendor-error-card">
+                <div class="vendor-error-icon">
+                    <i class="fas fa-store-slash"></i>
+                </div>
+                <span class="vendor-error-kicker">Vendor not found</span>
+                <h2 class="vendor-error-title">${heading}</h2>
+                <p class="vendor-error-desc">${description}</p>
+                <div class="vendor-error-actions">
+                    <a href="vendors.html" class="vendor-error-btn-primary">
+                        <i class="fas fa-house"></i>
+                        Browse all vendors
+                    </a>
+                    <button class="vendor-error-btn-secondary" onclick="history.back()">
+                        <i class="fas fa-arrow-left"></i>
+                        Go back
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+/* ─── Vendor info ───────────────────────────────────────────────────────── */
 
 function getVendorId() {
     const params = new URLSearchParams(window.location.search);
@@ -80,6 +386,8 @@ function renderVendorInfo(vendor) {
     }
 }
 
+/* ─── Menu ──────────────────────────────────────────────────────────────── */
+
 function renderVendorMenu(vendorName) {
     const grid = document.getElementById("vendorMenuGrid");
     const summary = document.getElementById("vendorMenuSummary");
@@ -96,7 +404,15 @@ function renderVendorMenu(vendorName) {
     }
 
     if (items.length === 0) {
-        grid.innerHTML = '<div class="empty-menu">No items available right now. Check back soon for the next fresh batch.</div>';
+        grid.innerHTML = `
+            <div class="empty-menu">
+                <div class="empty-menu-icon">
+                    <i class="fas fa-bowl-food"></i>
+                </div>
+                <strong class="empty-menu-title">No menu items yet</strong>
+                <p>This vendor hasn't published any dishes today. Check back soon — good things are coming.</p>
+            </div>
+        `;
         return;
     }
 
@@ -109,20 +425,16 @@ function renderVendorMenu(vendorName) {
                     <img src="${item.image}" alt="${item.name}">
                     <span class="vendor-card-chip">${chip}</span>
                 </div>
-
                 <div class="vendor-menu-body">
                     <div class="vendor-menu-topline">
                         <h3 class="vendor-menu-name">${item.name}</h3>
                         <span class="vendor-menu-price">${formatCurrency(item.price)}</span>
                     </div>
-
                     <p class="vendor-menu-description">${item.description}</p>
-
                     <div class="vendor-menu-meta">
                         <span><i class="fas fa-star"></i> ${formatRating(item.rating)}</span>
                         <span><i class="fas fa-bowl-food"></i> Ready for pickup</span>
                     </div>
-
                     <div class="vendor-card-actions">
                         <button class="add-to-cart" data-item-id="${item.id}">
                             <i class="fas fa-plus"></i>
@@ -150,6 +462,8 @@ function renderVendorMenu(vendorName) {
         });
     });
 }
+
+/* ─── Featured dish ─────────────────────────────────────────────────────── */
 
 function renderFeaturedDish() {
     const featuredItem = menuItems
@@ -180,6 +494,8 @@ function renderFeaturedDish() {
         addToCart(featuredItem.id);
     };
 }
+
+/* ─── Reviews ───────────────────────────────────────────────────────────── */
 
 function renderReviews(vendor) {
     const avgRating = Number(vendor.rating || 4.6);
@@ -253,6 +569,8 @@ function buildRatingBreakdown(rating) {
     ];
 }
 
+/* ─── Hero actions ──────────────────────────────────────────────────────── */
+
 function bindHeroActions() {
     const orderNowButton = document.getElementById("orderNow");
     const visitStallButton = document.getElementById("visitStall");
@@ -280,6 +598,8 @@ function bindHeroActions() {
     }
 }
 
+/* ─── Cart helpers ──────────────────────────────────────────────────────── */
+
 function addToCart(itemId) {
     const item = menuItems.find(function (entry) {
         return String(entry.id) === String(itemId);
@@ -301,12 +621,13 @@ function eatNow(itemId) {
     }
 }
 
+/* ─── Utilities ─────────────────────────────────────────────────────────── */
+
 function showNotification(message) {
     if (typeof window.showToast === "function") {
         window.showToast(message, "info");
         return;
     }
-
     window.alert(message);
 }
 
@@ -329,8 +650,4 @@ function getStarString(rating) {
 
 function clamp(value, min, max) {
     return Math.min(max, Math.max(min, value));
-}
-
-function showError(message) {
-    document.body.innerHTML = "<h2 style='text-align:center;margin-top:2rem;'>" + (message || "Vendor not found") + "</h2>";
 }

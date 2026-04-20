@@ -42,6 +42,21 @@ async function initializeVendorsPage() {
     renderVendorCards();
     updateHeroStats();
 
+    // Ensure the global order pill exists without overwriting layout-rendered markup.
+    const globalPill = document.getElementById("globalOrderPill");
+    if (globalPill && typeof getGlobalOrderPillMarkup === "function") {
+        if (!globalPill.innerHTML || !globalPill.innerHTML.trim()) {
+            globalPill.innerHTML = getGlobalOrderPillMarkup();
+            if (typeof initializeSharedOrderPill === "function") {
+                try {
+                    initializeSharedOrderPill();
+                } catch (e) {
+                    console.warn('initializeSharedOrderPill failed', e);
+                }
+            }
+        }
+    }
+
     searchInput.addEventListener("input", function () {
         state.query = searchInput.value.trim().toLowerCase();
         renderVendorCards();
