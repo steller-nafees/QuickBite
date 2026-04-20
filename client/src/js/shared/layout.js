@@ -480,7 +480,8 @@ function initializeNotifications() {
 
     function renderNotifications() {
         var list = document.getElementById('notifList');
-        
+        if (!list) return; // guard: some pages don't include the notification panel
+
         if (!notifications.length) {
             list.innerHTML = '<div class="notif-empty"><i class="fas fa-bell-slash"></i>No notifications yet</div>';
             return;
