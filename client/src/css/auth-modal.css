@@ -286,7 +286,8 @@
 }
 
 /* Custom box */
-.checkmark {
+/* Custom box */
+.remember-row .checkmark {
     width: 20px;
     height: 20px;
     border: 2px solid rgba(26,26,26,0.2);
@@ -300,7 +301,7 @@
 }
 
 /* Tick (hidden by default) */
-.checkmark::after {
+.remember-row .checkmark::after {
     content: "";
     position: absolute;
     left: 5px;
