@@ -810,7 +810,7 @@ document.addEventListener("click", function (e) {
 
         e.preventDefault();
         const link = anchor.textContent.trim();
-        showNotification(link + " page is not connected yet");
+        //showNotification(link + " page is not connected yet");
     }
 });
 

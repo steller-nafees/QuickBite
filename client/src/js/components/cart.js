@@ -61,7 +61,8 @@
 
     function updateQty(itemId, delta) {
         const cart = getCart();
-        const idx = cart.findIndex(c => c.id === itemId);
+        const normalizedId = String(itemId);
+        const idx = cart.findIndex(c => String(c.id) === normalizedId);
         if (idx === -1) return;
         cart[idx].quantity += delta;
         if (cart[idx].quantity <= 0) cart.splice(idx, 1);
@@ -69,7 +70,8 @@
     }
 
     function removeFromCart(itemId) {
-        const cart = getCart().filter(c => c.id !== itemId);
+        const normalizedId = String(itemId);
+        const cart = getCart().filter(c => String(c.id) !== normalizedId);
         saveCart(cart);
     }
 
@@ -197,13 +199,13 @@
 
         // Qty controls
         body.querySelectorAll('.qty-minus').forEach(btn => {
-            btn.addEventListener('click', () => { updateQty(Number(btn.dataset.id), -1); });
+            btn.addEventListener('click', () => { updateQty(btn.dataset.id, -1); });
         });
         body.querySelectorAll('.qty-plus').forEach(btn => {
-            btn.addEventListener('click', () => { updateQty(Number(btn.dataset.id), +1); });
+            btn.addEventListener('click', () => { updateQty(btn.dataset.id, +1); });
         });
         body.querySelectorAll('.cart-item-remove').forEach(btn => {
-            btn.addEventListener('click', () => { removeFromCart(Number(btn.dataset.id)); });
+            btn.addEventListener('click', () => { removeFromCart(btn.dataset.id); });
         });
     }
 

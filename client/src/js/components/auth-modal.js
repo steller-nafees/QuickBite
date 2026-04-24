@@ -353,10 +353,12 @@ document.addEventListener('DOMContentLoaded', function () {
     const regContainer = registerForm.querySelector('.reg-steps');
     if (!regContainer) return;
 
-    const steps = Array.from(regContainer.querySelectorAll('.reg-step'));
+    const steps = Array.from(regContainer.querySelectorAll('.reg-step, .step'));
     const nextBtn = regContainer.querySelector('[data-reg-next]');
     const backBtn = regContainer.querySelector('[data-reg-back]');
-    const registerBtn = regContainer.querySelector('.reg-controls .btn');
+    const registerBtn = regContainer.querySelector('[data-reg-submit]')
+        || regContainer.querySelector('.reg-controls .btn.btn-primary:last-of-type')
+        || regContainer.querySelector('.reg-controls .btn:last-of-type');
     const roleInput = document.getElementById('regRole');
     const roleButtons = Array.from(regContainer.querySelectorAll('[data-reg-role]'));
 
@@ -479,7 +481,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (!validateStep1()) return;
 
             // Require acceptance of Terms & Conditions
-            const acceptEl = document.getElementById('regAcceptTos');
+            const acceptEl = document.getElementById('regAcceptTos') || document.getElementById('tac');
             if (acceptEl && !acceptEl.checked) {
                 markInvalid(acceptEl);
                 showFormError(steps[1], 'You must accept the Terms & Conditions to register.');
