@@ -174,7 +174,7 @@ async function initializeVendorsPage() {
 
                         <div class="vendors-card-actions">
                             <a class="vendors-link-btn" href="vendor.html?vendorId=${encodeURIComponent(vendor.id)}">View vendor</a>
-                            <a class="btn btn-primary" href="menu.html">Browse menu</a>
+                            <a class="browse-menu-btn" href="vendor.html?vendorId=${encodeURIComponent(vendor.id)}#menu">Browse menu</a>
                         </div>
                     </div>
                 </article>

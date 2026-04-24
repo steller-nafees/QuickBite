@@ -32,9 +32,11 @@ async function initializeMenuPage() {
         });
         window.menuItems = menuItems;
     } catch (error) {
+        console.error("Failed to load catalog:", error);
         menuGrid.innerHTML = `
             <article class="menu-empty">
-                <h3 class="menu-card-name">No Vendors Found.</h3>
+                <h3 class="menu-card-name">Failed to load catalog</h3>
+                <p class="menu-card-desc">${(error && error.message) || 'Unable to reach the API. Make sure the server is running.'}</p>
             </article>
         `;
         return;
@@ -321,7 +323,8 @@ function initializeFoodPreviewModal() {
         </div>
     `;
 
-    document.body.appendChild(overlay);
+    const pageRoot = document.querySelector('.menu-page') || document.querySelector('[data-page="menu"]');
+    (pageRoot || document.body).appendChild(overlay);
 
     let currentItem = null;
     const modal = document.getElementById("foodPreviewModal");
