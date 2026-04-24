@@ -478,6 +478,14 @@ document.addEventListener('DOMContentLoaded', function () {
         registerBtn.addEventListener('click', async () => {
             if (!validateStep1()) return;
 
+            // Require acceptance of Terms & Conditions
+            const acceptEl = document.getElementById('regAcceptTos');
+            if (acceptEl && !acceptEl.checked) {
+                markInvalid(acceptEl);
+                showFormError(steps[1], 'You must accept the Terms & Conditions to register.');
+                return;
+            }
+
             const isEmailAvailable = await checkRegisterEmailAvailability({ silent: true, showTakenToast: true });
             if (!isEmailAvailable) {
                 markInvalid(registerEmailInput);

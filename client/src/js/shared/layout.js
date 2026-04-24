@@ -299,14 +299,14 @@ function getGlobalFooterMarkup() {
                             <a href="${getHomeLink("#discover")}">Discover</a>
                             <a href="vendors.html">Vendors</a>
                             <a href="${getHomeLink("#menu")}">Top Picks</a>
-                            <a href="${getHomeLink("#pricing")}">Launch</a>
+                            <a href="#" data-auth-open="register">Launch</a>
                         </div>
                     </div>
                     <div class="footer-column">
                         <h4 class="footer-title">Support</h4>
                         <div class="footer-links">
                             <a href="#help">Help Center</a>
-                            <a href="#contact">Contact Us</a>
+                            <a href="./contact.html">Contact Us</a>
                             <a href="#privacy">Privacy Policy</a>
                             <a href="#terms">Terms of Service</a>
                         </div>
@@ -359,6 +359,59 @@ function renderGlobalLayout() {
     updateGlobalCartCount();
     // Ensure header shows correct user state after rendering
     updateHeaderUserState();
+}
+
+// Move location picker into nav menu for smaller screens and restore on larger screens
+function relocateLocationPicker() {
+    var threshold = 1080;
+    var locationPicker = document.getElementById('locationPicker');
+    var navMenu = document.getElementById('navMenu');
+    var navContainer = document.querySelector('.nav-container');
+    var headerUserBtn = document.getElementById('headerUserBtn');
+    var navUtilities = document.querySelector('.nav-utilities');
+    var headerCartBtn = document.getElementById('headerCartBtn');
+    var navToggle = document.getElementById('navToggle');
+
+    if (!locationPicker || !navMenu || !navContainer) return;
+
+    var alreadyMoved = locationPicker.classList.contains('moved-to-nav');
+
+    if (window.innerWidth < threshold) {
+        if (!alreadyMoved) {
+            // move into navMenu as the first child
+            navMenu.insertAdjacentElement('afterbegin', locationPicker);
+            locationPicker.classList.add('moved-to-nav');
+        }
+        // move sign-in button into navMenu as well
+        if (headerUserBtn && !headerUserBtn.classList.contains('moved-to-nav-user')) {
+            navMenu.appendChild(headerUserBtn);
+            headerUserBtn.classList.add('moved-to-nav-user');
+        }
+        // move cart next to the hamburger toggle (keep visible)
+        if (headerCartBtn && navToggle && !headerCartBtn.classList.contains('moved-to-toggle')) {
+            // insert cart before the toggle so it's visually next to it
+            navContainer.insertBefore(headerCartBtn, navToggle);
+            headerCartBtn.classList.add('moved-to-toggle');
+        }
+    } else {
+        if (alreadyMoved) {
+            // move back to nav-container before nav-menu
+            // find insertion point: place before navMenu inside navContainer
+            navContainer.insertBefore(locationPicker, navMenu);
+            locationPicker.classList.remove('moved-to-nav');
+        }
+        // restore sign-in button to nav-utilities
+        if (headerUserBtn && headerUserBtn.classList.contains('moved-to-nav-user') && navUtilities) {
+            navUtilities.appendChild(headerUserBtn);
+            headerUserBtn.classList.remove('moved-to-nav-user');
+        }
+        // restore cart to nav-utilities
+        if (headerCartBtn && headerCartBtn.classList.contains('moved-to-toggle') && navUtilities) {
+            // put cart at the start of nav-utilities
+            navUtilities.insertBefore(headerCartBtn, navUtilities.firstChild);
+            headerCartBtn.classList.remove('moved-to-toggle');
+        }
+    }
 }
 
 function initializeLocationSelector() {
@@ -646,6 +699,12 @@ initializeLocationSelector();
 initializeAuthSignOut();
 initializeNotifications();
 initializeUserDropdown();
+
+// Place the location picker appropriately on load and when resizing
+relocateLocationPicker();
+window.addEventListener('resize', function () {
+    relocateLocationPicker();
+});
 
 if (document.body.dataset.page !== "home") {
     initializeSharedNavigation();

@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us - QuickBite</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Bungee&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../src/css/landing.css">
+    <link rel="stylesheet" href="../src/css/contact.css">
+    <link rel="stylesheet" href="../src/css/auth-modal.css">
+    <link rel="stylesheet" href="../src/css/notifications.css">
+    <link rel="stylesheet" href="../src/css/cart.css">
+</head>
+<body>
+
+    <!-- Hero -->
+    <section class="contact-hero">
+        <div class="contact-hero-orbs">
+            <span class="orb orb-1"></span>
+            <span class="orb orb-2"></span>
+            <span class="orb orb-3"></span>
+        </div>
+        <div class="container">
+            <a href="index.html" class="contact-back-link">
+                <i class="fas fa-arrow-left"></i>
+                Back to Home
+            </a>
+            <div class="contact-hero-content">
+                <span class="contact-kicker">
+                    <i class="fas fa-headset"></i>
+                    We're here for you
+                </span>
+                <h1 class="contact-hero-title">Get in<br>Touch.</h1>
+                <p class="contact-hero-desc">Have a question about your order, a vendor issue, or just want to say hello? We read every message and reply fast.</p>
+                <div class="contact-hero-stats">
+                    <div class="contact-stat">
+                        <strong>~2h</strong>
+                        <span>avg. response</span>
+                    </div>
+                    <div class="contact-stat-divider"></div>
+                    <div class="contact-stat">
+                        <strong>98%</strong>
+                        <span>satisfaction</span>
+                    </div>
+                    <div class="contact-stat-divider"></div>
+                    <div class="contact-stat">
+                        <strong>24/7</strong>
+                        <span>available</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main grid -->
+    <section class="contact-main">
+        <div class="container contact-grid">
+
+            <!-- Info sidebar -->
+            <aside class="contact-info">
+
+                <div class="contact-info-card">
+                    <div class="contact-info-icon">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <div class="contact-info-body">
+                        <h3>Email us</h3>
+                        <p>For general questions and support</p>
+                        <a href="mailto:hello@quickbite.app" class="contact-info-link">hello@quickbite.app</a>
+                    </div>
+                </div>
+
+                <div class="contact-info-card">
+                    <div class="contact-info-icon">
+                        <i class="fas fa-phone"></i>
+                    </div>
+                    <div class="contact-info-body">
+                        <h3>Call us</h3>
+                        <p>Mon–Fri, 9am to 6pm</p>
+                        <a href="tel:+8801700000000" class="contact-info-link">+880 1700 000 000</a>
+                    </div>
+                </div>
+
+                <div class="contact-info-card">
+                    <div class="contact-info-icon">
+                        <i class="fas fa-location-dot"></i>
+                    </div>
+                    <div class="contact-info-body">
+                        <h3>Find us</h3>
+                        <p>QuickBite Campus HQ</p>
+                        <span class="contact-info-link">Dhaka, Bangladesh</span>
+                    </div>
+                </div>
+
+                <div class="contact-info-card contact-info-card--social">
+                    <p class="contact-social-label">Also reach us on</p>
+                    <div class="contact-socials">
+                        <a href="#" class="contact-social-btn" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="contact-social-btn" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="contact-social-btn" aria-label="Twitter/X"><i class="fab fa-x-twitter"></i></a>
+                        <a href="#" class="contact-social-btn" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                    </div>
+                </div>
+
+            </aside>
+
+            <!-- Form panel -->
+            <div class="contact-form-wrap">
+                <div class="contact-form-header">
+                    <span class="contact-section-kicker">Send a message</span>
+                    <h2 class="contact-form-title">We'd love to hear from you</h2>
+                </div>
+
+                <form class="contact-form" id="contactForm" novalidate>
+                    <div class="form-row">
+                        <div class="field-group">
+                            <label for="contactName">Full name</label>
+                            <div class="field-input-wrap">
+                                <i class="fas fa-user"></i>
+                                <input type="text" id="contactName" name="name" placeholder="e.g. Nafisa Rahman" autocomplete="name">
+                            </div>
+                            <span class="field-error" id="nameError"></span>
+                        </div>
+                        <div class="field-group">
+                            <label for="contactEmail">Email address</label>
+                            <div class="field-input-wrap">
+                                <i class="fas fa-envelope"></i>
+                                <input type="email" id="contactEmail" name="email" placeholder="you@example.com" autocomplete="email">
+                            </div>
+                            <span class="field-error" id="emailError"></span>
+                        </div>
+                    </div>
+
+                    <div class="field-group">
+                        <label for="contactSubject">Subject</label>
+                        <div class="field-input-wrap field-select-wrap">
+                            <i class="fas fa-tag"></i>
+                            <select id="contactSubject" name="subject">
+                                <option value="" disabled selected>Choose a topic</option>
+                                <option value="order">Order issue</option>
+                                <option value="vendor">Vendor enquiry</option>
+                                <option value="account">Account help</option>
+                                <option value="feedback">Feedback</option>
+                                <option value="other">Other</option>
+                            </select>
+                            <i class="fas fa-chevron-down field-select-arrow"></i>
+                        </div>
+                        <span class="field-error" id="subjectError"></span>
+                    </div>
+
+                    <div class="field-group">
+                        <label for="contactMessage">Message</label>
+                        <div class="field-textarea-wrap">
+                            <textarea id="contactMessage" name="message" rows="5" placeholder="Tell us what's on your mind..." maxlength="500"></textarea>
+                        </div>
+                        <div class="field-meta-row">
+                            <span class="field-error" id="messageError"></span>
+                            <span class="char-count" id="charCount">0 / 500</span>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="contact-submit" id="submitBtn">
+                        <span class="submit-label">
+                            <i class="fas fa-paper-plane"></i>
+                            Send message
+                        </span>
+                        <span class="submit-loading" aria-hidden="true">
+                            <i class="fas fa-circle-notch fa-spin"></i>
+                            Sending...
+                        </span>
+                    </button>
+                </form>
+
+                <!-- Success -->
+                <div class="contact-success" id="contactSuccess" aria-live="polite">
+                    <div class="contact-success-icon">
+                        <i class="fas fa-check"></i>
+                    </div>
+                    <h3>Message sent!</h3>
+                    <p>Thanks for reaching out. We'll get back to you within a couple of hours.</p>
+                    <button class="contact-success-reset" id="resetForm">Send another message</button>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="contact-faq">
+        <div class="container">
+            <div class="contact-faq-header">
+                <span class="contact-section-kicker contact-section-kicker--light">Quick answers</span>
+                <h2 class="contact-faq-title">Common questions</h2>
+            </div>
+            <div class="faq-grid">
+
+                <details class="faq-item">
+                    <summary class="faq-question">
+                        How do I track my order?
+                        <i class="fas fa-plus faq-icon"></i>
+                    </summary>
+                    <p class="faq-answer">Once you place an order, you'll see a live status on your orders page. You'll also get a notification when your order is ready for pickup.</p>
+                </details>
+
+                <details class="faq-item">
+                    <summary class="faq-question">
+                        Can I cancel or modify my order?
+                        <i class="fas fa-plus faq-icon"></i>
+                    </summary>
+                    <p class="faq-answer">You can cancel within 2 minutes of placing your order. After that the vendor has already started preparing. Contact us and we'll do our best to help.</p>
+                </details>
+
+                <details class="faq-item">
+                    <summary class="faq-question">
+                        How do I become a vendor on QuickBite?
+                        <i class="fas fa-plus faq-icon"></i>
+                    </summary>
+                    <p class="faq-answer">Register with the Vendor role during sign-up, then complete your stall profile. Our team reviews and approves applications within 24 hours.</p>
+                </details>
+
+                <details class="faq-item">
+                    <summary class="faq-question">
+                        What payment methods are accepted?
+                        <i class="fas fa-plus faq-icon"></i>
+                    </summary>
+                    <p class="faq-answer">We currently support bKash, Nagad, and cash on pickup. More payment options are coming soon.</p>
+                </details>
+
+                <details class="faq-item">
+                    <summary class="faq-question">
+                        My order was wrong — what do I do?
+                        <i class="fas fa-plus faq-icon"></i>
+                    </summary>
+                    <p class="faq-answer">We're sorry about that! Use the contact form above or email us directly. Include your order number and we'll sort it right away.</p>
+                </details>
+
+                <details class="faq-item">
+                    <summary class="faq-question">
+                        Is QuickBite available on all campuses?
+                        <i class="fas fa-plus faq-icon"></i>
+                    </summary>
+                    <p class="faq-answer">We're currently expanding across Dhaka. If your campus isn't listed yet, drop us a message — we'd love to bring QuickBite to you.</p>
+                </details>
+
+            </div>
+        </div>
+    </section>
+
+    <script src="js/quickbite-config.js"></script>
+    <script src="../src/js/shared/api.js"></script>
+    <a href="#" id="authLoginOpener" data-auth-open="login" style="display:none"></a>
+    <script src="../src/js/shared/layout.js"></script>
+    <script src="../src/js/pages/contact.js"></script>
+    <script src="../src/js/components/auth-modal.js"></script>
+    <script src="../src/js/components/cart.js"></script>
+    <script src="../src/js/shared/toast.js"></script>
+</body>
+</html>

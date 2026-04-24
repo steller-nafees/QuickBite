@@ -799,9 +799,17 @@ document.addEventListener("click", function (e) {
 
 /* ─── FOOTER LINKS ─── */
 document.addEventListener("click", function (e) {
-    if (e.target.closest(".footer-links a")) {
+    const anchor = e.target.closest(".footer-links a");
+    if (anchor) {
+        const href = String(anchor.getAttribute('href') || '').trim();
+
+        // If the link points to a real page (contains .html or is an absolute/relative path), allow navigation
+        if (href.includes('.html') || href.startsWith('/') || href.startsWith('./') || href.startsWith('http')) {
+            return; // allow default navigation
+        }
+
         e.preventDefault();
-        const link = e.target.textContent.trim();
+        const link = anchor.textContent.trim();
         showNotification(link + " page is not connected yet");
     }
 });
