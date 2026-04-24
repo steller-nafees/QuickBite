@@ -1680,25 +1680,561 @@
     font-size: 14px;
 }
 
-/* ── Responsive for Payment Modals ── */
-@media (max-width: 480px) {
+/* ═══════════════════════════════════════════
+   RESPONSIVE — 1080px and below
+═══════════════════════════════════════════ */
+
+/* ── 1080px: Laptop ── */
+@media (max-width: 1080px) {
+    .cart-drawer {
+        width: 380px;
+    }
+
+    .checkout-panel {
+        max-width: 480px;
+    }
 
     .payment-processing-panel,
     .payment-success-panel {
-        padding: 32px 20px;
-        border-radius: 20px;
+        width: 400px;
+    }
+}
+
+/* ── 768px: Tablet ── */
+@media (max-width: 768px) {
+    /* Cart Drawer */
+    .cart-drawer {
+        width: 360px;
+    }
+
+    .cart-header {
+        padding: 16px 20px 14px;
+    }
+
+    .cart-header-left h2 {
+        font-size: 18px;
+    }
+
+    .cart-item {
+        padding: 10px 20px;
+        gap: 10px;
+    }
+
+    .cart-item-img {
+        width: 50px;
+        height: 50px;
+    }
+
+    .cart-footer {
+        padding: 14px 20px 18px;
+    }
+
+    .cart-checkout-btn {
+        font-size: 15px;
+        padding: 13px;
+    }
+
+    /* Checkout Modal */
+    .checkout-panel {
+        max-width: 95vw;
+        border-radius: 18px;
+    }
+
+    .checkout-panel-header {
+        padding: 16px 20px 14px;
+        border-radius: 18px 18px 0 0;
+    }
+
+    .checkout-panel-header h2 {
+        font-size: 18px;
+    }
+
+    .checkout-body {
+        padding: 16px 20px 20px;
+    }
+
+    .payment-methods {
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 8px;
+    }
+
+    .payment-method-btn {
+        padding: 12px 8px;
+        gap: 6px;
+    }
+
+    .payment-method-btn .method-icon,
+    .payment-method-btn .payment-method-icon {
+        font-size: 20px;
+        height: 26px;
+    }
+
+    .payment-method-btn .method-label {
+        font-size: 12px;
+    }
+
+    /* Pickup Time Picker */
+    .pickup-time-picker {
+        padding: 18px;
+    }
+
+    .pickup-time-picker__title {
+        font-size: 18px;
+    }
+
+    .pickup-time-picker__grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    .time-slot.premium-time-slot {
+        min-height: 76px;
+        padding: 14px 14px;
+    }
+
+    .premium-time-slot__label {
+        font-size: 15px;
+    }
+
+    /* Processing & Success Modals */
+    .payment-processing-panel,
+    .payment-success-panel {
+        width: 92vw;
+        padding: 36px 24px;
     }
 
     .payment-processing-title,
     .payment-success-title {
+        font-size: 23px;
+    }
+
+    /* Order Status */
+    .order-status-panel {
+        max-width: 95vw;
+        padding: 28px 22px 24px;
+    }
+
+    .order-status-title {
         font-size: 22px;
+    }
+
+    .order-stepper {
+        gap: 0;
+    }
+
+    .order-step-label {
+        font-size: 9px;
+    }
+}
+
+/* ── 480px: Mobile ── */
+@media (max-width: 480px) {
+    /* Cart Drawer */
+    .cart-drawer {
+        width: 100vw;
+        box-shadow: none;
+    }
+
+    .cart-header {
+        padding: 14px 16px 12px;
+    }
+
+    .cart-header-left h2 {
+        font-size: 17px;
+    }
+
+    .cart-item {
+        padding: 10px 16px;
+        gap: 10px;
+    }
+
+    .cart-item-img {
+        width: 48px;
+        height: 48px;
+        border-radius: 10px;
+    }
+
+    .cart-item-name {
+        font-size: 13px;
+    }
+
+    .cart-item-price {
+        font-size: 12px;
+    }
+
+    .qty-btn {
+        width: 26px;
+        height: 26px;
+        font-size: 13px;
+    }
+
+    .qty-value {
+        font-size: 14px;
+    }
+
+    .cart-footer {
+        padding: 12px 16px 16px;
+    }
+
+    .cart-total-label {
+        font-size: 14px;
+    }
+
+    .cart-total-value {
+        font-size: 18px;
+    }
+
+    .cart-checkout-btn {
+        font-size: 14px;
+        padding: 12px;
+    }
+
+    .cart-clear-btn {
+        font-size: 12px;
+        padding: 12px;
+    }
+
+    /* Checkout Modal */
+    .checkout-modal {
+        padding: 0;
+        align-items: flex-end;
+    }
+
+    .checkout-panel {
+        max-width: 100vw;
+        width: 100vw;
+        border-radius: 20px 20px 0 0;
+        max-height: 95vh;
+    }
+
+    .checkout-panel-header {
+        border-radius: 20px 20px 0 0;
+        padding: 14px 16px 12px;
+    }
+
+    .checkout-panel-header h2 {
+        font-size: 17px;
+    }
+
+    .checkout-body {
+        padding: 14px 16px 18px;
+    }
+
+    .checkout-section-title {
+        font-size: 12px;
+        margin-bottom: 10px;
+    }
+
+    .checkout-order-item {
+        padding: 8px 14px;
+        font-size: 12px;
+    }
+
+    .checkout-order-item-qty {
+        width: 18px;
+        height: 18px;
+        font-size: 10px;
+    }
+
+    /* Pickup Time Picker */
+    .pickup-time-picker {
+        padding: 14px;
+        border-radius: 18px;
+    }
+
+    .pickup-time-picker__eyebrow {
+        font-size: 10px;
+        padding: 5px 8px;
+    }
+
+    .pickup-time-picker__title {
+        font-size: 16px;
+        margin: 10px 0 4px;
+    }
+
+    .pickup-time-picker__helper {
+        font-size: 12px;
+    }
+
+    .pickup-time-picker__preview {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+        padding: 12px 14px;
+        border-radius: 14px;
+        margin-bottom: 12px;
+    }
+
+    .pickup-time-picker__preview-value {
+        font-size: 16px;
+    }
+
+    .pickup-time-picker__grid {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+
+    .time-slot.premium-time-slot {
+        min-height: 68px;
+        border-radius: 16px;
+        padding: 12px 16px;
+    }
+
+    .premium-time-slot__label {
+        font-size: 15px;
+    }
+
+    .pickup-time-picker__note {
+        font-size: 11px;
+    }
+
+    /* Payment Methods */
+    .payment-methods {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+
+    .payment-method-btn {
+        flex-direction: row;
+        justify-content: flex-start;
+        padding: 12px 16px;
+        gap: 12px;
+    }
+
+    .payment-method-btn .method-icon,
+    .payment-method-btn .payment-method-icon {
+        font-size: 22px;
+        height: 28px;
+        max-width: 100px;
+    }
+
+    .payment-method-btn .method-label {
+        font-size: 14px;
+    }
+
+    .payment-method-btn .method-sub {
+        font-size: 12px;
+    }
+
+    .payment-selected-tick {
+        top: 50%;
+        right: 14px;
+        transform: translateY(-50%);
+    }
+
+    /* Checkout Total */
+    .checkout-total-box {
+        padding: 12px 14px;
+    }
+
+    .checkout-total-row {
+        font-size: 14px;
+    }
+
+    .checkout-total-row.is-total {
+        font-size: 15px;
+    }
+
+    .checkout-place-btn {
+        font-size: 15px;
+        padding: 14px;
+    }
+
+    /* Processing Modal */
+    .payment-processing-panel {
+        width: 100vw;
+        max-width: 100vw;
+        border-radius: 20px 20px 0 0;
+        padding: 32px 20px;
+    }
+
+    .payment-processing-modal {
+        align-items: flex-end;
+    }
+
+    .payment-processing-title {
+        font-size: 22px;
+    }
+
+    .payment-processing-sub {
+        font-size: 13px;
+    }
+
+    .payment-spinner {
+        width: 68px;
+        height: 68px;
+    }
+
+    .payment-spinner i {
+        font-size: 28px;
     }
 
     .payment-amount-value {
         font-size: 24px;
     }
 
+    .payment-step {
+        padding: 10px 12px;
+        gap: 10px;
+    }
+
+    .payment-step span {
+        font-size: 12px;
+    }
+
+    /* Success Modal */
+    .payment-success-modal {
+        align-items: flex-end;
+    }
+
+    .payment-success-panel {
+        width: 100vw;
+        max-width: 100vw;
+        border-radius: 20px 20px 0 0;
+        padding: 32px 20px;
+    }
+
+    .payment-success-title {
+        font-size: 22px;
+    }
+
+    .payment-success-sub {
+        font-size: 13px;
+        margin-bottom: 20px;
+    }
+
+    .success-checkmark {
+        width: 76px;
+        height: 76px;
+    }
+
+    .success-checkmark i {
+        font-size: 34px;
+    }
+
+    .payment-receipt-card {
+        border-radius: 14px;
+        margin-bottom: 18px;
+    }
+
+    .receipt-header {
+        padding: 14px 16px;
+        font-size: 14px;
+    }
+
     .receipt-row {
         padding: 12px 16px;
+    }
+
+    .receipt-label {
+        font-size: 12px;
+    }
+
+    .receipt-value {
+        font-size: 13px;
+    }
+
+    .receipt-amount {
+        font-size: 17px;
+    }
+
+    .payment-success-btn {
+        font-size: 15px;
+        padding: 14px;
+    }
+
+    /* Order Status Modal */
+    .order-status-modal {
+        padding: 0;
+        align-items: flex-end;
+    }
+
+    .order-status-panel {
+        max-width: 100vw;
+        width: 100vw;
+        border-radius: 20px 20px 0 0;
+        padding: 28px 20px 24px;
+    }
+
+    .order-status-icon {
+        width: 68px;
+        height: 68px;
+        margin-bottom: 16px;
+    }
+
+    .order-status-icon i {
+        font-size: 30px;
+    }
+
+    .order-status-title {
+        font-size: 20px;
+    }
+
+    .order-status-sub {
+        font-size: 13px;
+        margin-bottom: 18px;
+    }
+
+    .order-token-pill {
+        padding: 8px 16px;
+    }
+
+    .order-token-value {
+        font-size: 20px;
+    }
+
+    .order-step-dot {
+        width: 28px;
+        height: 28px;
+        font-size: 11px;
+    }
+
+    .order-step-label {
+        font-size: 9px;
+    }
+
+    .order-detail-row {
+        padding: 9px 14px;
+        font-size: 12px;
+    }
+
+    .order-dismiss-btn {
+        font-size: 14px;
+        padding: 12px;
+    }
+}
+
+/* ── 360px: Very small phones ── */
+@media (max-width: 360px) {
+    .cart-header-left h2 {
+        font-size: 15px;
+    }
+
+    .cart-item-img {
+        width: 42px;
+        height: 42px;
+    }
+
+    .cart-total-value {
+        font-size: 16px;
+    }
+
+    .premium-time-slot__label {
+        font-size: 14px;
+    }
+
+    .checkout-panel-header h2,
+    .payment-processing-title,
+    .payment-success-title,
+    .order-status-title {
+        font-size: 17px;
+    }
+
+    .payment-amount-value {
+        font-size: 22px;
+    }
+
+    .receipt-amount {
+        font-size: 16px;
     }
 }

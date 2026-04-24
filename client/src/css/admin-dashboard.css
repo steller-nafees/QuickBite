@@ -638,7 +638,7 @@ tbody tr:hover {
   border: 1px solid var(--red-12);
 }
 
-.bar>div {
+.bar > div {
   height: 100%;
   width: 0%;
   background: var(--gradient-button-primary);
@@ -651,45 +651,422 @@ tbody tr:hover {
   color: var(--color-red);
 }
 
-@media (max-width: 1100px) {
+/* ============================================================
+   RESPONSIVE — Starting from 1080px down
+   Breakpoints:
+     1080px  — laptop (compact sidebar)
+      768px  — tablet (icon-only rail + scrollable main)
+      480px  — phone  (bottom nav, full-width stacked layout)
+   ============================================================ */
+
+/* ── 1080px: Laptop — tighten sidebar, shrink grid ── */
+@media (max-width: 1080px) {
   .app {
-    grid-template-columns: 86px 1fr;
+    grid-template-columns: 220px 1fr;
   }
 
+  .brand-title {
+    font-size: 16px;
+  }
+
+  .grid4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .cv {
+    font-size: 22px;
+  }
+
+  .main {
+    padding: 14px 14px 22px;
+  }
+
+  .search {
+    min-width: 240px;
+  }
+
+  .barrow {
+    grid-template-columns: 100px 1fr 80px;
+  }
+}
+
+/* ── 768px: Tablet — icon-only sidebar rail ── */
+@media (max-width: 768px) {
+  body {
+    overflow: auto; /* allow full-page scroll on tablet */
+  }
+
+  .app {
+    grid-template-columns: 72px 1fr;
+    height: auto;
+    min-height: 100%;
+  }
+
+  /* Sidebar becomes a narrow icon rail */
+  .sidebar {
+    height: 100%;
+    min-height: 100vh;
+    padding: 14px 10px;
+    gap: 8px;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    align-self: start;
+  }
+
+  /* Hide all text labels in sidebar */
   .brand-copy,
   .nav-copy,
   .who {
     display: none;
   }
 
-  .brand,
+  .brand {
+    justify-content: center;
+    padding: 8px;
+    border-radius: 10px;
+    width: 100%;
+  }
+
+  .brand-badge {
+    width: 36px;
+    height: 36px;
+  }
+
+  .nav {
+    width: 100%;
+    align-items: center;
+  }
+
   .nav-btn {
     justify-content: center;
+    padding: 10px;
+    border-radius: 10px;
+    width: 100%;
   }
 
   .nav-icon {
-    width: 42px;
-    height: 42px;
-  }
-}
-
-@media (max-width: 900px) {
-  .grid4 {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
   }
 
-  .search {
-    min-width: 220px;
+  .sidefoot {
+    justify-content: center;
+    width: 100%;
   }
-}
 
-@media (max-width: 560px) {
-  .grid4 {
-    grid-template-columns: 1fr;
+  /* Main content */
+  .main {
+    height: auto;
+    overflow: visible;
+    padding: 14px 12px 24px;
+  }
+
+  /* Topline: stack title above search */
+  .topline {
+    flex-direction: column;
+    gap: 10px;
+    align-items: stretch;
+    margin-bottom: 12px;
   }
 
   .search {
     min-width: 0;
     width: 100%;
+  }
+
+  /* 2-column stat grid on tablet */
+  .grid4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin: 10px 0 14px;
+  }
+
+  .cv {
+    font-size: 20px;
+  }
+
+  /* Panel toolbar stacks */
+  .phead {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .toolbar {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  /* Modal: full-width with room for keyboard */
+  .modal {
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .mbody {
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+
+  /* Form fields go single-column */
+  .field {
+    min-width: 100%;
+    flex: 1 1 100%;
+  }
+
+  /* Sales bars: narrow label column */
+  .barrow {
+    grid-template-columns: 80px 1fr 64px;
+    gap: 8px;
+  }
+
+  /* Tabs wrap cleanly */
+  .tabs {
+    gap: 6px;
+  }
+
+  .tab {
+    padding: 6px 9px;
+    font-size: 12px;
+  }
+}
+
+/* ── 480px: Phone — bottom nav, full single-column ── */
+@media (max-width: 480px) {
+  body {
+    overflow: auto;
+    padding-bottom: 70px; /* space for bottom nav bar */
+  }
+
+  /* Switch to single-column layout; sidebar becomes bottom nav */
+  .app {
+    display: block;
+  }
+
+  /* Hide desktop sidebar entirely on phone */
+  .sidebar {
+    display: none;
+  }
+
+  /* Bottom navigation bar */
+  .sidebar[role="navigation"],
+  .app::after {
+    /* The bottom nav is injected via .bottom-nav element in HTML.
+       If your HTML doesn't have it yet, add:
+       <nav class="bottom-nav">…</nav> before </body> */
+    display: flex;
+  }
+
+  .bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    height: 64px;
+    background: var(--gradient-page);
+    border-top: 1px solid var(--white-20);
+    display: flex;
+    align-items: stretch;
+    padding: 0 4px;
+    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.15);
+  }
+
+  .bottom-nav .nav-btn {
+    flex: 1;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 4px;
+    border-radius: 10px;
+    font-size: 10px;
+    color: var(--color-white);
+    border: none;
+    background: transparent;
+  }
+
+  .bottom-nav .nav-btn.is-active {
+    background: var(--white-20);
+  }
+
+  .bottom-nav .nav-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: var(--white-08);
+    border-color: var(--white-20);
+  }
+
+  /* Main fills full width */
+  .main {
+    padding: 12px 10px 20px;
+    height: auto;
+    overflow: visible;
+  }
+
+  /* Topline stacks vertically */
+  .topline {
+    flex-direction: column;
+    gap: 10px;
+    align-items: stretch;
+  }
+
+  .title {
+    font-size: 18px;
+  }
+
+  .subtitle {
+    font-size: 12px;
+  }
+
+  .search {
+    min-width: 0;
+    width: 100%;
+  }
+
+  /* Single-column stat cards */
+  .grid4 {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin: 8px 0 12px;
+  }
+
+  .cv {
+    font-size: 18px;
+  }
+
+  .cardb {
+    padding: 10px 10px 8px;
+  }
+
+  .cl {
+    font-size: 11px;
+  }
+
+  /* Panel heads stack completely */
+  .phead {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 10px 12px;
+  }
+
+  .pbody {
+    padding: 10px 12px 12px;
+  }
+
+  .toolbar {
+    width: 100%;
+    justify-content: flex-start;
+    gap: 6px;
+  }
+
+  /* Buttons full-width in toolbar on phone */
+  .toolbar .btn {
+    flex: 1;
+    justify-content: center;
+  }
+
+  /* Tabs: horizontal scroll if they overflow */
+  .tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 4px;
+    gap: 6px;
+  }
+
+  .tab {
+    flex: 0 0 auto;
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  /* Tables: allow horizontal scroll, pin first column */
+  .tablewrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 8px;
+  }
+
+  table {
+    min-width: 540px; /* ensure table doesn't squash */
+  }
+
+  thead th,
+  tbody td {
+    padding: 8px;
+    font-size: 12px;
+  }
+
+  /* Sales bars: collapse label to shorter column */
+  .barrow {
+    grid-template-columns: 64px 1fr 52px;
+    gap: 6px;
+    font-size: 12px;
+  }
+
+  .bar {
+    height: 10px;
+  }
+
+  /* Modal fills full screen on phone */
+  .backdrop {
+    padding: 0;
+    align-items: flex-end;
+  }
+
+  .modal {
+    width: 100%;
+    border-radius: 16px 16px 0 0;
+    max-height: 92vh;
+    overflow-y: auto;
+  }
+
+  .mhead {
+    padding: 14px 14px 12px;
+  }
+
+  .mbody {
+    padding: 10px 12px 12px;
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+
+  .mfoot {
+    padding: 10px 12px;
+    flex-direction: column-reverse;
+    gap: 8px;
+  }
+
+  .mfoot .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Form fields: always full width */
+  .field {
+    min-width: 0;
+    flex: 1 1 100%;
+  }
+
+  /* Inputs: comfortable tap targets */
+  input[type="text"],
+  input[type="number"],
+  select,
+  textarea {
+    padding: 12px 10px;
+    font-size: 16px; /* prevents iOS zoom on focus */
+  }
+
+  /* Badges: slightly smaller */
+  .badge {
+    padding: 4px 8px;
+    font-size: 11px;
   }
 }

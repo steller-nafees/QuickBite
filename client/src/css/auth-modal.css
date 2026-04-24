@@ -1064,5 +1064,205 @@
 .mismatch {
     box-shadow: 0 0 0 3px rgba(177, 9, 9, 0.12)
 }
+/* ─── Responsive: 1080px and below ─── */
+
+@media (max-width: 1080px) {
+    .auth-panel {
+        width: 860px;
+        height: auto;
+        min-height: 520px;
+    }
+
+    .auth-right {
+        width: 320px;
+    }
+
+    .auth-forms {
+        padding: 0 40px;
+    }
+
+    .auth-sub-description {
+        padding: 0 40px;
+    }
+
+    .auth-heading {
+        padding: 0 40px;
+    }
+}
+
+/* ─── Tablet: 768px and below ─── */
+
+@media (max-width: 768px) {
+    .auth-panel {
+        width: 95%;
+        height: auto;
+        min-height: unset;
+        border-radius: 12px;
+    }
+
+    .auth-grid {
+        flex-direction: column;
+    }
+
+    .auth-left {
+        padding: 24px 20px;
+        overflow: visible;
+    }
+
+    .auth-right {
+        width: 100%;
+        height: 180px;
+        flex-shrink: 0;
+        order: -1;
+        border-radius: 0;
+    }
+
+    .brand-right {
+        border-radius: 0;
+    }
+
+    .brand-logo {
+        width: 56px;
+        height: 56px;
+        margin-bottom: 6px;
+    }
+
+    .brand-title {
+        font-size: 16px;
+    }
+
+    .brand-sub {
+        font-size: 13px;
+    }
+
+    .auth-forms {
+        padding: 0 0;
+    }
+
+    .auth-sub-description {
+        padding: 0 10px;
+    }
+
+    .auth-heading {
+        padding: 0 10px;
+        font-size: 18px;
+    }
+
+    .auth-brand,
+    .auth-sub-title {
+        font-size: 18px;
+    }
+
+    .auth-login-simple {
+        max-width: 100%;
+    }
+
+    .auth-login-btn {
+        padding: 13px;
+    }
+
+    .images-grid {
+        display: none;
+    }
+}
+
+/* ─── Phone: 480px and below ─── */
+
+@media (max-width: 480px) {
+    .auth-modal {
+        align-items: flex-end;
+    }
+
+    .auth-panel {
+        width: 100%;
+        max-width: 100%;
+        border-radius: 16px 16px 0 0;
+        max-height: 94svh;
+        overflow-y: auto;
+    }
+
+    .auth-right {
+        height: 140px;
+    }
+
+    .brand-logo {
+        width: 44px;
+        height: 44px;
+        margin-bottom: 4px;
+    }
+
+    .brand-title {
+        font-size: 14px;
+    }
+
+    .brand-sub {
+        display: none;
+    }
+
+    .auth-left {
+        padding: 18px 16px 28px;
+        gap: 6px;
+    }
+
+    .auth-brand,
+    .auth-sub-title {
+        font-size: 16px;
+    }
+
+    .auth-heading {
+        font-size: 16px;
+        padding: 0 6px;
+    }
+
+    .auth-sub-description {
+        font-size: 13px;
+        padding: 0 6px;
+    }
+
+    .auth-forms {
+        padding: 0;
+    }
+
+    .auth-login-btn {
+        padding: 13px;
+        font-size: 15px;
+    }
+
+    .auth-login-meta {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .role-options {
+        flex-direction: column;
+    }
+
+    .pw-criteria {
+        grid-template-columns: 1fr;
+    }
+
+    .auth-close {
+        font-size: 24px;
+        right: 10px;
+        top: 6px;
+    }
+
+    .auth-back {
+        font-size: 18px;
+        left: 10px;
+        top: 6px;
+    }
+
+    .reg-controls {
+        position: static;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .reg-controls .btn {
+        width: 100%;
+        text-align: center;
+    }
+}
 
 @import "./auth-modal-additions.css";
