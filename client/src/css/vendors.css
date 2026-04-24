@@ -510,7 +510,7 @@
     border: 0;
 }
 
-@media (max-width: 1120px) {
+@media (max-width: 1080px) {
     .vendors-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
@@ -518,20 +518,44 @@
     .vendors-hero-layout {
         grid-template-columns: 1fr;
     }
+
+    .vendors-title {
+        font-size: clamp(2.4rem, 4.5vw, 3.8rem);
+    }
 }
 
-@media (max-width: 760px) {
-    .vendors-toolbar,
-    .vendors-card-topline,
-    .vendors-card-actions,
-    .vendors-card-footer {
-        flex-direction: column;
-        align-items: flex-start;
+@media (max-width: 860px) {
+    .vendors-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1rem;
     }
 
-    .vendors-grid,
+    .vendors-hero-copy {
+        padding: 1.6rem;
+        border-radius: 28px;
+    }
+
+    .vendors-hero-copy::after {
+        inset: 0.75rem;
+    }
+
+    .vendors-hero-panel {
+        padding: 1.35rem;
+        border-radius: 26px;
+    }
+
+    .vendors-panel-title {
+        font-size: clamp(1.75rem, 3vw, 2.4rem);
+    }
+
     .vendors-stat-row {
-        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+
+    .vendors-toolbar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.85rem;
     }
 
     .vendors-search {
@@ -539,8 +563,207 @@
         min-width: 0;
     }
 
+    .vendors-section-title {
+        font-size: clamp(1.9rem, 3.5vw, 2.8rem);
+    }
+}
+
+@media (max-width: 760px) {
+    .vendors-hero {
+        padding: 1.35rem 0 0.75rem;
+    }
+
+    .vendors-hero-layout {
+        gap: 1rem;
+    }
+
+    .vendors-hero-copy {
+        padding: 1.35rem;
+        border-radius: 24px;
+    }
+
+    .vendors-hero-copy::after {
+        inset: 0.6rem;
+        border-radius: 18px;
+    }
+
+    .vendors-title {
+        font-size: clamp(2rem, 7.5vw, 3rem);
+        margin-top: 0.75rem;
+    }
+
+    .vendors-subtitle {
+        font-size: 0.95rem;
+        margin-top: 0.75rem;
+    }
+
+    .vendors-stat-row {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.6rem;
+        margin-top: 1.1rem;
+    }
+
+    .vendors-stat {
+        padding: 0.75rem 0.8rem;
+        border-radius: 16px;
+    }
+
+    .vendors-stat strong {
+        font-size: clamp(1.2rem, 4vw, 1.6rem);
+    }
+
+    .vendors-stat-label {
+        font-size: 0.78rem;
+        margin-bottom: 0.35rem;
+    }
+
+    .vendors-hero-panel {
+        padding: 1.2rem;
+        border-radius: 22px;
+        gap: 0.85rem;
+    }
+
+    .vendors-panel-title {
+        font-size: clamp(1.55rem, 5vw, 2rem);
+    }
+
+    .vendors-panel-points span {
+        padding: 0.75rem 0.9rem;
+        border-radius: 14px;
+        font-size: 0.92rem;
+    }
+
+    .vendors-browser {
+        padding: 0.75rem 0 2rem;
+    }
+
+    .vendors-toolbar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .vendors-section-title {
+        font-size: clamp(1.75rem, 6vw, 2.4rem);
+    }
+
+    .vendors-filter-row {
+        gap: 0.6rem;
+    }
+
+    .vendors-filter-chip {
+        padding: 0.7rem 0.9rem;
+        font-size: 0.88rem;
+    }
+
+    .vendors-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .vendors-card {
+        border-radius: 24px;
+    }
+
+    .vendors-card-body {
+        padding: 1.1rem;
+    }
+
+    .vendors-card-name {
+        font-size: 1.4rem;
+    }
+
+    .vendors-card-topline,
+    .vendors-card-actions,
+    .vendors-card-footer {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
     .vendors-card-actions .btn,
     .vendors-card-actions .vendors-link-btn {
         width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .vendors-hero-copy {
+        padding: 1.1rem;
+        border-radius: 20px;
+    }
+
+    .vendors-title {
+        font-size: clamp(1.75rem, 8.5vw, 2.5rem);
+        margin-top: 0.6rem;
+    }
+
+    .vendors-stat-row {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.5rem;
+    }
+
+    .vendors-stat {
+        padding: 0.65rem 0.6rem;
+        border-radius: 14px;
+    }
+
+    .vendors-stat strong {
+        font-size: clamp(1.05rem, 4.5vw, 1.35rem);
+    }
+
+    .vendors-stat-label {
+        font-size: 0.72rem;
+    }
+
+    .vendors-hero-panel {
+        padding: 1rem;
+        border-radius: 20px;
+    }
+
+    .vendors-panel-title {
+        font-size: clamp(1.35rem, 6vw, 1.75rem);
+    }
+
+    .vendors-panel-points span {
+        padding: 0.65rem 0.8rem;
+        font-size: 0.88rem;
+        border-radius: 12px;
+    }
+
+    .vendors-section-title {
+        font-size: clamp(1.55rem, 7.5vw, 2rem);
+    }
+
+    .vendors-card {
+        border-radius: 20px;
+    }
+
+    .vendors-card-body {
+        padding: 1rem;
+    }
+
+    .vendors-card-name {
+        font-size: 1.25rem;
+    }
+
+    .vendors-card-badge,
+    .vendors-card-tag {
+        font-size: 0.72rem;
+        padding: 0.48rem 0.65rem;
+    }
+
+    .vendors-filter-chip {
+        padding: 0.65rem 0.8rem;
+        font-size: 0.84rem;
+    }
+
+    .vendors-empty {
+        padding: 1.75rem 1.25rem;
+        border-radius: 20px;
+    }
+
+    .vendors-empty h3 {
+        font-size: 1.5rem;
     }
 }

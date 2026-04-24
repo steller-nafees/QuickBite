@@ -3674,6 +3674,10 @@ section {
         flex: none;
         min-width: 0;
     }
+    .food-card {
+        width: 100%;
+    }
+    
 }
 
 

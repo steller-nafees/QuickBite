@@ -650,6 +650,21 @@ body {
 
 /* ─── Responsive ────────────────────────────────────────────────────────── */
 
+@media (max-width: 1080px) {
+    .contact-grid {
+        grid-template-columns: minmax(14rem, 18rem) minmax(0, 1fr);
+        gap: 1.5rem;
+    }
+
+    .contact-hero-title {
+        font-size: clamp(3.5rem, 8vw, 6rem);
+    }
+
+    .contact-form-wrap {
+        padding: 1.8rem 2rem;
+    }
+}
+
 @media (max-width: 960px) {
     .contact-grid {
         grid-template-columns: 1fr;
@@ -662,11 +677,64 @@ body {
     .contact-info-card--social {
         grid-column: 1 / -1;
     }
+
+    .contact-form-wrap {
+        padding: 1.8rem;
+    }
+
+    .faq-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .contact-hero {
+        padding: 2rem 0 3rem;
+    }
+
+    .contact-hero-stats {
+        gap: 1.2rem;
+    }
 }
 
-@media (max-width: 680px) {
-    .faq-grid,
+@media (max-width: 768px) {
+    .contact-hero {
+        padding: 1.8rem 0 2.8rem;
+    }
+
+    .contact-hero-title {
+        font-size: clamp(3rem, 12vw, 5rem);
+    }
+
+    .contact-hero-desc {
+        font-size: 0.97rem;
+        max-width: 100%;
+    }
+
+    .contact-hero-stats {
+        gap: 1rem;
+    }
+
+    .contact-stat strong {
+        font-size: 1.5rem;
+    }
+
+    .contact-main {
+        padding: 2.5rem 0 3rem;
+    }
+
+    .contact-faq {
+        padding: 2.5rem 0 3rem;
+    }
+
+    .contact-form-wrap {
+        padding: 1.5rem;
+        border-radius: 26px;
+    }
+
     .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .faq-grid {
         grid-template-columns: 1fr;
     }
 
@@ -674,12 +742,112 @@ body {
         grid-template-columns: 1fr;
     }
 
-    .contact-form-wrap {
-        padding: 1.5rem;
-        border-radius: 24px;
+    .contact-info-card--social {
+        grid-column: auto;
+    }
+}
+
+@media (max-width: 680px) {
+    .contact-hero-title {
+        font-size: clamp(2.8rem, 14vw, 4.5rem);
     }
 
+    .contact-back-link {
+        margin-bottom: 1.8rem;
+        font-size: 0.85rem;
+        padding: 0.65rem 1rem;
+    }
+
+    .contact-hero-stats {
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+
+    .contact-stat-divider {
+        display: none;
+    }
+
+    .contact-form-wrap {
+        padding: 1.25rem;
+        border-radius: 20px;
+    }
+
+    .contact-form-title {
+        font-size: clamp(1.6rem, 6vw, 2.2rem);
+    }
+
+    .field-input-wrap input,
+    .field-input-wrap select {
+        font-size: 1rem; /* prevents iOS zoom on focus */
+    }
+
+    .field-textarea-wrap textarea {
+        font-size: 1rem;
+        min-height: 110px;
+    }
+
+    .contact-submit {
+        padding: 0.95rem;
+        font-size: 1rem;
+    }
+
+    .contact-faq-title {
+        font-size: clamp(1.9rem, 7vw, 2.6rem);
+    }
+
+    .faq-question {
+        font-size: 0.92rem;
+        padding: 1rem;
+    }
+
+    .faq-answer {
+        font-size: 0.88rem;
+        padding: 0 1rem 1rem;
+    }
+
+    .contact-info-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+    }
+
+    .contact-info-body h3 {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 420px) {
     .contact-hero-title {
-        font-size: clamp(3rem, 14vw, 5rem);
+        font-size: clamp(2.4rem, 15vw, 3.5rem);
+    }
+
+    .contact-hero-desc {
+        font-size: 0.92rem;
+    }
+
+    .contact-form-wrap {
+        padding: 1rem;
+        border-radius: 18px;
+    }
+
+    .contact-info-card {
+        padding: 1.1rem;
+        border-radius: 18px;
+    }
+
+    .faq-item {
+        border-radius: 16px;
+    }
+
+    .contact-success {
+        padding: 2rem 1rem;
+    }
+
+    .contact-success h3 {
+        font-size: 1.6rem;
+    }
+
+    .contact-socials {
+        flex-wrap: wrap;
     }
 }
