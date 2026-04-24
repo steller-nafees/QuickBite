@@ -13,6 +13,9 @@ orderRouters.get("/my-orders", orderController.getMyOrders);
 // Get vendor orders (vendors - view orders for their foods)
 orderRouters.get("/vendor-orders", orderController.getVendorOrders);
 
+// Heartbeat API - Check order status (customers only)
+orderRouters.get("/heartbeat/:id", orderController.getOrderHeartbeat);
+
 // Create order (students only)
 orderRouters.post("/", orderController.createOrder);
 

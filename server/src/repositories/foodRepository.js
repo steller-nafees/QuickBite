@@ -11,11 +11,11 @@ exports.getAllFoods = async () => {
         f.price, 
         f.is_available, 
         f.managed_by, 
-        u.name as vendor_name,
+        u.full_name as vendor_name,
         f.created_at, 
         f.updated_at 
        FROM food f
-       JOIN user u ON f.managed_by = u.id
+       JOIN user u ON f.managed_by = u.user_id
        WHERE f.is_available = true
        ORDER BY f.created_at DESC`
     );
@@ -36,11 +36,11 @@ exports.getFoodById = async (id) => {
         f.price, 
         f.is_available, 
         f.managed_by, 
-        u.name as vendor_name,
+        u.full_name as vendor_name,
         f.created_at, 
         f.updated_at 
        FROM food f
-       JOIN user u ON f.managed_by = u.id
+       JOIN user u ON f.managed_by = u.user_id
        WHERE f.food_id = ?`,
       [id]
     );

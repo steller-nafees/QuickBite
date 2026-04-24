@@ -60,13 +60,13 @@ exports.signup = async (signupData) => {
 
   // Create user
   const userId = await userService.createUser({
-    name,
+    full_name: name,
     email,
     password: hashedPassword,
-    role: role || "student",
+    role: role || "Customer",
   });
 
-  const user = { id: userId, name, email, role: role || "student" };
+  const user = { id: userId, name, email, role: role || "Customer" };
   return formatAuthResponse(user);
 };
 

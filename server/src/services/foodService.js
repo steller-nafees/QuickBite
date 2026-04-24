@@ -10,7 +10,7 @@ exports.getAllFoods = async () => {
 
 exports.getFoodById = async (id) => {
   try {
-    if (!id || isNaN(id)) {
+    if (!id || typeof id !== 'string') {
       throw new Error("Invalid food ID");
     }
     return await foodRepo.getFoodById(id);
@@ -21,7 +21,7 @@ exports.getFoodById = async (id) => {
 
 exports.getFoodsByVendor = async (vendorId) => {
   try {
-    if (!vendorId || isNaN(vendorId)) {
+    if (!vendorId || typeof vendorId !== 'string') {
       throw new Error("Invalid vendor ID");
     }
     return await foodRepo.getFoodsByVendor(vendorId);
@@ -32,7 +32,7 @@ exports.getFoodsByVendor = async (vendorId) => {
 
 exports.createFood = async (vendorId, foodData) => {
   try {
-    if (!vendorId || isNaN(vendorId)) {
+    if (!vendorId || typeof vendorId !== 'string') {
       throw new Error("Invalid vendor ID");
     }
 
@@ -57,11 +57,11 @@ exports.createFood = async (vendorId, foodData) => {
 
 exports.updateFood = async (foodId, vendorId, data) => {
   try {
-    if (!foodId || isNaN(foodId)) {
+    if (!foodId || typeof foodId !== 'string') {
       throw new Error("Invalid food ID");
     }
 
-    if (!vendorId || isNaN(vendorId)) {
+    if (!vendorId || typeof vendorId !== 'string') {
       throw new Error("Invalid vendor ID");
     }
 
@@ -80,11 +80,11 @@ exports.updateFood = async (foodId, vendorId, data) => {
 
 exports.deleteFood = async (foodId, vendorId) => {
   try {
-    if (!foodId || isNaN(foodId)) {
+    if (!foodId || typeof foodId !== 'string') {
       throw new Error("Invalid food ID");
     }
 
-    if (!vendorId || isNaN(vendorId)) {
+    if (!vendorId || typeof vendorId !== 'string') {
       throw new Error("Invalid vendor ID");
     }
 

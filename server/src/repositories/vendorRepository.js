@@ -4,7 +4,7 @@ const db = require("../config/db");
 exports.getAllVendors = async () => {
   try {
     const [rows] = await db.query(
-      "SELECT id, name, email, role, created_at, updated_at FROM user WHERE role = 'vendor'"
+      "SELECT user_id, full_name, email, role, created_at, updated_at FROM user WHERE role = 'Vendor'"
     );
     return rows;
   } catch (error) {
@@ -16,7 +16,7 @@ exports.getAllVendors = async () => {
 exports.getVendor = async (id) => {
   try {
     const [rows] = await db.query(
-      "SELECT id, name, email, role, created_at, updated_at FROM user WHERE id = ? AND role = 'vendor'",
+      "SELECT user_id, full_name, email, role, created_at, updated_at FROM user WHERE user_id = ? AND role = 'Vendor'",
       [id]
     );
     return rows[0];
@@ -34,7 +34,7 @@ exports.updateVendor = async (id, fields) => {
     const setClause = keys.map((k) => `${k} = ?`).join(", ");
 
     await db.query(
-      `UPDATE user SET ${setClause} WHERE id = ? AND role = 'vendor'`,
+      `UPDATE user SET ${setClause} WHERE user_id = ? AND role = 'Vendor'`,
       [...values, id]
     );
   } catch (error) {
@@ -45,7 +45,7 @@ exports.updateVendor = async (id, fields) => {
 // Delete vendor
 exports.deleteVendor = async (id) => {
   try {
-    await db.query("DELETE FROM user WHERE id = ? AND role = 'vendor'", [id]);
+    await db.query("DELETE FROM user WHERE user_id = ? AND role = 'Vendor'", [id]);
   } catch (error) {
     throw new Error(`Failed to delete vendor: ${error.message}`);
   }

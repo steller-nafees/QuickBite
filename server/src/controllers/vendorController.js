@@ -1,7 +1,7 @@
 const vendorService = require("../services/vendorService");
 const foodService = require("../services/foodService");
 
-// Get all vendors (all users with role = 'vendor')
+// Get all vendors (all users with role = 'Vendor')
 exports.getAllVendors = async (req, res) => {
   try {
     const vendors = await vendorService.getAllVendors();
@@ -24,7 +24,7 @@ exports.getAllVendors = async (req, res) => {
 // Get single vendor by ID with their foods
 exports.getVendor = async (req, res) => {
   try {
-    if (!req.params.id || isNaN(req.params.id)) {
+    if (!req.params.id || typeof req.params.id !== 'string') {
       return res.status(400).json({
         status: "fail",
         message: "Invalid vendor ID provided",
@@ -64,7 +64,7 @@ exports.updateVendor = async (req, res) => {
   try {
     const { id } = req.params;
 
-    if (!id || isNaN(id)) {
+    if (!id || typeof id !== 'string') {
       return res.status(400).json({
         status: "fail",
         message: "Invalid vendor ID provided",
@@ -72,7 +72,7 @@ exports.updateVendor = async (req, res) => {
     }
 
     // Verify that the user is updating their own vendor profile
-    if (parseInt(id) !== req.user.id) {
+    if (id !== req.user.id) {
       return res.status(403).json({
         status: "fail",
         message: "You can only update your own vendor profile",
@@ -109,7 +109,7 @@ exports.deleteVendor = async (req, res) => {
   try {
     const { id } = req.params;
 
-    if (!id || isNaN(id)) {
+    if (!id || typeof id !== 'string') {
       return res.status(400).json({
         status: "fail",
         message: "Invalid vendor ID provided",
@@ -117,7 +117,7 @@ exports.deleteVendor = async (req, res) => {
     }
 
     // Verify that the user is deleting their own vendor profile
-    if (parseInt(id) !== req.user.id) {
+    if (id !== req.user.id) {
       return res.status(403).json({
         status: "fail",
         message: "You can only delete your own vendor profile",

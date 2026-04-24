@@ -1,13 +1,13 @@
 const orderService = require("../services/orderService");
 
-// Get customer's orders (students only)
+// Get customer's orders (customers only)
 exports.getMyOrders = async (req, res) => {
   try {
-    // Only students can view their orders
-    if (req.user.role !== "student") {
+    // Only customers can view their orders
+    if (req.user.role !== "Customer") {
       return res.status(403).json({
         status: "fail",
-        message: "Only students can view orders",
+        message: "Only customers can view orders",
       });
     }
 
@@ -32,7 +32,7 @@ exports.getMyOrders = async (req, res) => {
 exports.getVendorOrders = async (req, res) => {
   try {
     // Only vendors can view orders for their foods
-    if (req.user.role !== "vendor") {
+    if (req.user.role !== "Vendor") {
       return res.status(403).json({
         status: "fail",
         message: "Only vendors can view vendor orders",
@@ -59,7 +59,7 @@ exports.getVendorOrders = async (req, res) => {
 // Get order by ID (customer or vendor of that order)
 exports.getOrderById = async (req, res) => {
   try {
-    if (!req.params.id || isNaN(req.params.id)) {
+    if (!req.params.id || typeof req.params.id !== 'string') {
       return res.status(400).json({
         status: "fail",
         message: "Invalid order ID provided",
@@ -99,14 +99,14 @@ exports.getOrderById = async (req, res) => {
   }
 };
 
-// Create order (students only)
+// Create order (customers only)
 exports.createOrder = async (req, res) => {
   try {
-    // Only students can place orders
-    if (req.user.role !== "student") {
+    // Only customers can place orders
+    if (req.user.role !== "Customer") {
       return res.status(403).json({
         status: "fail",
-        message: "Only students can place orders",
+        message: "Only customers can place orders",
       });
     }
 
@@ -142,7 +142,7 @@ exports.createOrder = async (req, res) => {
 exports.updateOrderStatus = async (req, res) => {
   try {
     // Only vendors can update order status
-    if (req.user.role !== "vendor") {
+    if (req.user.role !== "Vendor") {
       return res.status(403).json({
         status: "fail",
         message: "Only vendors can update order status",
@@ -152,7 +152,7 @@ exports.updateOrderStatus = async (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
 
-    if (!id || isNaN(id)) {
+    if (!id || typeof id !== 'string') {
       return res.status(400).json({
         status: "fail",
         message: "Invalid order ID provided",
@@ -182,20 +182,20 @@ exports.updateOrderStatus = async (req, res) => {
   }
 };
 
-// Cancel order (students only)
+// Cancel order (customers only)
 exports.cancelOrder = async (req, res) => {
   try {
-    // Only students can cancel orders
-    if (req.user.role !== "student") {
+    // Only customers can cancel orders
+    if (req.user.role !== "Customer") {
       return res.status(403).json({
         status: "fail",
-        message: "Only students can cancel orders",
+        message: "Only customers can cancel orders",
       });
     }
 
     const { id } = req.params;
 
-    if (!id || isNaN(id)) {
+    if (!id || typeof id !== 'string') {
       return res.status(400).json({
         status: "fail",
         message: "Invalid order ID provided",
@@ -214,6 +214,44 @@ exports.cancelOrder = async (req, res) => {
     res.status(statusCode).json({
       status: "fail",
       message: error.message || "Failed to cancel order",
+    });
+  }
+};
+
+// Heartbeat API - Check order status (customers only)
+exports.getOrderHeartbeat = async (req, res) => {
+  try {
+    // Only customers can use heartbeat
+    if (req.user.role !== "Customer") {
+      return res.status(403).json({
+        status: "fail",
+        message: "Only customers can access this endpoint",
+      });
+    }
+
+    const orderId = req.params.id;
+
+    if (!orderId || typeof orderId !== 'string') {
+      return res.status(400).json({
+        status: "fail",
+        message: "Invalid order ID provided",
+      });
+    }
+
+    console.log(`Heartbeat check for order ID: ${orderId} by user ID: ${req.user.id}`);
+
+    const orderStatus = await orderService.getOrderHeartbeat(orderId, req.user.id);
+
+    res.status(200).json({
+      status: "success",
+      data: orderStatus,
+    });
+  } catch (error) {
+    console.error("Error in heartbeat API:", error);
+    const statusCode = error.message.includes("not found") ? 404 : error.message.includes("not authorized") ? 403 : 500;
+    res.status(statusCode).json({
+      status: "fail",
+      message: error.message || "Failed to fetch order status",
     });
   }
 };

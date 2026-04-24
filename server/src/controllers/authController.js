@@ -60,7 +60,9 @@ exports.login = async (req, res) => {
 exports.protect = async (req, res, next) => {
   try {
     const token = authService.extractToken(req);
+    console.log(`Extracted token: ${token}`);
     const user = await authService.verifyToken(token);
+    console.log(`Authenticated user ID: ${user.id}, role: ${user.role}`);
     req.user = user;
     next();
   } catch (error) {

@@ -3,7 +3,11 @@ const db = require("../config/db");
 exports.getAllUsers = async () => {
   try {
     const [rows] = await db.query("SELECT * FROM user");
-    return rows;
+    return rows.map(user => ({
+      ...user,
+      id: user.user_id,
+      name: user.full_name
+    }));
   } catch (error) {
     throw new Error(`Failed to fetch users: ${error.message}`);
   }
@@ -15,7 +19,13 @@ exports.findByEmail = async (email) => {
       "SELECT * FROM user WHERE email = ?",
       [email]
     );
-    return rows[0];
+    if (rows.length === 0) return null;
+    const user = rows[0];
+    return {
+      ...user,
+      id: user.user_id,
+      name: user.full_name
+    };
   } catch (error) {
     throw new Error(`Failed to find user by email: ${error.message}`);
   }
@@ -24,10 +34,16 @@ exports.findByEmail = async (email) => {
 exports.getUser = async (id) => {
   try {
     const [rows] = await db.query(
-      "SELECT * FROM user WHERE id = ?",
+      "SELECT * FROM user WHERE user_id = ?",
       [id]
     );
-    return rows[0];
+    if (rows.length === 0) return null;
+    const user = rows[0];
+    return {
+      ...user,
+      id: user.user_id,
+      name: user.full_name
+    };
   } catch (error) {
     throw new Error(`Failed to fetch user: ${error.message}`);
   }
@@ -36,10 +52,16 @@ exports.getUser = async (id) => {
 exports.findUserById = async (id) => {
   try {
     const [rows] = await db.query(
-      "SELECT * FROM user WHERE id = ?",
+      "SELECT * FROM user WHERE user_id = ?",
       [id]
     );
-    return rows[0];
+    if (rows.length === 0) return null;
+    const user = rows[0];
+    return {
+      ...user,
+      id: user.user_id,
+      name: user.full_name
+    };
   } catch (error) {
     throw new Error(`Failed to find user by ID: ${error.message}`);
   }
@@ -47,13 +69,13 @@ exports.findUserById = async (id) => {
 
 exports.create = async (user) => {
   try {
-    const { name, email, password, role, student_id, vendor_id } = user;
+    const { full_name, email, password, role } = user;
 
     const [result] = await db.query(
       `INSERT INTO user
-       (name, email, password, role, student_id, vendor_id)
-       VALUES (?, ?, ?, ?, ?, ?)`,
-      [name, email, password, role, student_id, vendor_id]
+       (full_name, email, password, role)
+       VALUES (?, ?, ?, ?)`,
+      [full_name, email, password, role]
     );
 
     return result.insertId;
@@ -70,7 +92,7 @@ exports.updateUserById = async (id, fields) => {
     const setClause = keys.map(k => `${k} = ?`).join(", ");
 
     await db.query(
-      `UPDATE user SET ${setClause} WHERE id = ?`,
+      `UPDATE user SET ${setClause} WHERE user_id = ?`,
       [...values, id]
     );
   } catch (error) {
@@ -80,7 +102,7 @@ exports.updateUserById = async (id, fields) => {
 
 exports.deleteUser = async (id) => {
   try {
-    await db.query("DELETE FROM user WHERE id = ?", [id]);
+    await db.query("DELETE FROM user WHERE user_id = ?", [id]);
   } catch (error) {
     throw new Error(`Failed to delete user: ${error.message}`);
   }
@@ -92,7 +114,13 @@ exports.findByResetToken = async (token) => {
       "SELECT * FROM user WHERE passwordResetToken = ?",
       [token]
     );
-    return rows[0];
+    if (rows.length === 0) return null;
+    const user = rows[0];
+    return {
+      ...user,
+      id: user.user_id,
+      name: user.full_name
+    };
   } catch (error) {
     throw new Error(`Failed to find user by reset token: ${error.message}`);
   }

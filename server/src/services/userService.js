@@ -10,7 +10,7 @@ exports.getAllUsers = async () => {
 
 exports.getUser = async (id) => {
   try {
-    if (!id || isNaN(id)) {
+    if (!id || typeof id !== 'string') {
       throw new Error("Invalid user ID");
     }
     return await userRepo.getUser(id);
@@ -21,8 +21,8 @@ exports.getUser = async (id) => {
 
 exports.createUser = async (userData) => {
   try {
-    if (!userData.name || !userData.email || !userData.password) {
-      throw new Error("Missing required fields: name, email, password");
+    if (!userData.full_name || !userData.email || !userData.password) {
+      throw new Error("Missing required fields: full_name, email, password");
     }
     return await userRepo.create(userData);
   } catch (error) {
@@ -32,7 +32,7 @@ exports.createUser = async (userData) => {
 
 exports.updateUser = async (id, data) => {
   try {
-    if (!id || isNaN(id)) {
+    if (!id || typeof id !== 'string') {
       throw new Error("Invalid user ID");
     }
     if (!data || Object.keys(data).length === 0) {
@@ -57,7 +57,7 @@ exports.findByEmail = async (email) => {
 
 exports.deleteUser = async (id) => {
   try {
-    if (!id || isNaN(id)) {
+    if (!id || typeof id !== 'string') {
       throw new Error("Invalid user ID");
     }
     return await userRepo.deleteUser(id);
