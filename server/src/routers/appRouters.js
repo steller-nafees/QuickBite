@@ -75,6 +75,35 @@ function normalizePickupTime(value) {
   return toSqlDateTime(parsed);
 }
 
+function normalizePaymentDetails(method, accountInput) {
+  const normalizedMethod = String(method || "").toLowerCase();
+  const rawAccount = String(accountInput || "").trim();
+
+  if (normalizedMethod === "bkash" || normalizedMethod === "nagad") {
+    const digits = rawAccount.replace(/\D/g, "");
+    if (digits.length < 11) {
+      throw new Error("A valid mobile banking number is required");
+    }
+    return {
+      method: normalizedMethod === "bkash" ? "Bkash" : "Nagad",
+      accountReference: digits,
+    };
+  }
+
+  if (normalizedMethod === "card") {
+    const digits = rawAccount.replace(/\D/g, "");
+    if (digits.length < 16) {
+      throw new Error("A valid card number is required");
+    }
+    return {
+      method: "Card",
+      accountReference: `**** **** **** ${digits.slice(-4)}`,
+    };
+  }
+
+  throw new Error("A valid payment method is required");
+}
+
 function toVendor(row, foods, ordersByVendor) {
   const vendorFoods = foods.filter((food) => food.vendor_id === row.user_id);
   const vendorOrders = ordersByVendor.get(row.user_id) || [];
@@ -171,7 +200,7 @@ async function getOrdersForCustomer(customerId) {
     [orderIds]
   );
   const [paymentRows] = await pool.query(
-    `SELECT order_id, payment_id, method, status, amount, paid_at
+    `SELECT order_id, payment_id, method, account_reference, status, amount, paid_at
      FROM payment
      WHERE order_id IN (?)`,
     [orderIds]
@@ -196,6 +225,7 @@ async function getOrdersForCustomer(customerId) {
     paymentByOrder.set(row.order_id, {
       payment_id: row.payment_id,
       method: row.method,
+      account_reference: row.account_reference || null,
       status: row.status,
       amount: Number(row.amount || 0),
       paid_at: row.paid_at,
@@ -250,7 +280,7 @@ async function getDashboardDataForVendor(vendorId) {
       [orderIds]
     );
     [paymentRows] = await pool.query(
-      `SELECT payment_id, order_id, method, status, amount, paid_at
+      `SELECT payment_id, order_id, method, account_reference, status, amount, paid_at
        FROM payment
        WHERE order_id IN (?)`,
       [orderIds]
@@ -275,6 +305,7 @@ async function getDashboardDataForVendor(vendorId) {
     payment_id: row.payment_id,
     order_id: row.order_id,
     method: row.method,
+    account_reference: row.account_reference || null,
     status: row.status,
     amount: Number(row.amount || 0),
     paid_at: row.paid_at,
@@ -401,6 +432,8 @@ router.post("/orders", async (req, res) => {
       return res.status(400).json({ ok: false, message: "Pickup time is required" });
     }
 
+    const paymentDetails = normalizePaymentDetails(req.body?.payment_method, req.body?.payment_account);
+
     const foodIds = items.map((item) => item.food_id);
     const [foodRows] = await connection.query(
       `SELECT f.food_id, f.item_name, f.price, f.is_available, f.managed_by, u.full_name AS vendor_name
@@ -468,18 +501,14 @@ router.post("/orders", async (req, res) => {
       );
     }
 
-    const paymentMethodMap = {
-      bkash: "mobile_banking",
-      nagad: "mobile_banking",
-      card: "card",
-    };
     const paymentId = await generatePrefixedId(connection, "payment", "payment_id", "QBP");
     await connection.query(
-      "INSERT INTO payment (payment_id, order_id, method, status, amount, paid_at) VALUES (?, ?, ?, 'completed', ?, NOW())",
+      "INSERT INTO payment (payment_id, order_id, method, account_reference, status, amount, paid_at) VALUES (?, ?, ?, ?, 'completed', ?, NOW())",
       [
         paymentId,
         createdOrder.order_id,
-        paymentMethodMap[String(req.body?.payment_method || "").toLowerCase()] || "card",
+        paymentDetails.method,
+        paymentDetails.accountReference,
         totalAmount,
       ]
     );
@@ -505,6 +534,7 @@ router.post("/orders", async (req, res) => {
           ? {
               payment_id: paymentRows[0].payment_id,
               method: paymentRows[0].method,
+              account_reference: paymentRows[0].account_reference || null,
               status: paymentRows[0].status,
               amount: Number(paymentRows[0].amount || 0),
               paid_at: paymentRows[0].paid_at,

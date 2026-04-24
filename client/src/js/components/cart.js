@@ -551,12 +551,14 @@
         if (cart.length === 0) return;
 
         // Validate payment fields
+        let paymentAccount = '';
         if (checkoutPaymentMethod === 'bkash' || checkoutPaymentMethod === 'nagad') {
             const num = document.getElementById('walletNumber')?.value.trim();
             if (!num || num.length < 11) {
                 shakeField('walletNumber', 'Enter a valid mobile number');
                 return;
             }
+            paymentAccount = num;
         } else if (checkoutPaymentMethod === 'card') {
             const cardNum = document.getElementById('cardNumber')?.value.replace(/\s/g, '');
             const expiry = document.getElementById('cardExpiry')?.value;
@@ -566,6 +568,10 @@
             if (!expiry || expiry.length < 5) { shakeField('cardExpiry', 'Enter expiry'); return; }
             if (!cvv || cvv.length < 3) { shakeField('cardCvv', 'Enter CVV'); return; }
             if (!cardName) { shakeField('cardName', 'Enter name on card'); return; }
+            paymentAccount = cardNum;
+        } else {
+            showCartToast('Please select a payment method.');
+            return;
         }
 
         const user = getAuthUser();
@@ -584,6 +590,7 @@
             const response = await window.QuickBiteApi.placeOrder({
                 pickup_time: pickupTime,
                 payment_method: checkoutPaymentMethod,
+                payment_account: paymentAccount,
                 items: cart.map(function (item) {
                     return {
                         food_id: item.id,
@@ -640,11 +647,12 @@
     }
 
     function buildPaymentProcessingHTML(order) {
-        const method = order.payment?.method || 'wallet';
-        const methodIcon = method === 'card' ? 'fa-credit-card' : 'fa-mobile-screen-button';
-        const methodLabel = method === 'card' ? 'Card Payment' :
-            method === 'bkash' ? 'bKash Payment' :
-                method === 'nagad' ? 'Nagad Payment' : 'Wallet Payment';
+        const method = String(order.payment?.method || '');
+        const normalizedMethod = method.toLowerCase();
+        const methodIcon = normalizedMethod === 'card' ? 'fa-credit-card' : 'fa-mobile-screen-button';
+        const methodLabel = normalizedMethod === 'card' ? 'Card Payment' :
+            normalizedMethod === 'bkash' ? 'bKash Payment' :
+                normalizedMethod === 'nagad' ? 'Nagad Payment' : 'Payment';
 
         return `
         <div class="payment-processing-backdrop" id="paymentProcessingBackdrop"></div>
@@ -774,7 +782,7 @@
 
     function buildPaymentSuccessHTML(order) {
         const transactionId = order.payment?.transaction_id || 'N/A';
-        const payMethod = order.payment?.method?.toUpperCase() || 'WALLET';
+        const payMethod = order.payment?.method || 'Bkash';
         const paidAt = order.payment?.paid_at
             ? new Date(order.payment.paid_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
             : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });

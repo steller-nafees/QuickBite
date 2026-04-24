@@ -163,7 +163,8 @@ DELIMITER ;
 CREATE TABLE `payment` (
   `payment_id` varchar(10) NOT NULL,
   `order_id` varchar(10) NOT NULL,
-  `method` enum('card','wallet','cash','mobile_banking','online') NOT NULL,
+  `method` enum('Bkash','Nagad','Card') NOT NULL,
+  `account_reference` varchar(32) DEFAULT NULL,
   `status` enum('pending','completed','failed') DEFAULT 'pending',
   `amount` decimal(10,2) NOT NULL,
   `paid_at` timestamp NULL DEFAULT NULL
@@ -173,13 +174,13 @@ CREATE TABLE `payment` (
 -- Dumping data for table `payment`
 --
 
-INSERT INTO `payment` (`payment_id`, `order_id`, `method`, `status`, `amount`, `paid_at`) VALUES
-('QBP-0001', 'QB-0001', 'mobile_banking', 'completed', 1280.00, '2026-04-14 07:45:00'),
-('QBP-0002', 'QB-0002', 'card', 'completed', 830.00, '2026-04-14 09:05:00'),
-('QBP-0003', 'QB-0003', 'wallet', 'completed', 1050.00, '2026-04-14 10:05:00'),
-('QBP-0004', 'QB-0004', 'cash', 'completed', 450.00, '2026-04-14 11:05:00'),
-('QBP-0005', 'QB-0005', 'mobile_banking', 'pending', 750.00, NULL),
-('QBP-0006', 'QB-0006', 'card', 'completed', 580.00, '2026-04-14 13:05:00');
+INSERT INTO `payment` (`payment_id`, `order_id`, `method`, `account_reference`, `status`, `amount`, `paid_at`) VALUES
+('QBP-0001', 'QB-0001', 'Bkash', '01711234567', 'completed', 1280.00, '2026-04-14 07:45:00'),
+('QBP-0002', 'QB-0002', 'Card', '**** **** **** 3456', 'completed', 830.00, '2026-04-14 09:05:00'),
+('QBP-0003', 'QB-0003', 'Nagad', '01876543210', 'completed', 1050.00, '2026-04-14 10:05:00'),
+('QBP-0004', 'QB-0004', 'Card', '**** **** **** 1122', 'completed', 450.00, '2026-04-14 11:05:00'),
+('QBP-0005', 'QB-0005', 'Bkash', '01812345678', 'pending', 750.00, NULL),
+('QBP-0006', 'QB-0006', 'Card', '**** **** **** 9876', 'completed', 580.00, '2026-04-14 13:05:00');
 
 --
 -- Triggers `payment`
