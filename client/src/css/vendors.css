@@ -385,6 +385,28 @@
     justify-content: space-between;
     gap: 0.75rem;
 }
+.browse-menu-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.85rem 1rem;
+    border-radius: 999px;
+    background: var(--color-red);
+    color: var(--color-white);
+    font-weight: 700;
+    text-decoration: none;
+    transition: ease 0.18s transform, ease 0.18s background-color, ease 0.18s color, ease 0.18s box-shadow;
+    transform: translateY(0);
+    border: 1px solid var(--color-red);
+}
+
+.browse-menu-btn:hover,
+.browse-menu-btn:focus-visible {
+    background: transparent;
+    border: 1px solid var(--color-red);
+    color: var(--color-red);
+    box-shadow: 0 12px 28px rgba(122, 12, 6, 0.16);
+}
 
 .vendors-card-name {
     font-family: var(--font-secondary);
@@ -443,11 +465,18 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid var(--color-red-soft);
+    border: 2px solid var(--color-red-soft);
     background: transparent;
     color: var(--color-red-dark);
     font-weight: 700;
     text-decoration: none;
+    transition: ease 0.18s transform, ease 0.18s background-color, ease 0.18s color, ease 0.18s box-shadow;
+}
+
+.vendors-link-btn:hover,
+.vendors-link-btn:focus-visible {
+    background: var(--color-red);
+    color: var(--color-cream-soft);
 }
 
 .vendors-empty {

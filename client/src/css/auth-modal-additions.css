@@ -343,13 +343,12 @@
     transition: background 0.2s, border-color 0.2s;
     background: #fff;
     align-self: flex-start;
-    margin-top: 1px;       /* ← was 2px */
+    margin-top: 1px;
     flex-shrink: 0;
 }
 .tac-row input {
     display: none;
 }
-
 
 .tac-row input:checked + .checkmark {
     background-color: #8B0F08;
@@ -411,3 +410,376 @@
     to   { transform: scale(1); opacity: 1; }
 }
 
+
+/* ═══════════════════════════════════════════════════════
+   RESPONSIVE BREAKPOINTS
+   1080px → laptop  |  768px → tablet  |  480px → phone
+   ═══════════════════════════════════════════════════════ */
+
+/* ── Laptop (≤ 1080px) ── */
+@media (max-width: 1080px) {
+    /* Error banner */
+    .auth-form-error {
+        padding: 8px 11px;
+        gap: 8px;
+        margin-bottom: 10px;
+        margin-top: 10px;
+    }
+
+    .auth-form-error span {
+        font-size: 12.5px;
+    }
+
+    /* Toast container */
+    #qb-toast-container {
+        bottom: 20px;
+        right: 20px;
+        gap: 9px;
+    }
+
+    /* Toast */
+    .qb-toast {
+        min-width: 270px;
+        max-width: 340px;
+        padding: 12px 13px 15px 13px;
+        gap: 11px;
+    }
+
+    .qb-toast-title {
+        font-size: 12.5px;
+    }
+
+    .qb-toast-msg {
+        font-size: 12.5px;
+    }
+
+    /* Password strength */
+    .pw-strength {
+        margin: 5px 0 9px;
+    }
+
+    .strength-label {
+        font-size: 11.5px;
+    }
+
+    .pw-criteria li {
+        font-size: 11px;
+    }
+
+    /* Role block */
+    .auth-role-block {
+        margin-bottom: 16px;
+    }
+
+    /* T&C row */
+    .tac-row .text {
+        font-size: 12px;
+    }
+
+    /* Close button */
+    .auth-close {
+        right: 14px;
+        top: 10px;
+        width: 30px;
+        height: 30px;
+        font-size: 17px;
+    }
+
+    /* Reg meta */
+    .auth-reg-meta {
+        margin-top: 12px;
+    }
+}
+
+
+/* ── Tablet (≤ 768px) ── */
+@media (max-width: 768px) {
+    /* Error banner */
+    .auth-form-error {
+        padding: 8px 10px;
+        gap: 7px;
+        margin-bottom: 9px;
+        margin-top: 9px;
+        border-radius: 0 6px 6px 0;
+    }
+
+    .auth-form-error i {
+        font-size: 14px;
+    }
+
+    .auth-form-error span {
+        font-size: 12px;
+        line-height: 1.3;
+    }
+
+    /* Toast container — anchor bottom-left on tablet to avoid thumb zone overlap */
+    #qb-toast-container {
+        bottom: 16px;
+        right: 16px;
+        left: 16px;
+        gap: 8px;
+        align-items: stretch;
+    }
+
+    /* Toast — full-width on tablet */
+    .qb-toast {
+        min-width: 0;
+        max-width: 100%;
+        width: 100%;
+        padding: 11px 12px 14px 12px;
+        gap: 10px;
+        border-radius: 9px;
+    }
+
+    .qb-toast-icon {
+        width: 30px;
+        height: 30px;
+    }
+
+    .qb-toast-icon svg {
+        width: 14px;
+        height: 14px;
+    }
+
+    .qb-toast-title {
+        font-size: 12px;
+        margin-bottom: 1px;
+    }
+
+    .qb-toast-msg {
+        font-size: 12px;
+        line-height: 1.4;
+    }
+
+    .qb-toast-close {
+        font-size: 13px;
+        padding: 2px 3px;
+    }
+
+    /* Password strength */
+    .pw-strength {
+        margin: 4px 0 8px;
+    }
+
+    .strength-bar {
+        gap: 4px;
+        margin-bottom: 4px;
+    }
+
+    .strength-bar .seg {
+        height: 5px;
+    }
+
+    .strength-label {
+        font-size: 11px;
+        margin-bottom: 4px;
+    }
+
+    /* Criteria: single column on tablet */
+    .pw-criteria {
+        grid-template-columns: 1fr 1fr;
+        gap: 3px 8px;
+    }
+
+    .pw-criteria li {
+        font-size: 10.5px;
+        gap: 4px;
+    }
+
+    .pw-criteria li::before {
+        font-size: 10px;
+    }
+
+    /* Role block */
+    .auth-role-block {
+        margin-bottom: 14px;
+    }
+
+    .auth-role-block .role-options {
+        margin-top: 0.3rem;
+    }
+
+    .reg-steps .step > [data-reg-next] {
+        margin-top: 0.6rem;
+    }
+
+    /* T&C row */
+    .tac-row {
+        gap: 7px;
+    }
+
+    .tac-row .checkmark {
+        width: 15px;
+        height: 15px;
+        min-width: 15px;
+    }
+
+    .tac-row .text {
+        font-size: 11.5px;
+    }
+
+    /* Close button */
+    .auth-close {
+        right: 12px;
+        top: 10px;
+        width: 30px;
+        height: 30px;
+        font-size: 16px;
+    }
+
+    /* Reg meta */
+    .auth-reg-meta {
+        margin-top: 12px;
+    }
+}
+
+
+/* ── Phone (≤ 480px) ── */
+@media (max-width: 480px) {
+    /* Error banner */
+    .auth-form-error {
+        padding: 7px 9px;
+        gap: 6px;
+        margin-bottom: 8px;
+        margin-top: 8px;
+        border-left-width: 2px;
+    }
+
+    .auth-form-error i {
+        font-size: 13px;
+    }
+
+    .auth-form-error span {
+        font-size: 11.5px;
+    }
+
+    /* Toast container — full-width, sits just above safe area */
+    #qb-toast-container {
+        bottom: 12px;
+        right: 12px;
+        left: 12px;
+        gap: 7px;
+    }
+
+    /* Toast */
+    .qb-toast {
+        padding: 10px 11px 13px 11px;
+        gap: 9px;
+        border-radius: 8px;
+        border-left-width: 3px;
+    }
+
+    .qb-toast-icon {
+        width: 28px;
+        height: 28px;
+    }
+
+    .qb-toast-icon svg {
+        width: 13px;
+        height: 13px;
+    }
+
+    .qb-toast-title {
+        font-size: 11.5px;
+    }
+
+    .qb-toast-msg {
+        font-size: 11.5px;
+        line-height: 1.38;
+    }
+
+    .qb-toast-progress {
+        height: 2px;
+    }
+
+    /* Password strength */
+    .pw-strength {
+        margin: 4px 0 7px;
+    }
+
+    .strength-bar {
+        gap: 3px;
+        margin-bottom: 3px;
+    }
+
+    .strength-bar .seg {
+        height: 4px;
+    }
+
+    .strength-label {
+        font-size: 10.5px;
+        min-height: 14px;
+        margin-bottom: 3px;
+    }
+
+    /* Criteria: single column on phone */
+    .pw-criteria {
+        grid-template-columns: 1fr;
+        gap: 2px 0;
+    }
+
+    .pw-criteria li {
+        font-size: 10px;
+        gap: 4px;
+    }
+
+    .pw-criteria li::before {
+        font-size: 9.5px;
+    }
+
+    /* Role block */
+    .auth-role-block {
+        margin-bottom: 12px;
+    }
+
+    .auth-role-block .role-options {
+        margin-top: 0.25rem;
+    }
+
+    .reg-steps .step > [data-reg-next] {
+        margin-top: 0.5rem;
+    }
+
+    /* T&C row */
+    .tac-row {
+        gap: 6px;
+    }
+
+    .tac-row .checkmark {
+        width: 14px;
+        height: 14px;
+        min-width: 14px;
+        border-radius: 3px;
+    }
+
+    .checkmark::after {
+        left: 3px;
+        top: 1px;
+        width: 4px;
+        height: 7px;
+    }
+
+    .tac-row .text {
+        font-size: 11px;
+        line-height: 1.38;
+    }
+
+    /* Close button — slightly smaller, easier to tap with larger touch target trick */
+    .auth-close {
+        right: 10px;
+        top: 8px;
+        width: 28px;
+        height: 28px;
+        font-size: 15px;
+    }
+
+    /* Reg meta */
+    .auth-reg-meta {
+        margin-top: 10px;
+    }
+
+    /* Req asterisk — keep legible */
+    .req-star {
+        font-size: 0.7rem;
+    }
+}

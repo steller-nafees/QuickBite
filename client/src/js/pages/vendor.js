@@ -276,7 +276,7 @@ function hideLoadingSkeleton() {
             <div class="container">
                 <div class="vendor-section-heading">
                     <div>
-                        <span class="vendor-section-kicker">Menu</span>
+                        <span class="vendor-section-kicker" id="menu">Menu</span>
                         <h2 class="vendor-section-title">Popular picks from this kitchen</h2>
                         <p class="vendor-section-subtitle" id="vendorMenuSummary">Fresh meals prepared by this vendor.</p>
                     </div>

@@ -3104,6 +3104,25 @@ section {
     cursor: pointer;
 }
 
+.menu-cta-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.menu-cta-button {
+    display: inline-flex;
+    margin: auto;
+    background-color: var(--color-cream-soft);
+    border-radius: 999px;
+    color: var(--color-red-soft);
+    padding: 0.75rem 1.5rem;
+    text-decoration: none;
+    font-family: var(--font-label);
+    cursor: pointer;
+}
+
+
 /* Animations */
 @keyframes fadeInUp {
     from {
