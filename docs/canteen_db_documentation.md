@@ -62,10 +62,15 @@ Represents payment information for an order.
 | ----------- | -------------------------------------- | ------------------------------------ |
 | payment_id | PK, INT                                | Unique identifier for payment        |
 | order_id   | FK → ORDER.order_id                   | Order being paid                     |
-| method      | ENUM('card', 'wallet', 'cash', etc.)  | Payment method                       |
+| method      | ENUM('Bkash', 'Nagad', 'Card')        | Payment method used in the UI        |
+| account_reference | VARCHAR / NULLABLE              | Wallet phone number or masked card number |
 | status      | ENUM('pending', 'completed', 'failed')| Payment status                       |
 | amount      | DECIMAL                               | Payment amount                       |
 | paid_at     | TIMESTAMP                             | Timestamp when payment was completed |
+
+`account_reference` rules:
+- `Bkash` / `Nagad`: store full phone number
+- `Card`: store masked card number only, for example `**** **** **** 3456`
 
 ## 2. Relational Table – Entity Relationships
 
@@ -87,4 +92,3 @@ Represents payment information for an order.
 5. Payment is one-to-one per order.
 6. Vendors manage their own `FOOD` items.
 7. `ORDER.status` tracks the order lifecycle from pending to delivered.
-

@@ -616,7 +616,19 @@ function eatNow(itemId) {
     });
 
     if (item) {
+        if (window.QuickBiteCart && typeof window.QuickBiteCart.addAndCheckout === "function") {
+            window.QuickBiteCart.addAndCheckout(item);
+            showNotification(item.name + " is ready for checkout.");
+            return;
+        }
+
         addToCart(itemId);
+        if (window.QuickBiteCart && typeof window.QuickBiteCart.openCheckout === "function") {
+            window.QuickBiteCart.openCheckout();
+            showNotification(item.name + " is ready for checkout.");
+            return;
+        }
+
         showNotification(item.name + " is in your platter. Eat Now selected.");
     }
 }

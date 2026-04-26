@@ -59,6 +59,9 @@
         getMyOrders: function () {
             return request("/me/orders", { method: "GET" });
         },
+        getOrderHeartbeat: function (orderId) {
+            return request("/orders/heartbeat/" + encodeURIComponent(orderId), { method: "GET" });
+        },
         updateProfile: function (payload) {
             return request("/me/profile", {
                 method: "PATCH",
