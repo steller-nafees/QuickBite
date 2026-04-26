@@ -123,6 +123,7 @@ function updateHeaderUserState() {
                 localStorage.removeItem("quickbite-auth-user");
                 localStorage.removeItem("quickbite-profile");
                 localStorage.removeItem("quickbite-auth-token");
+                localStorage.removeItem("quickbite-cart");
                 // Redirect to home page
                 window.location.href = "index.html";
             };
@@ -250,6 +251,12 @@ function getGlobalHeaderMarkup() {
 }
 
 function getGlobalOrderPillMarkup() {
+    const user = getAuthUserFromStorage();
+    const hasSession = Boolean(user && (user.email || user.fullName || user.name));
+    if (!hasSession) {
+        return "";
+    }
+
     return `
         <section class="order-shell" id="orderShell">
             <div class="order-pill" id="orderPill" aria-expanded="false">
@@ -496,6 +503,7 @@ function initializeAuthSignOut() {
         localStorage.removeItem("quickbite-auth-user");
         localStorage.removeItem("quickbite-profile");
         localStorage.removeItem("quickbite-auth-token");
+        localStorage.removeItem("quickbite-cart");
         window.location.href = "index.html";
     });
 }

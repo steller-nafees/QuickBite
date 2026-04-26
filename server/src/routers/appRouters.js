@@ -501,6 +501,15 @@ router.patch("/me/profile", async (req, res) => {
   }
 });
 
+router.delete("/me/profile", async (req, res) => {
+  try {
+    await pool.query("DELETE FROM user WHERE user_id = ?", [req.user.user_id]);
+    res.json({ ok: true, message: "Account deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ ok: false, message: error.message || "Failed to delete account" });
+  }
+});
+
 router.patch("/me/password", async (req, res) => {
   req.body.passwordCurrent = req.body.currentPassword;
   req.body.password = req.body.newPassword;

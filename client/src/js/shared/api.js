@@ -68,6 +68,11 @@
                 body: JSON.stringify(payload)
             });
         },
+        deleteProfile: function () {
+            return request("/me/profile", {
+                method: "DELETE"
+            });
+        },
         updatePassword: function (payload) {
             return request("/me/password", {
                 method: "PATCH",

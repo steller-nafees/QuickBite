@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -10,12 +11,15 @@
   <link rel="manifest" href="favicon/site.webmanifest" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Baloo+2:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Bungee&family=Baloo+2:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;600&display=swap"
+    rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <link rel="stylesheet" href="../src/css/landing.css" />
   <link rel="stylesheet" href="../src/css/admin-dashboard.css" />
   <link rel="stylesheet" href="../src/css/notifications.css" />
 </head>
+
 <body data-page="admin-dashboard">
   <div class="app" data-page="admin-dashboard">
     <aside class="sidebar" aria-label="Admin sidebar">
@@ -44,6 +48,10 @@
           <span class="nav-icon" aria-hidden="true"><i class="fa-solid fa-chart-line"></i></span>
           <span class="nav-copy">Sales</span>
         </button>
+        <button class="nav-btn" type="button" data-view="profile">
+          <span class="nav-icon" aria-hidden="true"><i class="fa-solid fa-user-gear"></i></span>
+          <span class="nav-copy">Profile Settings</span>
+        </button>
       </nav>
 
       <div class="sidefoot">
@@ -59,7 +67,8 @@
       <header class="topline">
         <div>
           <h1 class="title" id="pageTitle">Dashboard Overview</h1>
-          <p class="subtitle" id="pageSubtitle">Monitor today’s performance, see recent orders, and keep the platform flowing.</p>
+          <p class="subtitle" id="pageSubtitle">Monitor today’s performance, see recent orders, and keep the platform
+            flowing.</p>
         </div>
         <div class="search" role="search">
           <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
@@ -70,10 +79,38 @@
       <!-- OVERVIEW -->
       <section class="view is-active" id="view-overview" data-view="overview">
         <div class="grid4">
-          <div class="card"><div class="accent"></div><div class="cardb"><div class="cl">Total Orders Today</div><div class="cv" id="statOrdersToday">0</div><div class="cm" id="statOrdersTodayMeta">—</div></div></div>
-          <div class="card"><div class="accent"></div><div class="cardb"><div class="cl">Pending Orders</div><div class="cv" id="statPending">0</div><div class="cm">Awaiting vendor acceptance</div></div></div>
-          <div class="card"><div class="accent"></div><div class="cardb"><div class="cl">Revenue Today</div><div class="cv" id="statRevenueToday">৳0</div><div class="cm">Completed payments only</div></div></div>
-          <div class="card"><div class="accent"></div><div class="cardb"><div class="cl">Menu Items Active</div><div class="cv" id="statActiveFoods">0</div><div class="cm" id="statActiveFoodsMeta">—</div></div></div>
+          <div class="card">
+            <div class="accent"></div>
+            <div class="cardb">
+              <div class="cl">Total Orders Today</div>
+              <div class="cv" id="statOrdersToday">0</div>
+              <div class="cm" id="statOrdersTodayMeta">—</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="accent"></div>
+            <div class="cardb">
+              <div class="cl">Pending Orders</div>
+              <div class="cv" id="statPending">0</div>
+              <div class="cm">Awaiting vendor acceptance</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="accent"></div>
+            <div class="cardb">
+              <div class="cl">Revenue Today</div>
+              <div class="cv" id="statRevenueToday">৳0</div>
+              <div class="cm">Completed payments only</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="accent"></div>
+            <div class="cardb">
+              <div class="cl">Menu Items Active</div>
+              <div class="cv" id="statActiveFoods">0</div>
+              <div class="cm" id="statActiveFoodsMeta">—</div>
+            </div>
+          </div>
         </div>
 
         <div class="panel">
@@ -82,24 +119,22 @@
               <div class="pt">Recent Orders (Live)</div>
               <div class="ps">A quick snapshot of the latest order activity</div>
             </div>
-            <button class="btn ghost sm" type="button" data-jump="orders"><i class="fa-solid fa-arrow-right"></i>Go to Orders</button>
+            <button class="btn ghost sm" type="button" data-jump="orders"><i class="fa-solid fa-arrow-right"></i>Go to
+              Orders</button>
           </div>
           <div class="pbody">
-            <div class="tablewrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Order ID</th>
-                    <th>Customer</th>
-                    <th>Vendor</th>
-                    <th>Total</th>
-                    <th>Status</th>
-                    <th>Pickup Time</th>
-                    <th>Payment</th>
-                  </tr>
-                </thead>
-                <tbody id="recentOrdersBody"></tbody>
-              </table>
+            <div class="ad-recent-orders">
+              <div class="ad-row ad-row-header ad-row--overview">
+                <div class="ad-col ad-col-header">Order ID</div>
+                <div class="ad-col ad-col-header">Customer</div>
+                <div class="ad-col ad-col-header">Vendor</div>
+                <div class="ad-col ad-col-header">Total</div>
+                <div class="ad-col ad-col-header">Status</div>
+                <div class="ad-col ad-col-header">Pickup Time</div>
+                <div class="ad-col ad-col-header">Payment</div>
+              </div>
+              <div class="ad-table-modern ad-table-modern--overview" id="recentOrdersBody">
+              </div>
             </div>
           </div>
         </div>
@@ -117,24 +152,22 @@
               <input id="menuSearch" type="text" placeholder="Search items…" aria-label="Search menu items" />
               <select id="menuVendorFilter" aria-label="Filter by vendor"></select>
               <select id="menuCategoryFilter" aria-label="Filter by category"></select>
-              <button class="btn primary" id="addFoodBtn" type="button"><i class="fa-solid fa-plus"></i>Add New Item</button>
+              <button class="btn primary" id="addFoodBtn" type="button"><i class="fa-solid fa-plus"></i>Add New
+                Item</button>
             </div>
           </div>
           <div class="pbody">
-            <div class="tablewrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Name</th>
-                    <th>Category</th>
-                    <th>Price</th>
-                    <th>Vendor</th>
-                    <th>Availability</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="foodBody"></tbody>
-              </table>
+            <div class="ad-recent-orders">
+              <div class="ad-row ad-row-header ad-row--menu">
+                <div class="ad-col ad-col-header">Name</div>
+                <div class="ad-col ad-col-header">Category</div>
+                <div class="ad-col ad-col-header">Price</div>
+                <div class="ad-col ad-col-header">Vendor</div>
+                <div class="ad-col ad-col-header">Availability</div>
+                <div class="ad-col ad-col-header">Actions</div>
+              </div>
+              <div class="ad-table-modern ad-table-modern--menu" id="foodBody">
+              </div>
             </div>
           </div>
         </div>
@@ -151,23 +184,20 @@
             <div class="tabs" id="orderTabs" aria-label="Filter orders by status"></div>
           </div>
           <div class="pbody">
-            <div class="tablewrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Order ID</th>
-                    <th>Customer</th>
-                    <th>Vendor</th>
-                    <th>Items</th>
-                    <th>Total</th>
-                    <th>Status</th>
-                    <th>Pickup Time</th>
-                    <th>Payment Status</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="ordersBody"></tbody>
-              </table>
+            <div class="ad-recent-orders">
+              <div class="ad-row ad-row-header ad-row--orders">
+                <div class="ad-col ad-col-header">Order ID</div>
+                <div class="ad-col ad-col-header">Customer</div>
+                <div class="ad-col ad-col-header">Vendor</div>
+                <div class="ad-col ad-col-header">Items</div>
+                <div class="ad-col ad-col-header">Total</div>
+                <div class="ad-col ad-col-header">Status</div>
+                <div class="ad-col ad-col-header">Pickup Time</div>
+                <div class="ad-col ad-col-header">Payment Status</div>
+                <div class="ad-col ad-col-header">Actions</div>
+              </div>
+              <div class="ad-table-modern ad-table-modern--orders" id="ordersBody">
+              </div>
             </div>
           </div>
         </div>
@@ -176,10 +206,38 @@
       <!-- SALES -->
       <section class="view" id="view-sales" data-view="sales">
         <div class="grid4">
-          <div class="card"><div class="accent"></div><div class="cardb"><div class="cl">Total Revenue</div><div class="cv" id="salesTotalRevenue">৳0</div><div class="cm">Completed payments</div></div></div>
-          <div class="card"><div class="accent"></div><div class="cardb"><div class="cl">Orders Completed</div><div class="cv" id="salesOrdersCompleted">0</div><div class="cm">Unique completed orders</div></div></div>
-          <div class="card"><div class="accent"></div><div class="cardb"><div class="cl">Average Order Value</div><div class="cv" id="salesAvgOrder">৳0</div><div class="cm">Based on completed orders</div></div></div>
-          <div class="card"><div class="accent"></div><div class="cardb"><div class="cl">Payments</div><div class="cv" id="salesPaymentsCount">0</div><div class="cm">All payment records</div></div></div>
+          <div class="card">
+            <div class="accent"></div>
+            <div class="cardb">
+              <div class="cl">Total Revenue</div>
+              <div class="cv" id="salesTotalRevenue">৳0</div>
+              <div class="cm">Completed payments</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="accent"></div>
+            <div class="cardb">
+              <div class="cl">Orders Completed</div>
+              <div class="cv" id="salesOrdersCompleted">0</div>
+              <div class="cm">Unique completed orders</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="accent"></div>
+            <div class="cardb">
+              <div class="cl">Average Order Value</div>
+              <div class="cv" id="salesAvgOrder">৳0</div>
+              <div class="cm">Based on completed orders</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="accent"></div>
+            <div class="cardb">
+              <div class="cl">Payments</div>
+              <div class="cv" id="salesPaymentsCount">0</div>
+              <div class="cm">All payment records</div>
+            </div>
+          </div>
         </div>
 
         <div class="panel">
@@ -202,20 +260,96 @@
             <div class="muted" id="paymentCountLabel">0 payments</div>
           </div>
           <div class="pbody">
-            <div class="tablewrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Payment ID</th>
-                    <th>Order ID</th>
-                    <th>Method</th>
-                    <th>Amount</th>
-                    <th>Payment Status</th>
-                    <th>Paid At</th>
-                  </tr>
-                </thead>
-                <tbody id="paymentsBody"></tbody>
-              </table>
+            <div class="ad-recent-orders">
+              <div class="ad-row ad-row-header ad-row--payments">
+                <div class="ad-col ad-col-header">Payment ID</div>
+                <div class="ad-col ad-col-header">Order ID</div>
+                <div class="ad-col ad-col-header">Method</div>
+                <div class="ad-col ad-col-header">Amount</div>
+                <div class="ad-col ad-col-header">Payment Status</div>
+                <div class="ad-col ad-col-header">Paid At</div>
+              </div>
+              <div class="ad-table-modern ad-table-modern--payments" id="paymentsBody">
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="view" id="view-profile" data-view="profile">
+        <div class="profile-grid">
+          <div class="panel">
+            <div class="phead">
+              <div>
+                <div class="pt">Profile</div>
+                <div class="ps">Update the account details used in your vendor dashboard.</div>
+              </div>
+              <button class="btn primary sm" id="profileSaveBtn" type="button"><i
+                  class="fa-solid fa-floppy-disk"></i>Save</button>
+            </div>
+            <div class="pbody">
+              <div class="settings-form">
+                <label class="field">
+                  <div class="lab">Full Name</div>
+                  <input id="profileFullName" type="text" placeholder="Your full name" />
+                </label>
+                <label class="field">
+                  <div class="lab">Email</div>
+                  <input id="profileEmail" type="email" disabled />
+                </label>
+                <label class="field">
+                  <div class="lab">Phone Number</div>
+                  <input id="profilePhone" type="text" placeholder="+8801XXXXXXXXX" />
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="phead">
+              <div>
+                <div class="pt">Password Change</div>
+                <div class="ps">Keep your account secure with a fresh password.</div>
+              </div>
+              <button class="btn ghost sm" id="profilePasswordBtn" type="button"><i
+                  class="fa-solid fa-key"></i>Update</button>
+            </div>
+            <div class="pbody">
+              <div class="settings-form">
+                <label class="field">
+                  <div class="lab">Current Password</div>
+                  <input id="profileCurrentPw" type="password" placeholder="••••••••" />
+                </label>
+                <label class="field">
+                  <div class="lab">New Password</div>
+                  <input id="profileNewPw" type="password" placeholder="At least 8 characters" />
+                </label>
+                <label class="field">
+                  <div class="lab">Confirm Password</div>
+                  <input id="profileConfirmPw" type="password" placeholder="Repeat new password" />
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel danger-panel">
+            <div class="phead">
+              <div>
+                <div class="pt">Delete Your Account</div>
+                <div class="ps">This permanently removes your vendor profile and signs you out.</div>
+              </div>
+            </div>
+            <div class="pbody">
+              <div class="danger-actions">
+                <p class="muted">Use this only if you are sure you want to permanently delete this QuickBite account.
+                </p>
+                <div class="profile-actions">
+                  <button class="btn ghost sm" id="profileLogoutBtn" type="button"><i
+                      class="fa-solid fa-right-from-bracket"></i>Log Out</button>
+                  <button class="btn danger sm" id="profileDeleteBtn" type="button"><i
+                      class="fa-solid fa-trash"></i>Delete Account</button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -226,50 +360,132 @@
   <!-- MODAL -->
   <div class="backdrop" id="foodModal" hidden>
     <div class="modal" role="dialog" aria-modal="true" aria-label="Food item form">
+
+      <!-- Header -->
       <div class="mhead">
-        <h3 id="foodModalTitle">Add New Food Item</h3>
-        <button class="btn ghost sm" type="button" id="foodModalClose"><i class="fa-solid fa-xmark"></i>Close</button>
+        <div class="mhead-inner">
+          <div class="mhead-icon" aria-hidden="true">
+            <i class="fa-solid fa-bowl-food"></i>
+          </div>
+          <div class="mhead-copy">
+            <p class="modal-kicker">Menu Studio</p>
+            <h3 id="foodModalTitle">Add New Food Item</h3>
+          </div>
+        </div>
+        <button class="modal-close" type="button" id="foodModalClose" aria-label="Close food modal">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
       </div>
+
+      <!-- Body -->
       <div class="mbody">
-        <div class="row">
-          <div class="field">
-            <div class="lab">Item Name</div>
-            <input id="fiName" type="text" placeholder="e.g. Chicken Burger" />
-          </div>
-          <div class="field">
-            <div class="lab">Category</div>
-            <input id="fiCategory" type="text" placeholder="e.g. Burger, Pasta, Sushi" />
-          </div>
-          <div class="field">
-            <div class="lab">Price (৳)</div>
-            <input id="fiPrice" type="number" min="0" placeholder="0" />
-          </div>
-        </div>
-        <div class="row" style="margin-top:10px">
-          <div class="field">
-            <div class="lab">Vendor</div>
-            <select id="fiVendor"></select>
-          </div>
-          <div class="field">
-            <div class="lab">Image Upload</div>
-            <input id="fiImage" type="file" accept="image/*" />
-          </div>
-          <div class="field">
-            <div class="lab">Available</div>
-            <div class="inline">
-              <button class="toggle on" id="fiAvail" type="button" aria-pressed="true" aria-label="Available toggle"><span class="knob"></span></button>
-              <span class="muted" id="fiAvailLabel">Available</span>
+        <div class="food-modal-layout">
+
+          <!-- Left: main fields -->
+          <div class="food-modal-main">
+
+            <!-- Name + Category -->
+            <div class="frow">
+              <div class="field field-grow">
+                <label class="lab" for="fiName">Item Name</label>
+                <input id="fiName" type="text" placeholder="e.g. Smoked Chicken Burger" />
+              </div>
+              <div class="field">
+                <label class="lab" for="fiCategory">Category</label>
+                <input id="fiCategory" type="text" placeholder="e.g. Burger, Pasta" />
+              </div>
             </div>
+
+            <!-- Description -->
+            <div class="field">
+              <label class="lab" for="fiDesc">Description</label>
+              <textarea id="fiDesc"
+                placeholder="Describe the flavor, texture, or signature ingredients that make this item stand out."></textarea>
+            </div>
+
+            <!-- Price + Vendor -->
+            <div class="frow">
+              <div class="field">
+                <label class="lab" for="fiPrice">Price (৳)</label>
+                <div class="price-input-wrap">
+                  <span class="price-symbol">৳</span>
+                  <input id="fiPrice" type="number" min="0" placeholder="0" />
+                </div>
+              </div>
+              <div class="field field-grow">
+                <label class="lab" for="fiVendor">Vendor</label>
+                <select id="fiVendor"></select>
+              </div>
+            </div>
+
+            <!-- Availability toggle row -->
+            <div class="avail-row" id="fiAvailCard" role="button" tabindex="0" aria-label="Toggle availability">
+              <div class="avail-text">
+                <strong id="fiAvailLabel">Available</strong>
+                <span>Customers can see and order this item right away.</span>
+              </div>
+              <span class="toggle on" id="fiAvail" aria-pressed="true" aria-label="Available toggle">
+                <span class="knob"></span>
+              </span>
+            </div>
+
           </div>
-        </div>
-        <div style="margin-top:10px">
-          <div class="lab">Description</div>
-          <textarea id="fiDesc" placeholder="Brief description of the item…"></textarea>
+
+          <!-- Right: image + tips -->
+          <div class="food-modal-side">
+
+            <!-- Image upload -->
+            <div class="field">
+              <label class="lab">Cover Photo</label>
+              <label class="upload-dropzone" for="fiImage">
+                <span class="upload-icon" aria-hidden="true"><i class="fa-regular fa-image"></i></span>
+                <strong>Add cover photo</strong>
+                <span class="upload-hint">PNG or JPG recommended</span>
+                <span class="upload-filename" id="fiImageName">No file selected</span>
+              </label>
+              <input id="fiImage" type="file" accept="image/*" />
+            </div>
+
+            <!-- Quick tips card -->
+            <div class="tips-card">
+              <p class="tips-title">Quick Tips</p>
+              <ul class="tips-list">
+                <li>Use a square image for best display</li>
+                <li>Descriptive names rank higher in search</li>
+                <li>Toggle off to hide without deleting</li>
+              </ul>
+            </div>
+
+          </div>
         </div>
       </div>
+
+      <!-- Footer -->
       <div class="mfoot">
         <button class="btn ghost" type="button" id="foodModalCancel">Cancel</button>
-        <button class="btn primary" type="button" id="foodModalSave">Save Item</button>
+        <button class="btn primary" type="button" id="foodModalSave">
+          <i class="fa-solid fa-floppy-disk"></i> Save Item
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="backdrop" id="confirmDeleteModal" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-label="Confirm account deletion">
+      <div class="mhead">
+        <h3>Delete your account?</h3>
+        <button class="btn ghost sm" type="button" id="confirmDeleteClose"><i
+            class="fa-solid fa-xmark"></i>Close</button>
+      </div>
+      <div class="mbody">
+        <p class="muted" style="margin-top:0">This action cannot be undone. Your QuickBite vendor profile will be
+          permanently deleted.</p>
+      </div>
+      <div class="mfoot">
+        <button class="btn ghost" type="button" id="confirmDeleteCancel">Cancel</button>
+        <button class="btn danger" type="button" id="confirmDeleteAction"><i class="fa-solid fa-trash"></i>Delete
+          Account</button>
       </div>
     </div>
   </div>
@@ -279,4 +495,5 @@
   <script src="../src/js/pages/admin-dashboard.js"></script>
   <script src="../src/js/shared/toast.js"></script>
 </body>
+
 </html>
