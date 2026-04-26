@@ -193,6 +193,32 @@
     );
   }
 
+  function OrdersEmptyState({ icon, title, message, hint, actionLabel, actionHref, className }) {
+    return React.createElement(
+      "article",
+      { className: "qb-orders-empty" + (className ? " " + className : "") },
+      React.createElement(
+        "div",
+        { className: "qb-orders-empty-icon", "aria-hidden": "true" },
+        React.createElement("i", { className: icon })
+      ),
+      React.createElement(
+        "div",
+        { className: "qb-orders-empty-copy" },
+        React.createElement("h4", { className: "qb-orders-empty-title" }, title),
+        React.createElement("p", { className: "qb-orders-empty-message" }, message),
+        hint ? React.createElement("span", { className: "qb-orders-empty-hint" }, hint) : null
+      ),
+      actionLabel && actionHref
+        ? React.createElement(
+          "a",
+          { className: "qb-orders-empty-action", href: actionHref },
+          actionLabel
+        )
+        : null
+    );
+  }
+
   function deriveMostOrderedItem(pastOrders) {
     const counts = new Map();
     (pastOrders || []).forEach((order) => {
@@ -212,154 +238,6 @@
     });
 
     return top;
-  }
-
-  function buildMockData() {
-    const now = Date.now();
-    const currentOrders = [
-      {
-        order_id: "QB-10421",
-        vendor_name: "Burger Haus",
-        created_at: "2026-04-13T08:42:00.000Z",
-        pickup_time: new Date(now + 22 * 60 * 1000).toISOString(),
-        status: "pending",
-        total_amount: 280,
-        items: [
-          { item_name: "Chicken Burger", quantity: 1, unit_price: 160 },
-          { item_name: "Fries", quantity: 1, unit_price: 60 },
-          { item_name: "Cola", quantity: 1, unit_price: 60 },
-        ],
-        payment: { method: "Bkash", status: "paid" },
-      },
-      {
-        order_id: "QB-10411",
-        vendor_name: "Grill Station",
-        created_at: "2026-04-13T07:55:00.000Z",
-        pickup_time: new Date(now + 11 * 60 * 1000).toISOString(),
-        status: "preparing",
-        total_amount: 430,
-        items: [
-          { item_name: "Beef Burger", quantity: 1, unit_price: 220 },
-          { item_name: "Fries", quantity: 2, unit_price: 60 },
-          { item_name: "Iced Tea", quantity: 1, unit_price: 90 },
-        ],
-        payment: { method: "Cash", status: "unpaid" },
-      },
-      {
-        order_id: "QB-10398",
-        vendor_name: "Wrap & Roll",
-        created_at: "2026-04-13T06:31:00.000Z",
-        pickup_time: new Date(now + 4 * 60 * 1000).toISOString(),
-        status: "ready",
-        total_amount: 320,
-        items: [
-          { item_name: "Chicken Wrap", quantity: 2, unit_price: 140 },
-          { item_name: "Mineral Water", quantity: 1, unit_price: 40 },
-        ],
-        payment: { method: "Nagad", status: "paid" },
-      },
-    ];
-
-    const pastOrders = [
-      {
-        order_id: "QB-10365",
-        vendor_name: "Burger Haus",
-        created_at: "2026-04-10T10:12:00.000Z",
-        pickup_time: "01:10 PM",
-        status: "delivered",
-        total_amount: 360,
-        items: [
-          { item_name: "Chicken Burger", quantity: 2, unit_price: 160 },
-          { item_name: "Cola", quantity: 1, unit_price: 40 },
-        ],
-        payment: { method: "Bkash", status: "paid" },
-      },
-      {
-        order_id: "QB-10312",
-        vendor_name: "Grill Station",
-        created_at: "2026-04-06T09:42:00.000Z",
-        pickup_time: "12:30 PM",
-        status: "completed",
-        total_amount: 540,
-        items: [
-          { item_name: "Beef Burger", quantity: 2, unit_price: 220 },
-          { item_name: "Fries", quantity: 1, unit_price: 60 },
-          { item_name: "Cola", quantity: 1, unit_price: 40 },
-        ],
-        payment: { method: "Card", status: "paid" },
-      },
-      {
-        order_id: "QB-10288",
-        vendor_name: "Wrap & Roll",
-        created_at: "2026-04-02T11:05:00.000Z",
-        pickup_time: "01:00 PM",
-        status: "delivered",
-        total_amount: 420,
-        items: [
-          { item_name: "Chicken Burger", quantity: 1, unit_price: 160 },
-          { item_name: "Chicken Wrap", quantity: 1, unit_price: 140 },
-          { item_name: "Fries", quantity: 1, unit_price: 60 },
-          { item_name: "Iced Tea", quantity: 1, unit_price: 60 },
-        ],
-        payment: { method: "Bkash", status: "paid" },
-      },
-      {
-        order_id: "QB-10231",
-        vendor_name: "Burger Haus",
-        created_at: "2026-03-29T08:36:00.000Z",
-        pickup_time: "12:10 PM",
-        status: "completed",
-        total_amount: 300,
-        items: [
-          { item_name: "Fries", quantity: 2, unit_price: 60 },
-          { item_name: "Chicken Burger", quantity: 1, unit_price: 160 },
-        ],
-        payment: { method: "Cash", status: "paid" },
-      },
-      {
-        order_id: "QB-10192",
-        vendor_name: "Sip & Bite",
-        created_at: "2026-03-24T09:18:00.000Z",
-        pickup_time: "12:40 PM",
-        status: "delivered",
-        total_amount: 280,
-        items: [
-          { item_name: "Chicken Burger", quantity: 1, unit_price: 160 },
-          { item_name: "Cola", quantity: 2, unit_price: 60 },
-        ],
-        payment: { method: "Nagad", status: "paid" },
-      },
-      {
-        order_id: "QB-10110",
-        vendor_name: "Wrap & Roll",
-        created_at: "2026-03-18T10:52:00.000Z",
-        pickup_time: "01:15 PM",
-        status: "completed",
-        total_amount: 410,
-        items: [
-          { item_name: "Chicken Wrap", quantity: 2, unit_price: 140 },
-          { item_name: "Fries", quantity: 1, unit_price: 60 },
-          { item_name: "Mineral Water", quantity: 1, unit_price: 70 },
-        ],
-        payment: { method: "Bkash", status: "paid" },
-      },
-      {
-        order_id: "QB-10071",
-        vendor_name: "Grill Station",
-        created_at: "2026-03-12T09:05:00.000Z",
-        pickup_time: "12:20 PM",
-        status: "delivered",
-        total_amount: 480,
-        items: [
-          { item_name: "Beef Burger", quantity: 1, unit_price: 220 },
-          { item_name: "Chicken Burger", quantity: 1, unit_price: 160 },
-          { item_name: "Iced Tea", quantity: 1, unit_price: 100 },
-        ],
-        payment: { method: "Card", status: "paid" },
-      },
-    ];
-
-    return { currentOrders, pastOrders };
   }
 
   /* ─── Expandable Past Order Row ─── */
@@ -572,7 +450,14 @@
           { className: "qb-section" },
           React.createElement("h3", { className: "qb-section-title" }, "Current Orders"),
           currentOrders.length === 0
-            ? React.createElement("p", { className: "qb-empty" }, "No active orders right now. Place an order and it will show up here.")
+            ? React.createElement(OrdersEmptyState, {
+              icon: "fas fa-burger",
+              title: "No active orders on the grill",
+              message: "Your snack mission is currently on standby.",
+              hint: "Place an order and we will start the campus food drama immediately.",
+              actionLabel: "Browse Menu",
+              actionHref: "menu.html",
+            })
             : React.createElement(
               "div",
               { className: "qb-card-row" },
@@ -670,42 +555,51 @@
             "section",
             { className: "qb-section" },
             React.createElement("h3", { className: "qb-section-title" }, "Past Orders"),
-
-            /* Column header row */
-            React.createElement(
-              "div",
-              { className: "qb-row qb-row-header" },
-              React.createElement("div", { className: "qb-col qb-col-header" }, "Order ID"),
-              React.createElement("div", { className: "qb-col qb-col-header" }, "Date"),
-              React.createElement("div", { className: "qb-col qb-col-header" }, "Vendor"),
-              React.createElement("div", { className: "qb-col qb-col-header" }, "Total"),
-              React.createElement("div", { className: "qb-col qb-col-header" }, "Status"),
-              React.createElement("div", { className: "qb-col" })
-            ),
-
-            React.createElement(
-              "div",
-              { className: "qb-table-modern" },
-              shownPast.map((order) =>
-                React.createElement(PastOrderRow, { key: order.order_id, order })
-              )
-            ),
-
-            sortedPast.length > shownPast.length
-              ? React.createElement(
-                "div",
-                { className: "qb-view-more" },
+            sortedPast.length === 0
+              ? React.createElement(OrdersEmptyState, {
+                icon: "fas fa-utensils",
+                title: "No past orders yet",
+                message: "You haven't eaten anything from QuickBite yet... suspicious behavior for a hungry student.",
+                hint: "Order once and your snack history will start living here.",
+                actionLabel: "Find Something Tasty",
+                actionHref: "menu.html",
+              })
+              : React.createElement(
+                React.Fragment,
+                null,
                 React.createElement(
-                  "button",
-                  {
-                    type: "button",
-                    className: "qb-btn qb-btn-primary",
-                    onClick: () => setPastLimit((n) => Math.min(n + 4, sortedPast.length)),
-                  },
-                  "View More"
-                )
+                  "div",
+                  { className: "qb-row qb-row-header" },
+                  React.createElement("div", { className: "qb-col qb-col-header" }, "Order ID"),
+                  React.createElement("div", { className: "qb-col qb-col-header" }, "Date"),
+                  React.createElement("div", { className: "qb-col qb-col-header" }, "Vendor"),
+                  React.createElement("div", { className: "qb-col qb-col-header" }, "Total"),
+                  React.createElement("div", { className: "qb-col qb-col-header" }, "Status"),
+                  React.createElement("div", { className: "qb-col" })
+                ),
+                React.createElement(
+                  "div",
+                  { className: "qb-table-modern" },
+                  shownPast.map((order) =>
+                    React.createElement(PastOrderRow, { key: order.order_id, order })
+                  )
+                ),
+                sortedPast.length > shownPast.length
+                  ? React.createElement(
+                    "div",
+                    { className: "qb-view-more" },
+                    React.createElement(
+                      "button",
+                      {
+                        type: "button",
+                        className: "qb-btn qb-btn-primary",
+                        onClick: () => setPastLimit((n) => Math.min(n + 4, sortedPast.length)),
+                      },
+                      "View More"
+                    )
+                  )
+                  : null
               )
-              : null
           )
           : React.createElement(SettingsSection, { user, onSaveUser })
     );
@@ -786,7 +680,7 @@
 
   function CustomerDashboardApp() {
     const [user, setUser] = useState(readAuthUser());
-    const [data, setData] = useState(buildMockData());
+    const [data, setData] = useState({ currentOrders: [], pastOrders: [] });
 
     useEffect(() => {
       const u = readAuthUser();
@@ -803,6 +697,7 @@
           });
         })
         .catch(function (error) {
+          setData({ currentOrders: [], pastOrders: [] });
           notify(error.message, "err");
         });
     }, []);

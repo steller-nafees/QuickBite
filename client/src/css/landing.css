@@ -2623,6 +2623,11 @@ section {
     position: relative;
 }
 
+.food-preview-modal:has(.menu-modal-layout) {
+    max-width: 760px;
+    max-height: min(560px, 88dvh);
+}
+
 .food-preview-overlay.is-open .food-preview-modal {
     transform: translateY(0);
 }
@@ -2684,6 +2689,23 @@ section {
     transform: scale(1.08);
 }
 
+.menu-modal-layout {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    min-height: 0;
+    height: 100%;
+}
+
+.menu-modal-content {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+    min-width: 0;
+    background: var(--color-cream-light);
+}
+
 /* Modal image */
 .modal-image-wrap {
     position: relative;
@@ -2699,6 +2721,16 @@ section {
     height: 100%;
     object-fit: cover;
     display: block;
+}
+
+.menu-modal-layout .modal-image-wrap {
+    width: 43%;
+    min-width: 18rem;
+    max-width: 20rem;
+    height: auto;
+    min-height: 100%;
+    aspect-ratio: auto;
+    flex: 0 0 43%;
 }
 
 .modal-badge {
@@ -2727,6 +2759,11 @@ section {
     padding: 1.35rem 1.4rem 1.6rem;
     scrollbar-width: thin;
     scrollbar-color: var(--color-red) var(--color-cream-dark);
+}
+
+.menu-modal-content .modal-body {
+    overflow: visible;
+    padding: 1.15rem 1.25rem 1rem;
 }
 
 .modal-body::-webkit-scrollbar {
@@ -2786,6 +2823,19 @@ section {
 
 .modal-vendor-chip i {
     font-size: 0.75rem;
+}
+
+.modal-vendor-link {
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.modal-vendor-link:hover,
+.modal-vendor-link:focus-visible {
+    background: rgba(122, 12, 6, 0.14);
+    border-color: rgba(122, 12, 6, 0.24);
+    transform: translateY(-1px);
 }
 
 /* Meta pills row */
@@ -2849,6 +2899,11 @@ section {
     border-top: 1px solid rgba(122, 12, 6, 0.1);
     background: var(--color-cream-light);
     flex-shrink: 0;
+}
+
+.menu-modal-content .modal-footer {
+    padding: 0.9rem 1.25rem 1.1rem;
+    margin-top: auto;
 }
 
 /* Quantity stepper */
@@ -3817,6 +3872,19 @@ section {
     .food-preview-modal {
         max-height: 96dvh;
         border-radius: 24px 24px 0 0;
+    }
+
+    .menu-modal-layout {
+        flex-direction: column;
+    }
+
+    .menu-modal-layout .modal-image-wrap {
+        width: 100%;
+        max-width: none;
+        min-width: 0;
+        min-height: 12rem;
+        aspect-ratio: 16 / 8;
+        flex: none;
     }
 
     .modal-body {

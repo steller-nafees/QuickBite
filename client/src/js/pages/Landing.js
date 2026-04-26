@@ -146,7 +146,7 @@ function initializeSearch() {
         searchInput.value = item.name;
         currentSuggestions = [];
         renderSuggestions();
-        showNotification(item.name + " by " + item.vendor + " selected");
+        openFoodPreview(item);
     }
 
     searchInput.addEventListener("input", function () {
@@ -200,8 +200,17 @@ function initializeSearch() {
         e.preventDefault();
         const searchTerm = searchInput.value.trim();
         if (searchTerm) {
-            showNotification('Showing results for "' + searchTerm + '"');
-            searchInput.value = "";
+            const exactMatch = menuItems.find(function (item) {
+                return item.name.toLowerCase() === searchTerm.toLowerCase();
+            });
+            const firstMatch = exactMatch || currentSuggestions[0];
+
+            if (firstMatch) {
+                chooseSuggestion(firstMatch);
+                return;
+            }
+
+            showNotification('No food found for "' + searchTerm + '"');
         }
     });
 }
@@ -614,40 +623,38 @@ function initializeFoodPreviewModal() {
             <button class="modal-close" id="modalClose" aria-label="Close preview">
                 <i class="fas fa-times"></i>
             </button>
-            <div class="modal-image-wrap">
-                <img src="" alt="" class="modal-image" id="modalImage">
-                <div class="modal-badge" id="modalBadge">
-                    <i class="fas fa-fire"></i> <span>Bestseller</span>
+            <div class="menu-modal-layout">
+                <div class="modal-image-wrap">
+                    <img src="" alt="" class="modal-image" id="modalImage">
+                    <div class="modal-badge" id="modalBadge">
+                        <i class="fas fa-fire"></i> <span>Popular pick</span>
+                    </div>
                 </div>
-            </div>
-            <div class="modal-body">
-                <div class="modal-header-row">
-                    <h2 class="modal-name" id="modalFoodName">—</h2>
-                    <div class="modal-price" id="modalPrice">—</div>
+                <div class="menu-modal-content">
+                    <div class="modal-body">
+                        <div class="modal-header-row">
+                            <h2 class="modal-name" id="modalFoodName">-</h2>
+                            <div class="modal-price" id="modalPrice">-</div>
+                        </div>
+                        <a class="modal-vendor-chip modal-vendor-link" id="modalVendorLink" href="#">
+                            <i class="fas fa-store"></i>
+                            <span id="modalVendorName">-</span>
+                        </a>
+                        <div class="modal-meta-row">
+                            <span class="modal-meta-pill" id="modalRating"><i class="fas fa-star"></i> 4.5</span>
+                            <span class="modal-meta-pill" id="modalEta"><i class="fas fa-clock"></i> 15-20 min</span>
+                        </div>
+                        <div class="modal-divider"></div>
+                        <p class="modal-section-label">About this dish</p>
+                        <p class="modal-description" id="modalDescription">-</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="modal-add-btn" id="modalAddBtn">
+                            <i class="fas fa-shopping-bag"></i>
+                            <span>Add to cart</span>
+                        </button>
+                    </div>
                 </div>
-                <div class="modal-vendor-chip" id="modalVendorChip">
-                    <i class="fas fa-store"></i>
-                    <span id="modalVendorName">—</span>
-                </div>
-                <div class="modal-meta-row" id="modalMetaRow">
-                    <span class="modal-meta-pill" id="modalRating"><i class="fas fa-star"></i> 4.5</span>
-                    <span class="modal-meta-pill" id="modalEta"><i class="fas fa-clock"></i> 15–20 min</span>
-                    <span class="modal-meta-pill" id="modalCal"><i class="fas fa-fire-alt"></i> ~450 kcal</span>
-                </div>
-                <div class="modal-divider"></div>
-                <p class="modal-section-label">About this dish</p>
-                <p class="modal-description" id="modalDescription">—</p>
-            </div>
-            <div class="modal-footer">
-                <div class="qty-stepper" aria-label="Quantity">
-                    <button class="qty-btn" id="qtyMinus" aria-label="Decrease quantity">−</button>
-                    <span class="qty-value" id="qtyValue">1</span>
-                    <button class="qty-btn" id="qtyPlus" aria-label="Increase quantity">+</button>
-                </div>
-                <button class="modal-add-btn" id="modalAddBtn">
-                    <i class="fas fa-shopping-bag"></i>
-                    <span id="modalAddLabel">Add to cart</span>
-                </button>
             </div>
         </div>
     `;
@@ -655,32 +662,14 @@ function initializeFoodPreviewModal() {
     document.body.appendChild(overlay);
 
     let currentItem = null;
-    let qty = 1;
 
     const modal = overlay.querySelector("#foodPreviewModal");
     const closeBtn = overlay.querySelector("#modalClose");
-    const qtyMinus = overlay.querySelector("#qtyMinus");
-    const qtyPlus = overlay.querySelector("#qtyPlus");
-    const qtyValueEl = overlay.querySelector("#qtyValue");
     const modalAddBtn = overlay.querySelector("#modalAddBtn");
-    const modalAddLabel = overlay.querySelector("#modalAddLabel");
-
-    function updateQty(newQty) {
-        qty = Math.max(1, Math.min(20, newQty));
-        qtyValueEl.textContent = qty;
-        qtyMinus.disabled = qty <= 1;
-        if (currentItem) {
-            modalAddLabel.textContent = "Add " + qty + " — " + formatCurrency(currentItem.price * qty);
-        }
-    }
-
-    qtyMinus.addEventListener("click", function () { updateQty(qty - 1); });
-    qtyPlus.addEventListener("click", function () { updateQty(qty + 1); });
 
     modalAddBtn.addEventListener("click", function () {
         if (!currentItem) return;
-        for (let i = 0; i < qty; i++) addToCart(currentItem);
-        showNotification(qty + "× " + currentItem.name + " added to cart");
+        addToCart(currentItem);
         closeFoodPreview();
     });
 
@@ -696,17 +685,16 @@ function initializeFoodPreviewModal() {
 
     window._openFoodPreview = function (item) {
         currentItem = item;
-        qty = 1;
 
         overlay.querySelector("#modalImage").src = item.image;
         overlay.querySelector("#modalImage").alt = item.name;
         overlay.querySelector("#modalFoodName").textContent = item.name;
         overlay.querySelector("#modalPrice").textContent = formatCurrency(item.price);
-        overlay.querySelector("#modalVendorName").textContent = item.vendor;
-        overlay.querySelector("#modalRating").innerHTML = '<i class="fas fa-star" style="color:#e8a020"></i> ' + (item.rating || "—");
-        overlay.querySelector("#modalEta").innerHTML = '<i class="fas fa-clock"></i> ' + (item.eta || "15–20 min");
+        overlay.querySelector("#modalVendorName").textContent = item.vendor || "Campus vendor";
+        overlay.querySelector("#modalVendorLink").href = "vendor.html?vendorId=" + encodeURIComponent(item.vendor_id);
+        overlay.querySelector("#modalRating").innerHTML = '<i class="fas fa-star" style="color:#e8a020"></i> ' + formatRating(item.rating);
+        overlay.querySelector("#modalEta").innerHTML = '<i class="fas fa-clock"></i> ' + (item.eta || "15-20 min");
         overlay.querySelector("#modalDescription").textContent = item.description || "No description available.";
-        updateQty(1);
 
         overlay.classList.add("is-open");
         document.body.style.overflow = "hidden";
@@ -836,4 +824,9 @@ function formatCurrency(amount) {
         style: "currency",
         currency: "BDT"
     }).format(amount);
+}
+
+function formatRating(value) {
+    const numericValue = Number(value || 0);
+    return numericValue ? numericValue.toFixed(1) : "4.5";
 }
