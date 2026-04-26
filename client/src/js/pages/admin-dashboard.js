@@ -105,6 +105,7 @@ const state = {
   sessionVendorId: null,
   isVendorSession: false,
   liveTimer: null,
+  profileDeleteBusy: false,
   ...seedData(),
 };
 
@@ -126,6 +127,25 @@ function userName(id) {
   return u ? u.name : id;
 }
 
+function getOrderItems(order) {
+  if (order && Array.isArray(order.items) && order.items.length) {
+    return order.items;
+  }
+  return state.orderItems.filter((it) => it.order_id === order.order_id);
+}
+
+function signOut() {
+  try {
+    localStorage.removeItem("quickbite-auth-user");
+    localStorage.removeItem("quickbite-profile");
+    localStorage.removeItem("quickbite-auth-token");
+    localStorage.removeItem("quickbite-cart");
+  } catch (error) {
+    // ignore
+  }
+  window.location.href = "index.html";
+}
+
 function vendorOptionsHtml() {
   const vendors = state.users.filter((u) => u.role === "vendor");
   return vendors.map((v) => `<option value="${escapeHtml(v.user_id)}">${escapeHtml(v.name)}</option>`).join("");
@@ -144,6 +164,7 @@ function renderHeader() {
     menu: ["Menu Management", "Add, edit, remove, and control availability across all vendors."],
     orders: ["Orders", "Live order monitoring with in-place status updates and quick filters."],
     sales: ["Sales Records", "Revenue summary, daily trends, and payment breakdown across orders."],
+    profile: ["Profile Settings", "Manage your profile details, password, and account access."],
   };
   const [t, s] = titles[state.view] || titles.overview;
   $("pageTitle").textContent = t;
@@ -155,6 +176,11 @@ function setView(view) {
   state.view = view;
   state.search = "";
   renderHeader();
+  try {
+    window.location.hash = view;
+  } catch (error) {
+    // ignore
+  }
 
   $$(".nav-btn").forEach((b) => b.classList.toggle("is-active", b.dataset.view === view));
   $$(".view").forEach((v) => v.classList.toggle("is-active", v.dataset.view === view));
@@ -200,19 +226,21 @@ function renderOverview() {
     const pay = state.payments.find((p) => p.order_id === o.order_id);
     const payText = pay ? `${pay.method} • ${pay.status}` : "—";
     return `
-      <tr>
-        <td>${escapeHtml(o.order_id)}</td>
-        <td>${escapeHtml(userName(o.customer_id))}</td>
-        <td>${escapeHtml(userName(o.vendor_id))}</td>
-        <td>${escapeHtml(money(o.total_amount))}</td>
-        <td>${statusBadgeHtml(o.status)}</td>
-        <td>${escapeHtml(fmt(o.pickup_time))}</td>
-        <td>${escapeHtml(payText)}</td>
-      </tr>
+      <div class="ad-row ad-row-summary ad-row--overview">
+        <div class="ad-col ad-strong">${escapeHtml(o.order_id)}</div>
+        <div class="ad-col">${escapeHtml(userName(o.customer_id))}</div>
+        <div class="ad-col">
+          <span class="ad-vendor-pill">${escapeHtml(userName(o.vendor_id))}</span>
+        </div>
+        <div class="ad-col ad-total-col">${escapeHtml(money(o.total_amount))}</div>
+        <div class="ad-col">${statusBadgeHtml(o.status)}</div>
+        <div class="ad-col">${escapeHtml(fmt(o.pickup_time))}</div>
+        <div class="ad-col">${escapeHtml(payText)}</div>
+      </div>
     `;
   }).join("");
 
-  $("recentOrdersBody").innerHTML = rows || `<tr><td colspan="7" class="muted">No orders found.</td></tr>`;
+  $("recentOrdersBody").innerHTML = rows || `<p class="ad-empty">No orders found.</p>`;
 }
 
 function renderMenuFilters() {
@@ -246,26 +274,26 @@ function renderMenu() {
     const ariaPressed = f.is_available ? "true" : "false";
     const availLabel = f.is_available ? "Available" : "Unavailable";
     return `
-      <tr>
-        <td>${escapeHtml(f.name)}</td>
-        <td>${escapeHtml(f.category)}</td>
-        <td>${escapeHtml(money(f.price))}</td>
-        <td>${escapeHtml(userName(f.vendor_id))}</td>
-        <td>
+      <div class="ad-row ad-row-summary ad-row--menu">
+        <div class="ad-col ad-strong">${escapeHtml(f.name)}</div>
+        <div class="ad-col">${escapeHtml(f.category)}</div>
+        <div class="ad-col ad-total-col">${escapeHtml(money(f.price))}</div>
+        <div class="ad-col"><span class="ad-vendor-pill">${escapeHtml(userName(f.vendor_id))}</span></div>
+        <div class="ad-col">
           <button class="${toggleClass}" type="button" data-action="toggleFood" data-id="${escapeHtml(f.food_id)}" aria-pressed="${ariaPressed}" aria-label="Availability toggle">
             <span class="knob"></span>
           </button>
           <span class="muted" style="margin-left:8px">${escapeHtml(availLabel)}</span>
-        </td>
-        <td>
+        </div>
+        <div class="ad-col">
           <button class="btn ghost sm" type="button" data-action="editFood" data-id="${escapeHtml(f.food_id)}"><i class="fa-solid fa-pen"></i>Edit</button>
           <button class="btn ghost sm" type="button" data-action="deleteFood" data-id="${escapeHtml(f.food_id)}"><i class="fa-solid fa-trash"></i>Delete</button>
-        </td>
-      </tr>
+        </div>
+      </div>
     `;
   }).join("");
 
-  $("foodBody").innerHTML = rows || `<tr><td colspan="6" class="muted">No items match your filters.</td></tr>`;
+  $("foodBody").innerHTML = rows || `<p class="ad-empty">No items match your filters.</p>`;
 }
 
 function renderOrderTabs() {
@@ -281,7 +309,7 @@ function matchesOrderFilter(o) {
   if (state.orderTab !== "All" && o.status !== state.orderTab.toLowerCase()) return false;
   const q = (state.search || "").trim().toLowerCase();
   if (!q) return true;
-  const items = state.orderItems.filter((it) => it.order_id === o.order_id).map((it) => it.item_name).join(", ");
+  const items = getOrderItems(o).map((it) => it.item_name).join(", ");
   const hay = [o.order_id, userName(o.customer_id), userName(o.vendor_id), o.status, String(o.total_amount), items].join(" ").toLowerCase();
   return hay.includes(q);
 }
@@ -289,32 +317,32 @@ function matchesOrderFilter(o) {
 function renderOrders() {
   renderOrderTabs();
   const rows = state.orders.filter(matchesOrderFilter).map((o) => {
-    const its = state.orderItems.filter((it) => it.order_id === o.order_id);
+    const its = getOrderItems(o);
     const itemsLabel = its.length ? its.map((i) => `${i.item_name} ×${i.quantity}`).join(", ") : "—";
     const pay = state.payments.find((p) => p.order_id === o.order_id);
     const payStatus = pay ? pay.status : "pending";
     const payLabel = pay ? `${pay.method} • ${payStatus}` : "—";
     const options = ORDER_STATUSES.map((s) => `<option value="${escapeHtml(s)}"${s === o.status ? " selected" : ""}>${escapeHtml(s)}</option>`).join("");
     return `
-      <tr>
-        <td>${escapeHtml(o.order_id)}</td>
-        <td>${escapeHtml(userName(o.customer_id))}</td>
-        <td>${escapeHtml(userName(o.vendor_id))}</td>
-        <td>${escapeHtml(itemsLabel)}</td>
-        <td>${escapeHtml(money(o.total_amount))}</td>
-        <td>${statusBadgeHtml(o.status)}</td>
-        <td>${escapeHtml(fmt(o.pickup_time))}</td>
-        <td>${escapeHtml(payLabel)}</td>
-        <td>
+      <div class="ad-row ad-row-summary ad-row--orders">
+        <div class="ad-col ad-strong">${escapeHtml(o.order_id)}</div>
+        <div class="ad-col">${escapeHtml(userName(o.customer_id))}</div>
+        <div class="ad-col"><span class="ad-vendor-pill">${escapeHtml(userName(o.vendor_id))}</span></div>
+        <div class="ad-col">${escapeHtml(itemsLabel)}</div>
+        <div class="ad-col ad-total-col">${escapeHtml(money(o.total_amount))}</div>
+        <div class="ad-col">${statusBadgeHtml(o.status)}</div>
+        <div class="ad-col">${escapeHtml(fmt(o.pickup_time))}</div>
+        <div class="ad-col">${escapeHtml(payLabel)}</div>
+        <div class="ad-col">
           <select data-action="setOrderStatus" data-id="${escapeHtml(o.order_id)}" aria-label="Update order status">
             ${options}
           </select>
-        </td>
-      </tr>
+        </div>
+      </div>
     `;
   }).join("");
 
-  $("ordersBody").innerHTML = rows || `<tr><td colspan="9" class="muted">No orders match your filters.</td></tr>`;
+  $("ordersBody").innerHTML = rows || `<p class="ad-empty">No orders match your filters.</p>`;
 }
 
 function renderSales() {
@@ -358,16 +386,27 @@ function renderSales() {
 
   // Payments table
   const payRows = scopedPayments.slice(0, 30).map((p) => `
-    <tr>
-      <td>${escapeHtml(p.payment_id)}</td>
-      <td>${escapeHtml(p.order_id)}</td>
-      <td>${escapeHtml(p.method)}</td>
-      <td>${escapeHtml(money(p.amount))}</td>
-      <td>${escapeHtml(p.status)}</td>
-      <td>${escapeHtml(p.paid_at ? fmt(p.paid_at) : "—")}</td>
-    </tr>
+    <div class="ad-row ad-row-summary ad-row--payments">
+      <div class="ad-col ad-strong">${escapeHtml(p.payment_id)}</div>
+      <div class="ad-col">${escapeHtml(p.order_id)}</div>
+      <div class="ad-col">${escapeHtml(p.method)}</div>
+      <div class="ad-col ad-total-col">${escapeHtml(money(p.amount))}</div>
+      <div class="ad-col">${escapeHtml(p.status)}</div>
+      <div class="ad-col">${escapeHtml(p.paid_at ? fmt(p.paid_at) : "—")}</div>
+    </div>
   `).join("");
-  $("paymentsBody").innerHTML = payRows || `<tr><td colspan="6" class="muted">No payments found.</td></tr>`;
+  $("paymentsBody").innerHTML = payRows || `<p class="ad-empty">No payments found.</p>`;
+}
+
+function renderProfile() {
+  const user = state.sessionUser || {};
+  const fullName = String(user.fullName || user.name || "").trim();
+  const email = String(user.email || "").trim();
+  const phone = String(user.phone || "").trim();
+
+  if ($("profileFullName")) $("profileFullName").value = fullName;
+  if ($("profileEmail")) $("profileEmail").value = email;
+  if ($("profilePhone")) $("profilePhone").value = phone;
 }
 
 function renderAll() {
@@ -375,6 +414,7 @@ function renderAll() {
   renderMenu();
   renderOrders();
   renderSales();
+  renderProfile();
 }
 
 /* ===========================
@@ -398,6 +438,7 @@ function openFoodModal(mode, foodId) {
     $("fiVendor").value = state.isVendorSession ? (state.sessionVendorId || "") : (firstVendor ? firstVendor.user_id : "");
     setAvail(true);
     $("fiImage").value = "";
+    $("fiImageName").textContent = "No file selected";
   } else {
     const f = state.foods.find((x) => x.food_id === foodId);
     if (!f) return;
@@ -408,6 +449,7 @@ function openFoodModal(mode, foodId) {
     $("fiVendor").value = f.vendor_id;
     setAvail(!!f.is_available);
     $("fiImage").value = "";
+    $("fiImageName").textContent = f.image ? f.image : "No file selected";
   }
 
   if (state.isVendorSession) {
@@ -425,10 +467,20 @@ function closeFoodModal() {
 }
 
 function setAvail(on) {
-  const btn = $("fiAvail");
-  btn.classList.toggle("on", !!on);
-  btn.setAttribute("aria-pressed", on ? "true" : "false");
-  $("fiAvailLabel").textContent = on ? "Available" : "Unavailable";
+  const toggleEl = $("fiAvail");
+  const card     = $("fiAvailCard");
+  const label    = $("fiAvailLabel");
+ 
+  toggleEl.classList.toggle("on", !!on);
+  toggleEl.setAttribute("aria-pressed", on ? "true" : "false");
+  if (label) label.textContent = on ? "Available" : "Unavailable";
+ 
+  // avail-row subtle border highlight
+  if (card) {
+    card.style.borderColor = on
+      ? "rgba(122,12,6,0.32)"
+      : "rgba(122,12,6,0.16)";
+  }
 }
 
 async function saveFoodFromModal() {
@@ -458,6 +510,98 @@ async function saveFoodFromModal() {
     renderAll();
   } catch (error) {
     alert(error.message);
+  }
+}
+
+async function saveProfile() {
+  const fullName = $("profileFullName").value.trim();
+  const phone = $("profilePhone").value.trim();
+
+  try {
+    const result = await window.QuickBiteApi.updateProfile({ fullName, phone });
+    const nextUser = result.user || {};
+    state.sessionUser = {
+      ...(state.sessionUser || {}),
+      ...nextUser,
+      name: nextUser.fullName || nextUser.name || fullName,
+    };
+    localStorage.setItem("quickbite-auth-user", JSON.stringify(state.sessionUser));
+
+    const userIdx = state.users.findIndex((u) => normalizeId(u.user_id) === normalizeId(nextUser.userId || nextUser.id || state.sessionUser.user_id));
+    if (userIdx >= 0) {
+      state.users[userIdx] = {
+        ...state.users[userIdx],
+        name: nextUser.fullName || state.users[userIdx].name,
+        email: nextUser.email || state.users[userIdx].email,
+        phone: nextUser.phone || phone,
+      };
+    }
+
+    const sidebarUserName = $("sidebarUserName");
+    const sidebarSubline = $("sidebarSubline");
+    if (sidebarUserName) sidebarUserName.textContent = nextUser.fullName || state.sessionUser.name || "Vendor";
+    if (sidebarSubline && state.isVendorSession) sidebarSubline.textContent = nextUser.fullName || state.sessionUser.name || "Vendor";
+
+    renderProfile();
+    alert("Profile saved.");
+  } catch (error) {
+    alert(error.message);
+  }
+}
+
+async function updatePasswordFromProfile() {
+  const currentPassword = $("profileCurrentPw").value;
+  const newPassword = $("profileNewPw").value;
+  const confirmPassword = $("profileConfirmPw").value;
+
+  if (!currentPassword || !newPassword) {
+    alert("Please fill current and new password.");
+    return;
+  }
+  if (newPassword.length < 8) {
+    alert("New password must be at least 8 characters.");
+    return;
+  }
+  if (newPassword !== confirmPassword) {
+    alert("Passwords do not match.");
+    return;
+  }
+
+  try {
+    await window.QuickBiteApi.updatePassword({ currentPassword, newPassword, confirmPassword });
+    $("profileCurrentPw").value = "";
+    $("profileNewPw").value = "";
+    $("profileConfirmPw").value = "";
+    alert("Password updated.");
+  } catch (error) {
+    alert(error.message);
+  }
+}
+
+function openDeleteModal() {
+  if ($("confirmDeleteModal")) $("confirmDeleteModal").hidden = false;
+}
+
+function closeDeleteModal() {
+  if ($("confirmDeleteModal")) $("confirmDeleteModal").hidden = true;
+}
+
+async function deleteCurrentAccount() {
+  if (state.profileDeleteBusy) return;
+  state.profileDeleteBusy = true;
+  const actionBtn = $("confirmDeleteAction");
+  if (actionBtn) actionBtn.disabled = true;
+
+  try {
+    await window.QuickBiteApi.deleteProfile();
+    alert("Your account has been deleted.");
+    signOut();
+  } catch (error) {
+    alert(error.message);
+  } finally {
+    state.profileDeleteBusy = false;
+    if (actionBtn) actionBtn.disabled = false;
+    closeDeleteModal();
   }
 }
 
@@ -554,7 +698,21 @@ function wireEvents() {
   $("foodModalCancel").addEventListener("click", closeFoodModal);
   $("foodModalSave").addEventListener("click", saveFoodFromModal);
   $("foodModal").addEventListener("mousedown", (e) => { if (e.target === e.currentTarget) closeFoodModal(); });
-  $("fiAvail").addEventListener("click", () => setAvail(!$("fiAvail").classList.contains("on")));
+  $("fiAvailCard").addEventListener("click", () => setAvail(!$("fiAvail").classList.contains("on")));
+  $("fiAvailCard").addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setAvail(!$("fiAvail").classList.contains("on")); } });
+  $("fiImage").addEventListener("change", (e) => {
+    const file = e.target.files && e.target.files[0];
+    $("fiImageName").textContent = file ? file.name : "No file selected";
+  });
+
+  $("profileSaveBtn").addEventListener("click", saveProfile);
+  $("profilePasswordBtn").addEventListener("click", updatePasswordFromProfile);
+  $("profileLogoutBtn").addEventListener("click", signOut);
+  $("profileDeleteBtn").addEventListener("click", openDeleteModal);
+  $("confirmDeleteClose").addEventListener("click", closeDeleteModal);
+  $("confirmDeleteCancel").addEventListener("click", closeDeleteModal);
+  $("confirmDeleteAction").addEventListener("click", deleteCurrentAccount);
+  $("confirmDeleteModal").addEventListener("mousedown", (e) => { if (e.target === e.currentTarget) closeDeleteModal(); });
 }
 
 function startLiveFeed() {
@@ -636,9 +794,13 @@ function init() {
     const vendorName = userName(state.sessionVendorId);
     if (sidebarSubline) sidebarSubline.textContent = vendorName;
     if (sidebarUserName) sidebarUserName.textContent = vendorName;
+    const avatar = document.querySelector(".avatar");
+    if (avatar) avatar.textContent = String(vendorName || "V").charAt(0).toUpperCase();
   } else {
     if (sidebarSubline) sidebarSubline.textContent = "Admin Console";
     if (sidebarUserName) sidebarUserName.textContent = "Admin";
+    const avatar = document.querySelector(".avatar");
+    if (avatar) avatar.textContent = "A";
   }
 
   wireEvents();
@@ -647,6 +809,11 @@ function init() {
       state.users = result.users || [];
       state.foods = result.foods || [];
       state.orders = result.orders || [];
+      state.orderItems = result.orderItems || state.orders.flatMap((order) =>
+        Array.isArray(order.items)
+          ? order.items.map((item) => ({ ...item, order_id: item.order_id || order.order_id }))
+          : []
+      );
       state.payments = result.payments || [];
 
       if (state.isVendorSession && state.sessionVendorId) {
@@ -661,14 +828,26 @@ function init() {
         const vendorName = userName(state.sessionVendorId);
         if (sidebarSubline) sidebarSubline.textContent = vendorName;
         if (sidebarUserName) sidebarUserName.textContent = vendorName;
+        const avatar = document.querySelector(".avatar");
+        if (avatar) avatar.textContent = String(vendorName || "V").charAt(0).toUpperCase();
       }
 
+      const hashView = String((window.location.hash || "").replace("#", "") || "").toLowerCase();
+      if (hashView && ["overview", "menu", "orders", "sales", "profile"].includes(hashView)) {
+        state.view = hashView;
+      }
       renderHeader();
       renderAll();
+      setView(state.view);
     })
     .catch((error) => {
+      const hashView = String((window.location.hash || "").replace("#", "") || "").toLowerCase();
+      if (hashView && ["overview", "menu", "orders", "sales", "profile"].includes(hashView)) {
+        state.view = hashView;
+      }
       renderHeader();
       renderAll();
+      setView(state.view);
       alert(error.message);
       startLiveFeed();
     });

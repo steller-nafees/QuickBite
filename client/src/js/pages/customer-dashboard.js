@@ -153,6 +153,7 @@
       localStorage.removeItem("quickbite-auth-user");
       localStorage.removeItem("quickbite-profile");
       localStorage.removeItem("quickbite-auth-token");
+      localStorage.removeItem("quickbite-cart");
     } catch (e) {}
     window.location.href = "index.html";
   }
@@ -168,6 +169,114 @@
       fontWeight: 700,
       cursor: "pointer",
     };
+  }
+
+  function DangerModal({ title, message, busy, onCancel, onConfirm, confirmLabel }) {
+    useEffect(() => {
+      function onKeyDown(event) {
+        if (event.key === "Escape" && !busy) {
+          onCancel();
+        }
+      }
+
+      document.addEventListener("keydown", onKeyDown);
+      return function cleanup() {
+        document.removeEventListener("keydown", onKeyDown);
+      };
+    }, [busy, onCancel]);
+
+    return React.createElement(
+      "div",
+      {
+        style: {
+          position: "fixed",
+          inset: 0,
+          background: "rgba(16, 18, 27, 0.62)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: 20,
+          zIndex: 1000,
+        },
+        onClick: busy ? undefined : onCancel,
+      },
+      React.createElement(
+        "div",
+        {
+          role: "dialog",
+          "aria-modal": "true",
+          "aria-label": title,
+          style: {
+            width: "100%",
+            maxWidth: 460,
+            background: "var(--color-white)",
+            color: "var(--color-black)",
+            borderRadius: 20,
+            padding: 24,
+            boxShadow: "0 24px 80px rgba(0, 0, 0, 0.24)",
+          },
+          onClick: function (event) { event.stopPropagation(); },
+        },
+        React.createElement("div", { style: { display: "grid", gap: 12 } },
+          React.createElement("span", {
+            style: {
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 48,
+              height: 48,
+              borderRadius: 999,
+              background: "rgba(198, 40, 40, 0.12)",
+              color: "#b42318",
+              fontSize: 22,
+              fontWeight: 700,
+            }
+          }, "!"),
+          React.createElement("h3", { style: { margin: 0, fontSize: 24, lineHeight: 1.2 } }, title),
+          React.createElement("p", { style: { margin: 0, color: "rgba(17, 24, 39, 0.78)", lineHeight: 1.6 } }, message)
+        ),
+        React.createElement(
+          "div",
+          { style: { display: "flex", gap: 12, justifyContent: "flex-end", marginTop: 22, flexWrap: "wrap" } },
+          React.createElement(
+            "button",
+            {
+              type: "button",
+              onClick: onCancel,
+              disabled: busy,
+              style: {
+                border: "1px solid rgba(17, 24, 39, 0.14)",
+                background: "transparent",
+                color: "var(--color-black)",
+                borderRadius: 12,
+                padding: "10px 16px",
+                fontWeight: 700,
+                cursor: busy ? "not-allowed" : "pointer",
+              },
+            },
+            "Cancel"
+          ),
+          React.createElement(
+            "button",
+            {
+              type: "button",
+              onClick: onConfirm,
+              disabled: busy,
+              style: {
+                border: "none",
+                background: "#b42318",
+                color: "var(--color-white)",
+                borderRadius: 12,
+                padding: "10px 16px",
+                fontWeight: 700,
+                cursor: busy ? "progress" : "pointer",
+              },
+            },
+            busy ? "Deleting..." : (confirmLabel || "Delete")
+          )
+        )
+      )
+    );
   }
 
   function StatusPill({ status }) {
@@ -241,7 +350,7 @@
   }
 
   /* ─── Expandable Past Order Row ─── */
-  function PastOrderRow({ order }) {
+  function PastOrderRow({ order, onDeleteRequest }) {
     const [expanded, setExpanded] = useState(false);
 
     return React.createElement(
@@ -389,6 +498,20 @@
               "button",
               {
                 type: "button",
+                className: "qb-delete-order-btn",
+                onClick: (e) => {
+                  e.stopPropagation();
+                  if (typeof onDeleteRequest === "function") onDeleteRequest(order);
+                },
+                "aria-label": "Delete past order " + order.order_id,
+              },
+              React.createElement("i", { className: "fas fa-trash-alt", "aria-hidden": "true" }),
+              React.createElement("span", null, "Delete")
+            ),
+            React.createElement(
+              "button",
+              {
+                type: "button",
                 className: "reorder-btn",
                 onClick: (e) => { e.stopPropagation(); notify("Reorder added (mock).", "success"); },
               },
@@ -400,10 +523,24 @@
     );
   }
 
-  function OrdersTab({ currentOrders, pastOrders, mostOrderedItem, user, onSaveUser }) {
-    const [tab, setTab] = useState("current");
+  function OrdersTab({ currentOrders, pastOrders, mostOrderedItem, user, onSaveUser, onDeletePastOrder }) {
+    const [tab, setTab] = useState(function () {
+      const hash = String((window.location.hash || "").replace("#", "") || "").toLowerCase();
+      return hash === "past" || hash === "settings" ? hash : "current";
+    });
     const [pastLimit, setPastLimit] = useState(6);
     const [nowTs, setNowTs] = useState(Date.now());
+    const [pendingDeleteOrder, setPendingDeleteOrder] = useState(null);
+    const [deleteBusy, setDeleteBusy] = useState(false);
+
+    function switchTab(nextTab) {
+      setTab(nextTab);
+      try {
+        window.location.hash = nextTab === "current" ? "overview" : nextTab;
+      } catch (error) {
+        // ignore
+      }
+    }
 
     useEffect(() => {
       if (tab !== "current" || !currentOrders.length) return undefined;
@@ -421,6 +558,37 @@
 
     const shownPast = useMemo(() => sortedPast.slice(0, pastLimit), [sortedPast, pastLimit]);
 
+    useEffect(() => {
+      if (pastLimit > sortedPast.length && sortedPast.length > 0) {
+        setPastLimit((n) => Math.min(n, sortedPast.length));
+      }
+      if (sortedPast.length === 0) {
+        setPendingDeleteOrder(null);
+        setPastLimit(6);
+      }
+    }, [pastLimit, sortedPast.length]);
+
+    function requestDeletePastOrder(order) {
+      setPendingDeleteOrder(order);
+    }
+
+    function cancelDeletePastOrder() {
+      if (deleteBusy) return;
+      setPendingDeleteOrder(null);
+    }
+
+    async function confirmDeletePastOrder() {
+      if (!pendingDeleteOrder || typeof onDeletePastOrder !== "function") return;
+      setDeleteBusy(true);
+      try {
+        onDeletePastOrder(pendingDeleteOrder.order_id);
+        notify("Past order removed from this dashboard view.", "success");
+        setPendingDeleteOrder(null);
+      } finally {
+        setDeleteBusy(false);
+      }
+    }
+
     return React.createElement(
       "div",
       { className: "qb-stack" },
@@ -429,17 +597,17 @@
         { className: "qb-tabs" },
         React.createElement(
           "button",
-          { type: "button", className: "qb-tab" + (tab === "current" ? " is-active" : ""), onClick: () => setTab("current") },
+          { type: "button", className: "qb-tab" + (tab === "current" ? " is-active" : ""), onClick: () => switchTab("current") },
           "Current Orders"
         ),
         React.createElement(
           "button",
-          { type: "button", className: "qb-tab" + (tab === "past" ? " is-active" : ""), onClick: () => setTab("past") },
+          { type: "button", className: "qb-tab" + (tab === "past" ? " is-active" : ""), onClick: () => switchTab("past") },
           "Past Orders"
         ),
         React.createElement(
           "button",
-          { type: "button", className: "qb-tab" + (tab === "settings" ? " is-active" : ""), onClick: () => setTab("settings") },
+          { type: "button", className: "qb-tab" + (tab === "settings" ? " is-active" : ""), onClick: () => switchTab("settings") },
           "Settings"
         )
       ),
@@ -581,7 +749,7 @@
                   "div",
                   { className: "qb-table-modern" },
                   shownPast.map((order) =>
-                    React.createElement(PastOrderRow, { key: order.order_id, order })
+                    React.createElement(PastOrderRow, { key: order.order_id, order, onDeleteRequest: requestDeletePastOrder })
                   )
                 ),
                 sortedPast.length > shownPast.length
@@ -601,7 +769,17 @@
                   : null
               )
           )
-          : React.createElement(SettingsSection, { user, onSaveUser })
+          : React.createElement(SettingsSection, { user, onSaveUser }),
+      pendingDeleteOrder
+        ? React.createElement(DangerModal, {
+          title: "Delete this past order from your view?",
+          message: "Are you sure you want to remove order " + pendingDeleteOrder.order_id + " from your past orders list? This is a UI-only change for now and will not delete anything from the database.",
+          busy: deleteBusy,
+          confirmLabel: "Delete Order",
+          onCancel: cancelDeletePastOrder,
+          onConfirm: confirmDeletePastOrder,
+        })
+        : null
     );
   }
 
@@ -612,6 +790,8 @@
     const [currentPw, setCurrentPw] = useState("");
     const [newPw, setNewPw] = useState("");
     const [confirmPw, setConfirmPw] = useState("");
+    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+    const [deleteBusy, setDeleteBusy] = useState(false);
 
     async function saveProfile() {
       try {
@@ -643,38 +823,108 @@
       }
     }
 
+    async function deleteAccount() {
+      setDeleteBusy(true);
+      try {
+        await window.QuickBiteApi.deleteProfile();
+        notify("Your account has been deleted.", "success");
+        signOut();
+      } catch (error) {
+        notify(error.message, "err");
+      } finally {
+        setDeleteBusy(false);
+        setDeleteModalOpen(false);
+      }
+    }
+
     return React.createElement(
-      "section",
-      { className: "qb-section" },
-      React.createElement("h3", { className: "qb-section-title" }, "Basic Settings"),
+      React.Fragment,
+      null,
       React.createElement(
-        "div",
-        { className: "qb-settings-grid" },
+        "section",
+        { className: "qb-section" },
+        React.createElement("h3", { className: "qb-section-title" }, "Basic Settings"),
         React.createElement(
           "div",
-          { className: "qb-card qb-card-pad" },
-          React.createElement("div", { className: "qb-card-head" }, React.createElement("span", { className: "qb-card-title" }, "Profile"), React.createElement("button", { type: "button", className: "qb-link", onClick: saveProfile }, "Save")),
+          { className: "qb-settings-grid" },
           React.createElement(
             "div",
-            { className: "qb-form" },
-            React.createElement("label", { className: "qb-field" }, React.createElement("span", { className: "qb-label" }, "Name"), React.createElement("input", { className: "qb-input", value: fullName, onChange: (e) => setFullName(e.target.value), placeholder: "Your full name" })),
-            React.createElement("label", { className: "qb-field" }, React.createElement("span", { className: "qb-label" }, "Email"), React.createElement("input", { className: "qb-input", value: email, disabled: true })),
-            React.createElement("label", { className: "qb-field" }, React.createElement("span", { className: "qb-label" }, "Phone Number"), React.createElement("input", { className: "qb-input", value: phone, onChange: (e) => setPhone(e.target.value), placeholder: "+8801XXXXXXXXX" }))
-          )
-        ),
-        React.createElement(
-          "div",
-          { className: "qb-card qb-card-pad" },
-          React.createElement("div", { className: "qb-card-head" }, React.createElement("span", { className: "qb-card-title" }, "Password Change"), React.createElement("button", { type: "button", className: "qb-link", onClick: changePassword }, "Update")),
+            { className: "qb-card qb-card-pad" },
+            React.createElement("div", { className: "qb-card-head" }, React.createElement("span", { className: "qb-card-title" }, "Profile"), React.createElement("button", { type: "button", className: "qb-link", onClick: saveProfile }, "Save")),
+            React.createElement(
+              "div",
+              { className: "qb-form" },
+              React.createElement("label", { className: "qb-field" }, React.createElement("span", { className: "qb-label" }, "Name"), React.createElement("input", { className: "qb-input", value: fullName, onChange: (e) => setFullName(e.target.value), placeholder: "Your full name" })),
+              React.createElement("label", { className: "qb-field" }, React.createElement("span", { className: "qb-label" }, "Email"), React.createElement("input", { className: "qb-input", value: email, disabled: true })),
+              React.createElement("label", { className: "qb-field" }, React.createElement("span", { className: "qb-label" }, "Phone Number"), React.createElement("input", { className: "qb-input", value: phone, onChange: (e) => setPhone(e.target.value), placeholder: "+8801XXXXXXXXX" }))
+            )
+          ),
           React.createElement(
             "div",
-            { className: "qb-form" },
-            React.createElement("label", { className: "qb-field" }, React.createElement("span", { className: "qb-label" }, "Current Password"), React.createElement("input", { className: "qb-input", type: "password", value: currentPw, onChange: (e) => setCurrentPw(e.target.value), placeholder: "••••••••" })),
-            React.createElement("label", { className: "qb-field" }, React.createElement("span", { className: "qb-label" }, "New Password"), React.createElement("input", { className: "qb-input", type: "password", value: newPw, onChange: (e) => setNewPw(e.target.value), placeholder: "At least 8 characters" })),
-            React.createElement("label", { className: "qb-field" }, React.createElement("span", { className: "qb-label" }, "Confirm Password"), React.createElement("input", { className: "qb-input", type: "password", value: confirmPw, onChange: (e) => setConfirmPw(e.target.value), placeholder: "Repeat new password" }))
+            { className: "qb-card qb-card-pad" },
+            React.createElement("div", { className: "qb-card-head" }, React.createElement("span", { className: "qb-card-title" }, "Password Change"), React.createElement("button", { type: "button", className: "qb-link", onClick: changePassword }, "Update")),
+            React.createElement(
+              "div",
+              { className: "qb-form" },
+              React.createElement("label", { className: "qb-field" }, React.createElement("span", { className: "qb-label" }, "Current Password"), React.createElement("input", { className: "qb-input", type: "password", value: currentPw, onChange: (e) => setCurrentPw(e.target.value), placeholder: "••••••••" })),
+              React.createElement("label", { className: "qb-field" }, React.createElement("span", { className: "qb-label" }, "New Password"), React.createElement("input", { className: "qb-input", type: "password", value: newPw, onChange: (e) => setNewPw(e.target.value), placeholder: "At least 8 characters" })),
+              React.createElement("label", { className: "qb-field" }, React.createElement("span", { className: "qb-label" }, "Confirm Password"), React.createElement("input", { className: "qb-input", type: "password", value: confirmPw, onChange: (e) => setConfirmPw(e.target.value), placeholder: "Repeat new password" }))
+            )
+          ),
+          React.createElement(
+            "div",
+            {
+              className: "qb-card qb-card-pad",
+              style: {
+                border: "1px solid rgba(180, 35, 24, 0.2)",
+                background: "linear-gradient(180deg, rgba(180, 35, 24, 0.05), rgba(255, 255, 255, 0.98))",
+              },
+            },
+            React.createElement(
+              "div",
+              { className: "qb-card-head" },
+              React.createElement("span", { className: "qb-card-title", style: { color: "#b42318" } }, "Delete Your Account")
+            ),
+            React.createElement(
+              "div",
+              { className: "qb-form" },
+              React.createElement(
+                "p",
+                { style: { margin: 0, color: "rgba(17, 24, 39, 0.78)", lineHeight: 1.6 } },
+                "This will permanently remove your profile and sign you out of QuickBite."
+              ),
+              React.createElement(
+                "button",
+                {
+                  type: "button",
+                  onClick: function () { setDeleteModalOpen(true); },
+                  style: {
+                    width: "fit-content",
+                    border: "none",
+                    background: "#b42318",
+                    color: "var(--color-white)",
+                    borderRadius: 12,
+                    padding: "12px 18px",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                  },
+                },
+                "Delete Your Account"
+              )
+            )
           )
         )
-      )
+      ),
+      deleteModalOpen
+        ? React.createElement(DangerModal, {
+          title: "Delete your account?",
+          message: "This action cannot be undone. Please confirm that you want to permanently delete your QuickBite profile.",
+          busy: deleteBusy,
+          confirmLabel: "Delete Account",
+          onCancel: function () { setDeleteModalOpen(false); },
+          onConfirm: deleteAccount,
+        })
+        : null
     );
   }
 
@@ -717,6 +967,17 @@
       } catch (e) {}
     }
 
+    function onDeletePastOrder(orderId) {
+      setData(function (prev) {
+        return {
+          currentOrders: prev.currentOrders,
+          pastOrders: (prev.pastOrders || []).filter(function (order) {
+            return order.order_id !== orderId;
+          }),
+        };
+      });
+    }
+
     return React.createElement(
       "div",
       { className: "qb-page" },
@@ -742,7 +1003,7 @@
         React.createElement(
           "div",
           { className: "qb-container" },
-          React.createElement(OrdersTab, { currentOrders: data.currentOrders, pastOrders: data.pastOrders, mostOrderedItem, user, onSaveUser })
+          React.createElement(OrdersTab, { currentOrders: data.currentOrders, pastOrders: data.pastOrders, mostOrderedItem, user, onSaveUser, onDeletePastOrder })
         )
       )
     );
