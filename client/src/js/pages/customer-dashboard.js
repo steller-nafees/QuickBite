@@ -33,6 +33,96 @@
     }
   }
 
+  function parseDateLike(value) {
+    if (!value) return null;
+    if (value instanceof Date && !Number.isNaN(value.getTime())) return value;
+
+    const raw = String(value).trim();
+    if (!raw) return null;
+
+    const normalized = raw.includes("T") ? raw : raw.replace(" ", "T");
+    const direct = new Date(normalized);
+    if (!Number.isNaN(direct.getTime())) return direct;
+
+    const fallback = new Date(raw);
+    if (!Number.isNaN(fallback.getTime())) return fallback;
+
+    const timeMatch = raw.match(/^(\d{1,2}):(\d{2})\s*([AaPp][Mm])$/);
+    if (!timeMatch) return null;
+
+    let hours = Number(timeMatch[1]);
+    const minutes = Number(timeMatch[2]);
+    const meridiem = timeMatch[3].toUpperCase();
+
+    if (meridiem === "PM" && hours !== 12) hours += 12;
+    if (meridiem === "AM" && hours === 12) hours = 0;
+
+    const today = new Date();
+    const parsed = new Date(today);
+    parsed.setHours(hours, minutes, 0, 0);
+    return parsed;
+  }
+
+  function formatPickupTime(value) {
+    const parsed = parseDateLike(value);
+    if (!parsed) return String(value || "—");
+
+    return parsed.toLocaleTimeString([], {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+  }
+
+  function formatPickupDate(value) {
+    const parsed = parseDateLike(value);
+    if (!parsed) return "Today";
+
+    return parsed.toLocaleDateString([], {
+      month: "short",
+      day: "numeric",
+    });
+  }
+
+  function getCountdownParts(value, nowTs) {
+    const parsed = parseDateLike(value);
+    if (!parsed) {
+      return { label: "Pickup time unavailable", tone: "muted", short: "—" };
+    }
+
+    const diffMs = parsed.getTime() - nowTs;
+    if (diffMs <= 0) {
+      return { label: "Ready for pickup", tone: "ready", short: "Now" };
+    }
+
+    const totalSeconds = Math.floor(diffMs / 1000);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    if (hours > 0) {
+      return {
+        label: `${hours}h ${String(minutes).padStart(2, "0")}m left`,
+        tone: "normal",
+        short: `${hours}h ${minutes}m`,
+      };
+    }
+
+    if (minutes > 0) {
+      return {
+        label: `${minutes}m ${String(seconds).padStart(2, "0")}s left`,
+        tone: minutes <= 5 ? "urgent" : "normal",
+        short: `${minutes}m`,
+      };
+    }
+
+    return {
+      label: `${seconds}s left`,
+      tone: "urgent",
+      short: `${seconds}s`,
+    };
+  }
+
   function getInitials(name) {
     const text = String(name || "").trim();
     if (!text) return "C";
@@ -125,12 +215,13 @@
   }
 
   function buildMockData() {
+    const now = Date.now();
     const currentOrders = [
       {
         order_id: "QB-10421",
         vendor_name: "Burger Haus",
         created_at: "2026-04-13T08:42:00.000Z",
-        pickup_time: "12:20 PM",
+        pickup_time: new Date(now + 22 * 60 * 1000).toISOString(),
         status: "pending",
         total_amount: 280,
         items: [
@@ -144,7 +235,7 @@
         order_id: "QB-10411",
         vendor_name: "Grill Station",
         created_at: "2026-04-13T07:55:00.000Z",
-        pickup_time: "12:05 PM",
+        pickup_time: new Date(now + 11 * 60 * 1000).toISOString(),
         status: "preparing",
         total_amount: 430,
         items: [
@@ -158,7 +249,7 @@
         order_id: "QB-10398",
         vendor_name: "Wrap & Roll",
         created_at: "2026-04-13T06:31:00.000Z",
-        pickup_time: "11:40 AM",
+        pickup_time: new Date(now + 4 * 60 * 1000).toISOString(),
         status: "ready",
         total_amount: 320,
         items: [
@@ -434,6 +525,17 @@
   function OrdersTab({ currentOrders, pastOrders, mostOrderedItem, user, onSaveUser }) {
     const [tab, setTab] = useState("current");
     const [pastLimit, setPastLimit] = useState(6);
+    const [nowTs, setNowTs] = useState(Date.now());
+
+    useEffect(() => {
+      if (tab !== "current" || !currentOrders.length) return undefined;
+
+      const timer = window.setInterval(() => {
+        setNowTs(Date.now());
+      }, 1000);
+
+      return () => window.clearInterval(timer);
+    }, [tab, currentOrders.length]);
 
     const sortedPast = useMemo(() => {
       return [...pastOrders].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
@@ -474,13 +576,18 @@
             : React.createElement(
               "div",
               { className: "qb-card-row" },
-              currentOrders.map((order) =>
-                React.createElement(
+              currentOrders.map((order) => {
+                const countdown = getCountdownParts(order.pickup_time, nowTs);
+                const pickupTime = formatPickupTime(order.pickup_time);
+                const pickupDate = formatPickupDate(order.pickup_time);
+                const itemCount = (order.items || []).reduce((sum, it) => sum + Number(it.quantity || 0), 0);
+
+                return React.createElement(
                   "article",
-                  { className: "qb-card", key: order.order_id },
+                  { className: "qb-card qb-current-order", key: order.order_id },
                   React.createElement(
                     "div",
-                    { className: "qb-card-top" },
+                    { className: "qb-card-top qb-current-order-top" },
                     React.createElement(
                       "div",
                       { className: "qb-card-heading" },
@@ -491,18 +598,39 @@
                   ),
                   React.createElement(
                     "div",
-                    { className: "qb-card-summary" },
+                    { className: "qb-pickup-hero" },
                     React.createElement(
                       "div",
-                      { className: "qb-summary-block" },
-                      React.createElement("span", { className: "qb-summary-label" }, "Pickup"),
-                      React.createElement("strong", { className: "qb-summary-value" }, String(order.pickup_time || "—"))
+                      { className: "qb-pickup-main" },
+                      React.createElement("span", { className: "qb-pickup-label" }, "Pickup time"),
+                      React.createElement("strong", { className: "qb-pickup-time" }, pickupTime),
+                      React.createElement("span", { className: "qb-pickup-date" }, pickupDate)
                     ),
+                    React.createElement(
+                      "div",
+                      {
+                        className: "qb-countdown-badge qb-countdown-" + countdown.tone,
+                        "aria-live": "polite",
+                      },
+                      React.createElement("span", { className: "qb-countdown-mini" }, "Remaining"),
+                      React.createElement("strong", { className: "qb-countdown-value" }, countdown.short),
+                      React.createElement("span", { className: "qb-countdown-text" }, countdown.label)
+                    )
+                  ),
+                  React.createElement(
+                    "div",
+                    { className: "qb-card-summary qb-current-summary" },
                     React.createElement(
                       "div",
                       { className: "qb-summary-block" },
                       React.createElement("span", { className: "qb-summary-label" }, "Items"),
-                      React.createElement("strong", { className: "qb-summary-value" }, String((order.items || []).length))
+                      React.createElement("strong", { className: "qb-summary-value" }, String(itemCount))
+                    ),
+                    React.createElement(
+                      "div",
+                      { className: "qb-summary-block" },
+                      React.createElement("span", { className: "qb-summary-label" }, "Payment"),
+                      React.createElement("strong", { className: "qb-summary-value" }, order.payment?.method || "—")
                     )
                   ),
                   React.createElement(
@@ -531,10 +659,10 @@
                     "div",
                     { className: "qb-card-meta" },
                     React.createElement("div", null, React.createElement("span", { className: "qb-meta-k" }, "Total"), React.createElement("span", { className: "qb-meta-v" }, formatMoney(order.total_amount))),
-                    React.createElement("div", null, React.createElement("span", { className: "qb-meta-k" }, "Pickup"), React.createElement("span", { className: "qb-meta-v" }, String(order.pickup_time || "—")))
+                    React.createElement("div", null, React.createElement("span", { className: "qb-meta-k" }, "Placed"), React.createElement("span", { className: "qb-meta-v" }, formatPickupTime(order.created_at) + " " + String(formatPickupDate(order.created_at))))
                   )
-                )
-              )
+                );
+              })
             )
         )
         : tab === "past"

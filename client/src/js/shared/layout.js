@@ -257,8 +257,8 @@ function getGlobalOrderPillMarkup() {
                     <span class="dot"></span>
                     <div class="summary">
                         <strong id="statusText">Preparing</strong>
-                        <span class="token">Token 12</span>
-                        <span class="time" id="timeLeft">10 mins</span>
+                        <span class="token">Token QB-—</span>
+                        <span class="time" id="timeLeft">—</span>
                     </div>
                     <span class="chevron" aria-hidden="true">
                         <i class="fas fa-chevron-down chevron-open"></i>
@@ -266,8 +266,8 @@ function getGlobalOrderPillMarkup() {
                     </span>
                 </div>
                 <div class="order-details" id="orderDetails">
-                    <div><span>Vendor:</span> Pizza Hub</div>
-                    <div><span>Items:</span> Burger x1, Fries x2</div>
+                    <div><span>Vendor:</span> —</div>
+                    <div><span>Items:</span> —</div>
                 </div>
             </div>
         </section>
@@ -649,7 +649,6 @@ function initializeSharedOrderPill() {
     const pill = document.getElementById("orderPill");
     const statusText = document.getElementById("statusText");
     const timeEl = document.getElementById("timeLeft");
-    let minutes = 10;
 
     function syncOrderPillState() {
         if (!orderShell || !pill) {
@@ -664,6 +663,8 @@ function initializeSharedOrderPill() {
         return;
     }
 
+    window.__qbOrderPillManaged = true;
+
     syncOrderPillState();
 
     pill.addEventListener("click", function () {
@@ -677,21 +678,183 @@ function initializeSharedOrderPill() {
 
     window.addEventListener("scroll", syncOrderPillState, { passive: true });
 
-    window.setInterval(function () {
-        if (minutes > 0) {
-            minutes--;
+    function setShellVisible(isVisible) {
+        orderShell.style.display = isVisible ? "" : "none";
+    }
 
-            if (minutes === 0) {
-                statusText.textContent = "Ready for pickup";
-                timeEl.textContent = "Now";
-                pill.classList.add("is-ready");
+    function getTokenText(orderToken) {
+        const token = String(orderToken || "").trim();
+        return token ? "Token " + token : "Token QB-—";
+    }
+
+    function formatItems(items) {
+        const list = Array.isArray(items) ? items : [];
+        if (!list.length) return "—";
+        return list
+            .map(function (it) {
+                const name = String(it.item_name || "").trim();
+                const qty = Number(it.quantity || 0);
+                if (!name) return null;
+                return name + " x" + (qty > 0 ? qty : 1);
+            })
+            .filter(Boolean)
+            .join(", ");
+    }
+
+    function capitalizeStatus(status) {
+        const s = String(status || "").trim();
+        if (!s) return "—";
+        return s.charAt(0).toUpperCase() + s.slice(1);
+    }
+
+    function parseDateLike(value) {
+        if (!value) return null;
+        if (value instanceof Date && !Number.isNaN(value.getTime())) return value;
+        const raw = String(value).trim();
+        if (!raw) return null;
+
+        // MySQL timestamps often come as "YYYY-MM-DD HH:MM:SS"
+        const normalized = raw.includes("T") ? raw : raw.replace(" ", "T");
+        const d = new Date(normalized);
+        if (!Number.isNaN(d.getTime())) return d;
+
+        const d2 = new Date(raw);
+        return Number.isNaN(d2.getTime()) ? null : d2;
+    }
+
+    function formatTimeLeft(order) {
+        const status = String(order?.status || "").toLowerCase();
+        if (status === "ready") return "Now";
+        if (status === "completed" || status === "delivered") return "Done";
+
+        const pickup = parseDateLike(order?.pickup_time);
+        if (!pickup) return "ASAP";
+
+        const diffMs = pickup.getTime() - Date.now();
+        const diffMins = Math.round(diffMs / 60000);
+        if (diffMins <= 0) return "Now";
+        if (diffMins === 1) return "1 min";
+        return diffMins + " mins";
+    }
+
+    function setDetailRowValue(container, index, value) {
+        const rows = container ? Array.from(container.children || []) : [];
+        const row = rows[index];
+        if (!row) return;
+        const span = row.querySelector("span");
+        if (!span) {
+            row.textContent = String(value || "—");
+            return;
+        }
+        row.innerHTML = span.outerHTML + " " + String(value || "—");
+    }
+
+    function renderOrderIntoPill(order) {
+        const tokenEl = pill.querySelector(".token");
+        const details = document.getElementById("orderDetails");
+
+        const vendorName = String(order?.vendor_name || "").trim() || "—";
+        const itemsText = formatItems(order?.items);
+        const status = String(order?.status || "").toLowerCase();
+
+        statusText.textContent = capitalizeStatus(order?.status);
+        timeEl.textContent = formatTimeLeft(order);
+        if (tokenEl) tokenEl.textContent = getTokenText(order?.token);
+
+        setDetailRowValue(details, 0, vendorName);
+        setDetailRowValue(details, 1, itemsText);
+
+        pill.classList.toggle("is-ready", status === "ready");
+    }
+
+    function shouldHideForStatus(status) {
+        const s = String(status || "").toLowerCase();
+        return s === "completed" || s === "delivered";
+    }
+
+    let activeOrderId = null;
+    let pollTimer = null;
+    let refreshTimer = null;
+
+    function stopPolling() {
+        if (pollTimer) window.clearInterval(pollTimer);
+        if (refreshTimer) window.clearInterval(refreshTimer);
+        pollTimer = null;
+        refreshTimer = null;
+        activeOrderId = null;
+    }
+
+    async function refreshActiveOrder() {
+        const hasApi = window.QuickBiteApi && typeof window.QuickBiteApi.getMyOrders === "function";
+        const token = window.QuickBiteApi && typeof window.QuickBiteApi.getToken === "function" ? window.QuickBiteApi.getToken() : "";
+        if (!hasApi || !token) {
+            setShellVisible(false);
+            stopPolling();
+            return;
+        }
+
+        try {
+            const result = await window.QuickBiteApi.getMyOrders();
+            const currentOrders = Array.isArray(result?.currentOrders) ? result.currentOrders : [];
+            const active = currentOrders[0] || null;
+            if (!active || !active.order_id) {
+                setShellVisible(false);
+                stopPolling();
+                return;
+            }
+
+            setShellVisible(true);
+            renderOrderIntoPill(active);
+
+            if (String(active.order_id) !== String(activeOrderId)) {
+                activeOrderId = String(active.order_id);
+            }
+        } catch (error) {
+            // If request fails, keep the pill hidden to avoid showing stale demo content.
+            setShellVisible(false);
+            stopPolling();
+        }
+    }
+
+    async function pollHeartbeat() {
+        const orderId = activeOrderId;
+        if (!orderId) return;
+
+        try {
+            const result = await window.QuickBiteApi.getOrderHeartbeat(orderId);
+            const payload = result?.data || result?.order || result;
+            if (!payload || !payload.order_id) return;
+
+            renderOrderIntoPill(payload);
+
+            if (shouldHideForStatus(payload.status)) {
                 pill.classList.remove("expanded");
                 pill.setAttribute("aria-expanded", "false");
-            } else {
-                timeEl.textContent = minutes + " mins";
+                stopPolling();
+                setTimeout(function () {
+                    setShellVisible(false);
+                }, 1200);
+            }
+        } catch (error) {
+            const msg = String(error?.message || "");
+            if (msg.toLowerCase().includes("not found")) {
+                setShellVisible(false);
+                stopPolling();
             }
         }
-    }, 60000);
+    }
+
+    // Start hidden until we have a real active order.
+    setShellVisible(false);
+
+    // Initial fetch + polling loops.
+    refreshActiveOrder().then(function () {
+        if (!activeOrderId) return;
+
+        pollHeartbeat();
+        pollTimer = window.setInterval(pollHeartbeat, 15000);
+        refreshTimer = window.setInterval(refreshActiveOrder, 60000);
+    });
 }
 
 renderGlobalLayout();
@@ -708,8 +871,9 @@ window.addEventListener('resize', function () {
 
 if (document.body.dataset.page !== "home") {
     initializeSharedNavigation();
-    initializeSharedOrderPill();
 }
+
+initializeSharedOrderPill();
 
 window.QuickBiteLayout = {
     renderGlobalLayout: renderGlobalLayout,

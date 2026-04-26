@@ -1734,6 +1734,10 @@ section {
 }
 
 /* How It Works Section */
+.step {
+    background-color: var(--color-red-soft);
+    border-radius: 10px 28px 10px 28px;
+}
 .step-number {
     width: 4rem;
     height: 4rem;

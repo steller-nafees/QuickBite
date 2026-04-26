@@ -213,7 +213,8 @@ const statusText = document.getElementById("statusText");
 const timeEl = document.getElementById("timeLeft");
 let minutes = 10;
 
-if (orderShell && pill && timeEl && statusText) {
+// The global layout script owns the real order pill.
+if (!window.__qbOrderPillManaged && orderShell && pill && timeEl && statusText) {
     syncOrderPillState();
 
     pill.addEventListener("click", function () {

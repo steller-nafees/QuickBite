@@ -180,9 +180,11 @@ async function getCatalogData() {
 async function getOrdersForCustomer(customerId) {
   const [orderRows] = await pool.query(
     `SELECT o.order_id, o.customer_id, o.vendor_id, o.total_amount, o.status,
-            o.created_at, o.pickup_time, u.full_name AS vendor_name
+            o.created_at, o.pickup_time, u.full_name AS vendor_name,
+            ot.token_date, ot.token_seq
      FROM \`order\` o
      JOIN user u ON u.user_id = o.vendor_id
+     LEFT JOIN order_token ot ON ot.order_id = o.order_id
      WHERE o.customer_id = ?
      ORDER BY o.created_at DESC`,
     [customerId]
@@ -237,6 +239,7 @@ async function getOrdersForCustomer(customerId) {
     customer_id: row.customer_id,
     vendor_id: row.vendor_id,
     vendor_name: row.vendor_name,
+    token: row.token_seq ? `QB-${Number(row.token_seq)}` : null,
     total_amount: Number(row.total_amount || 0),
     status: row.status,
     created_at: row.created_at,
@@ -387,6 +390,97 @@ router.get("/me/orders", async (req, res) => {
   }
 });
 
+// Heartbeat API - Check order status (customers only)
+router.get("/orders/heartbeat/:id", async (req, res) => {
+  try {
+    const role = mapRole(req.user.role);
+    if (role !== "customer") {
+      return res.status(403).json({
+        ok: false,
+        status: "fail",
+        message: "Only customers can access this endpoint",
+      });
+    }
+
+    const orderId = String(req.params.id || "").trim();
+    if (!orderId) {
+      return res.status(400).json({
+        ok: false,
+        status: "fail",
+        message: "Invalid order ID provided",
+      });
+    }
+
+    const [orderRows] = await pool.query(
+      `SELECT 
+        o.order_id,
+        o.customer_id,
+        o.vendor_id,
+        u.full_name AS vendor_name,
+        o.total_amount,
+        o.status,
+        o.created_at,
+        o.pickup_time,
+        o.updated_at,
+        ot.token_date,
+        ot.token_seq
+       FROM \`order\` o
+       JOIN user u ON u.user_id = o.vendor_id
+       LEFT JOIN order_token ot ON ot.order_id = o.order_id
+       WHERE o.order_id = ? AND o.customer_id = ?
+       LIMIT 1`,
+      [orderId, req.user.user_id]
+    );
+
+    const order = orderRows[0];
+    if (!order) {
+      return res.status(404).json({
+        ok: false,
+        status: "fail",
+        message: "Order not found",
+      });
+    }
+
+    const [itemRows] = await pool.query(
+      `SELECT order_item_id, food_id, item_name, quantity, unit_price, total_price
+       FROM order_item
+       WHERE order_id = ?`,
+      [orderId]
+    );
+
+    const items = (itemRows || []).map((row) => ({
+      order_item_id: row.order_item_id,
+      food_id: row.food_id,
+      item_name: row.item_name,
+      quantity: Number(row.quantity || 0),
+      unit_price: Number(row.unit_price || 0),
+      total_price: Number(row.total_price || 0),
+    }));
+
+    res.status(200).json({
+      ok: true,
+      status: "success",
+      data: {
+        order_id: order.order_id,
+        token: order.token_seq ? `QB-${Number(order.token_seq)}` : null,
+        status: order.status,
+        vendor_name: order.vendor_name,
+        total_amount: Number(order.total_amount || 0),
+        created_at: order.created_at,
+        updated_at: order.updated_at,
+        pickup_time: order.pickup_time,
+        items,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      ok: false,
+      status: "fail",
+      message: error.message || "Failed to fetch order status",
+    });
+  }
+});
+
 router.patch("/me/profile", async (req, res) => {
   try {
     const fullName = String(req.body?.fullName || "").trim();
@@ -492,6 +586,35 @@ router.post("/orders", async (req, res) => {
     );
     const createdOrder = orderRows[0];
 
+    // Ensure token tables exist (safe if already created).
+    await connection.query(
+      `CREATE TABLE IF NOT EXISTS daily_order_token_counter (
+        token_date DATE PRIMARY KEY,
+        last_seq INT NOT NULL
+      )`
+    );
+    await connection.query(
+      `CREATE TABLE IF NOT EXISTS order_token (
+        order_id VARCHAR(64) PRIMARY KEY,
+        token_date DATE NOT NULL,
+        token_seq INT NOT NULL,
+        UNIQUE KEY uniq_token_per_day (token_date, token_seq)
+      )`
+    );
+
+    // Daily token: QB-1, QB-2... resets each day.
+    const [tokenCounterResult] = await connection.query(
+      `INSERT INTO daily_order_token_counter (token_date, last_seq)
+       VALUES (CURDATE(), 1)
+       ON DUPLICATE KEY UPDATE last_seq = LAST_INSERT_ID(last_seq + 1)`,
+    );
+    const tokenSeq = Number(tokenCounterResult.insertId || 1);
+    const tokenCode = `QB-${tokenSeq}`;
+    await connection.query(
+      "INSERT INTO order_token (order_id, token_date, token_seq) VALUES (?, CURDATE(), ?)",
+      [createdOrder.order_id, tokenSeq]
+    );
+
     for (const item of normalizedItems) {
       const orderItemId = await generatePrefixedId(connection, "order_item", "order_item_id", "QBI");
       await connection.query(
@@ -522,6 +645,7 @@ router.post("/orders", async (req, res) => {
       ok: true,
       order: {
         order_id: createdOrder.order_id,
+        token: tokenCode,
         customer_id: req.user.user_id,
         vendor_id: vendorId,
         vendor_name: vendorRows[0]?.full_name || "",

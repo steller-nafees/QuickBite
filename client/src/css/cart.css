@@ -432,7 +432,36 @@
     transform: translateY(12px) scale(0.98);
     transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
     scrollbar-width: thin;
-    scrollbar-color: var(--color-red-mid) var(--color-cream-soft);
+    scrollbar-color: rgba(165, 59, 44, 0.25) transparent;
+}
+
+.checkout-panel::-webkit-scrollbar {
+    width: 4px;
+}
+
+.checkout-panel::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 999px;
+    margin: 20px 0;
+}
+
+.checkout-panel::-webkit-scrollbar-thumb {
+    background: rgba(165, 59, 44, 0.22);
+    border-radius: 999px;
+}
+
+.checkout-panel::-webkit-scrollbar-thumb:hover {
+    background: rgba(165, 59, 44, 0.42);
+}
+
+.checkout-panel::-webkit-scrollbar-button {
+    display: none;
+    width: 0;
+    height: 0;
+}
+
+.checkout-panel::-webkit-scrollbar-corner {
+    background: transparent;
 }
 
 .checkout-modal.is-open .checkout-panel {
@@ -546,198 +575,130 @@
     color: var(--color-cream-soft);
 }
 
-/* ── Pickup time ── */
 .pickup-time-picker {
+    max-width: 100%;
+    padding: 18px;
+    border: 1px solid var(--red-12);
+    border-radius: 18px;
     background: var(--color-cream-soft);
-    border: 1px solid var(--color-red-soft);
-    border-radius: 24px;
-    padding: 20px;
-    box-shadow: var(--pickup-shadow);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-}
-
-.pickup-time-picker__header {
-    margin-bottom: 16px;
+    box-shadow: none;
 }
 
 .pickup-time-picker__eyebrow {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 6px 10px;
-    border-radius: 999px;
-    background: rgba(165, 59, 44, 0.08);
-    color: var(--color-red);
     font-size: 11px;
     font-weight: 700;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
+    color: var(--color-red);
+    margin-bottom: 8px;
 }
 
 .pickup-time-picker__title {
-    margin: 12px 0 6px;
-    font-family: var(--font-secondary);
-    font-size: 20px;
-    line-height: 1.15;
+    font-size: 18px;
+    font-weight: 700;
     color: var(--color-charcoal);
+    margin: 0 0 6px;
 }
 
 .pickup-time-picker__helper {
-    margin: 0;
     font-size: 13px;
-    line-height: 1.5;
     color: var(--color-gray);
+    margin: 0 0 14px;
 }
 
 .pickup-time-picker__preview {
-    position: relative;
-    overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    padding: 14px 16px;
-    margin-bottom: 16px;
-    border-radius: 18px;
-    background:
-        linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(255, 245, 239, 0.88)),
-        var(--pickup-glow);
-    border: 1px solid rgba(165, 59, 44, 0.12);
+    padding: 12px 14px;
+    border: 1px solid var(--red-12);
+    border-radius: 14px;
+    background: var(--color-cream-soft);
+    margin-bottom: 14px;
 }
 
 .pickup-time-picker__preview-label {
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    font-size: 12px;
     color: var(--color-gray);
 }
 
 .pickup-time-picker__preview-value {
-    font-family: var(--font-secondary);
     font-size: 18px;
-    color: var(--color-red);
+    font-weight: 700;
+    color: var(--color-charcoal);
+}
+
+.pickup-time-picker__preview-note {
+    font-size: 12px;
+    color: var(--color-gray);
+    text-align: right;
 }
 
 .pickup-time-picker__grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px;
+    gap: 10px;
+    margin-bottom: 14px;
 }
 
-.time-slot.premium-time-slot {
-    position: relative;
-    overflow: hidden;
-    min-height: 82px;
+.time-slot {
     display: flex;
     flex-direction: column;
-    justify-content: center;
     align-items: flex-start;
-    gap: 6px;
-    padding: 16px 18px;
-    border: 1px solid rgba(165, 59, 44, 0.12);
-    border-radius: 20px;
-    background: var(--color-red-soft);
-    color: var(--color-cream-soft);
-    box-shadow: 0 10px 26px rgba(53, 28, 24, 0.08);
+    gap: 4px;
+    min-height: 72px;
+    padding: 14px 16px;
+    border: 1px solid var(--red-25);
+    border-radius: 14px;
+    background: var(--color-cream-soft);
     cursor: pointer;
-    isolation: isolate;
-    transform: translateY(0) scale(1);
-    transition:
-        transform 0.24s ease,
-        box-shadow 0.24s ease,
-        border-color 0.24s ease,
-        background 0.24s ease,
-        color 0.24s ease;
+    text-align: left;
+    transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
 }
 
-.premium-time-slot__glow {
-    position: absolute;
-    inset: -35% auto auto -20%;
-    width: 88px;
-    height: 88px;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(255, 181, 160, 0.55) 0%, rgba(255, 181, 160, 0) 72%);
-    opacity: 0;
-    transform: scale(0.75);
-    transition: opacity 0.24s ease, transform 0.24s ease;
-    pointer-events: none;
-    z-index: -1;
+.time-slot:hover:not(:disabled) {
+    border-color: var(--color-red-deep);
+    background: var(--color-cream-soft);
+    transform: translateY(-1px);
+}
+
+.time-slot.active {
+    border-color: var(--color-red);
+    background: var(--color-cream-soft);
+}
+
+.time-slot:disabled {
+    opacity: 1;
+    cursor: not-allowed;
+    color: var(--color-gray);
+    background: #f6f3ee;
+    border-style: dashed;
 }
 
 .premium-time-slot__label {
-    font-family: var(--font-secondary);
-    font-size: 17px;
-    font-weight: 800;
-    line-height: 1.15;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--color-charcoal);
 }
 
 .premium-time-slot__meta {
     font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
     color: var(--color-gray);
 }
 
-.time-slot.premium-time-slot:hover:not(:disabled) {
-    transform: translateY(-3px) scale(1.02);
-    border-color: rgba(165, 59, 44, 0.24);
-    box-shadow: 0 18px 34px rgba(165, 59, 44, 0.16);
-}
-
-.time-slot.premium-time-slot:hover:not(:disabled) .premium-time-slot__glow,
-.time-slot.premium-time-slot:focus-visible .premium-time-slot__glow,
-.time-slot.premium-time-slot.active .premium-time-slot__glow {
-    opacity: 1;
-    transform: scale(1);
-}
-
-.time-slot.premium-time-slot:active:not(:disabled) {
-    transform: translateY(0) scale(0.985);
-    box-shadow: 0 10px 20px rgba(165, 59, 44, 0.14);
-}
-
-.time-slot.premium-time-slot:focus-visible {
-    outline: none;
-    border-color: rgba(165, 59, 44, 0.32);
-    box-shadow:
-        0 0 0 4px rgba(165, 59, 44, 0.12),
-        0 18px 34px rgba(165, 59, 44, 0.15);
-}
-
-.time-slot.premium-time-slot.active {
-    color: var(--color-white);
-    border-color: rgba(165, 59, 44, 0.36);
-    background: linear-gradient(135deg, #cb5b45 0%, #9f3528 52%, #7f261d 100%);
-    box-shadow: var(--pickup-shadow-strong);
-    transform: translateY(-2px) scale(1.01);
-}
-
-.time-slot.premium-time-slot.active .premium-time-slot__meta {
-    color: rgba(255, 255, 255, 0.78);
-}
-
-.time-slot.premium-time-slot.disabled,
-.time-slot.premium-time-slot:disabled {
-    opacity: 0.56;
-    cursor: not-allowed;
-    color: #9f908a;
-    background: linear-gradient(180deg, rgba(245, 241, 239, 0.98), rgba(239, 233, 230, 0.96));
-    box-shadow: none;
-}
-
-.time-slot.premium-time-slot.disabled .premium-time-slot__meta,
-.time-slot.premium-time-slot:disabled .premium-time-slot__meta {
-    color: #a89892;
+.time-slot:disabled .premium-time-slot__label,
+.time-slot:disabled .premium-time-slot__meta {
+    color: #8f8a82;
 }
 
 .pickup-time-picker__note {
-    margin: 14px 2px 0;
     font-size: 12px;
-    line-height: 1.45;
     color: var(--color-gray);
+    margin-top: 14px;
 }
 
 @media (max-width: 640px) {
@@ -755,12 +716,16 @@
         align-items: flex-start;
     }
 
+    .pickup-time-picker__preview-note {
+        text-align: left;
+    }
+
     .pickup-time-picker__grid {
         grid-template-columns: 1fr;
     }
 
     .time-slot.premium-time-slot {
-        min-height: 74px;
+        min-height: 70px;
         border-radius: 18px;
     }
 }
@@ -1493,6 +1458,7 @@
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.3s ease, visibility 0.3s ease;
+    
 }
 
 .payment-success-modal.is-open {
@@ -1520,6 +1486,8 @@
     box-shadow: 0 32px 64px var(--color-red-deep);
     transform: scale(0.9);
     transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    scrollbar-width: thin;
+    scrollbar-color: rgba(165, 59, 44, 0.25) transparent;
 }
 
 .payment-success-modal.is-open .payment-success-panel {
@@ -1612,7 +1580,9 @@
     justify-content: space-between;
     align-items: center;
     padding: 14px 20px;
-    border-bottom: 1px solid var(--red-12);
+    border-bottom: 1px solid var(--color-red-soft);
+    background-color: var(--color-cream-soft);
+
 }
 
 .receipt-row:last-child {
@@ -1620,30 +1590,29 @@
 }
 
 .receipt-label {
-    font-family: var(--font-primary);
-    font-size: 13px;
-    color: var(--color-gray);
+    font-family: var(--font-secondary);
+    font-size: 16px;
+    color: var(--color-red-soft);
     font-weight: 500;
 }
 
 .receipt-value {
-    font-family: var(--font-primary);
-    font-size: 14px;
+    font-family: var(--font-secondary);
+    font-size: 16px;
     font-weight: 600;
-    color: var(--color-charcoal);
+    color: var(--color-red-soft);
 }
 
 .receipt-mono {
-    font-family: 'Courier New', monospace;
-    font-size: 12px;
+    font-family: var(--font-secondary);
+    font-size: 16px;
     letter-spacing: 0.5px;
 }
 
 .receipt-amount {
     font-family: var(--font-secondary);
-    font-size: 20px;
-    font-weight: 800;
-    color: var(--color-red);
+    font-size: 16px;
+    color: var(--color-red-soft);
 }
 
 .receipt-status {
@@ -1679,7 +1648,38 @@
 .payment-success-btn i {
     font-size: 14px;
 }
+.payment-success-panel {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(165, 59, 44, 0.25) transparent;
+}
 
+.payment-success-panel::-webkit-scrollbar {
+    width: 4px;
+}
+
+.payment-success-panel::-webkit-scrollbar-track {
+    background: transparent;
+    margin: 20px 0;
+}
+
+.payment-success-panel::-webkit-scrollbar-thumb {
+    background: rgba(165, 59, 44, 0.22);
+    border-radius: 999px;
+}
+
+.payment-success-panel::-webkit-scrollbar-thumb:hover {
+    background: rgba(165, 59, 44, 0.42);
+}
+
+.payment-success-panel::-webkit-scrollbar-button {
+    display: none;
+    width: 0;
+    height: 0;
+}
+
+.payment-success-panel::-webkit-scrollbar-corner {
+    background: transparent;
+}
 /* ═══════════════════════════════════════════
    RESPONSIVE — 1080px and below
 ═══════════════════════════════════════════ */

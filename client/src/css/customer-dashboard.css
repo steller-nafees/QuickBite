@@ -238,6 +238,14 @@ body {
   position: relative;
 }
 
+.qb-current-order {
+  display: flex;
+  flex-direction: column;
+  background:
+    radial-gradient(circle at top right, rgba(255, 255, 255, 0.14), transparent 32%),
+    linear-gradient(180deg, var(--color-red-mid) 0%, var(--color-red-dark) 100%);
+}
+
 .qb-card-pad {
   padding: 14px;
 }
@@ -248,6 +256,10 @@ body {
   justify-content: space-between;
   padding: 18px 18px 12px;
   gap: 12px;
+}
+
+.qb-current-order-top {
+  padding-bottom: 10px;
 }
 
 .qb-card-heading {
@@ -290,6 +302,102 @@ body {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
   padding: 0 18px 16px;
+}
+
+.qb-current-summary {
+  padding-top: 2px;
+}
+
+.qb-pickup-hero {
+  margin: 0 18px 16px;
+  padding: 18px;
+  border-radius: 22px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(190px, 0.95fr);
+  gap: 16px;
+  background: var(--gradient-cta);
+  border: 1px solid rgba(122, 12, 6, 0.12);
+  box-shadow: 0 14px 28px rgba(90, 5, 2, 0.18);
+}
+
+.qb-pickup-main {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.qb-pickup-label {
+  font-family: var(--font-label);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-red-mid);
+}
+
+.qb-pickup-time {
+  font-family: var(--font-label);
+  font-size: 32px;
+  line-height: 0.95;
+  color: var(--color-red-dark);
+}
+
+.qb-pickup-date {
+  font-family: var(--font-primary);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-gray);
+}
+
+.qb-countdown-badge {
+  border-radius: 18px;
+  padding: 14px 16px;
+  display: grid;
+  gap: 4px;
+  align-content: center;
+  min-height: 116px;
+  background: linear-gradient(180deg, rgba(122, 12, 6, 0.96), rgba(90, 5, 2, 1));
+  color: var(--color-cream-light);
+  box-shadow: inset 0 0 0 1px var(--white-08);
+}
+
+.qb-countdown-normal {
+  background: linear-gradient(180deg, rgba(122, 12, 6, 0.96), rgba(90, 5, 2, 1));
+}
+
+.qb-countdown-urgent {
+  background: linear-gradient(180deg, #9a150d, #6c0a06);
+}
+
+.qb-countdown-ready {
+  background: linear-gradient(180deg, #7a0c06, #4b0604);
+}
+
+.qb-countdown-muted {
+  background: linear-gradient(180deg, rgba(74, 74, 74, 0.95), rgba(42, 42, 42, 1));
+}
+
+.qb-countdown-mini {
+  font-family: var(--font-label);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--white-72);
+}
+
+.qb-countdown-value {
+  font-family: var(--font-label);
+  font-size: 28px;
+  line-height: 1;
+  color: var(--color-cream-light);
+}
+
+.qb-countdown-text {
+  font-family: var(--font-primary);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--white-88);
 }
 
 .qb-summary-block {
@@ -393,6 +501,7 @@ body {
   gap: 10px;
   padding: 16px 18px 18px;
   border-top: 1px solid rgba(182, 67, 30, 0.1);
+  margin-top: auto;
 }
 
 .qb-meta-k {
@@ -409,6 +518,7 @@ body {
   font-family: var(--font-primary);
   font-weight: 700;
   color: var(--color-black);
+  line-height: 1.35;
 }
 
 .qb-empty {
@@ -834,6 +944,14 @@ body {
     grid-template-columns: 1fr 1fr;
   }
 
+  .qb-pickup-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .qb-countdown-badge {
+    min-height: unset;
+  }
+
   /* Past orders table collapses to 3 visible cols + chevron */
   .qb-row,
   .qb-row-summary,
@@ -896,6 +1014,25 @@ body {
   .qb-card-summary {
     grid-template-columns: 1fr;
     padding: 0 14px 12px;
+  }
+
+  .qb-pickup-hero {
+    margin: 0 14px 12px;
+    padding: 14px;
+    gap: 12px;
+    border-radius: 18px;
+  }
+
+  .qb-pickup-time {
+    font-size: 26px;
+  }
+
+  .qb-countdown-badge {
+    padding: 12px 14px;
+  }
+
+  .qb-countdown-value {
+    font-size: 24px;
   }
 
   .qb-items {
