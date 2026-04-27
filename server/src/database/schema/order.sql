@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS `order` (
   customer_id INT NOT NULL,
   vendor_id INT NOT NULL,
   total_amount DECIMAL(10, 2) NOT NULL,
-  status ENUM('pending', 'preparing', 'ready', 'completed', 'delivered') DEFAULT 'pending',
+  status ENUM('pending', 'preparing', 'completed') DEFAULT 'pending',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   pickup_time TIMESTAMP NULL DEFAULT NULL,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

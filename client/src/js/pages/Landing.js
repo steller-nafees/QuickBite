@@ -281,6 +281,8 @@ function renderVendors() {
     let dragStartX = 0;
     let dragStarted = false;
     let isDragging = false;
+    let isHovered = false;
+    const AUTOPLAY_DELAY = 3800;
 
     // Render cards
     track.innerHTML = topVendors.map((v, i) => `
@@ -350,7 +352,7 @@ function renderVendors() {
             if (i === current) {
                 requestAnimationFrame(() => {
                     requestAnimationFrame(() => {
-                        bar.style.transition = "width 3.8s linear";
+                        bar.style.transition = `width ${AUTOPLAY_DELAY}ms linear`;
                         bar.style.width = "100%";
                     });
                 });
@@ -360,9 +362,20 @@ function renderVendors() {
         if (!skipAutoReset) resetAutoplay();
     }
 
+    function stopAutoplay() {
+        if (autoTimer) {
+            clearTimeout(autoTimer);
+            autoTimer = null;
+        }
+    }
+
     function resetAutoplay() {
-        clearInterval(autoTimer);
-        autoTimer = setInterval(() => goTo(current + 1, true), 3800);
+        stopAutoplay();
+        if (isHovered || topVendors.length <= 1) return;
+        autoTimer = setTimeout(() => {
+            goTo(current + 1, true);
+            resetAutoplay();
+        }, AUTOPLAY_DELAY);
     }
 
     // Arrows
@@ -386,7 +399,7 @@ function renderVendors() {
         isDragging = false;
         track.classList.add("is-dragging");
         track.setPointerCapture(e.pointerId);
-        clearInterval(autoTimer);
+        stopAutoplay();
     });
 
     track.addEventListener("pointermove", e => {
@@ -431,10 +444,17 @@ function renderVendors() {
 
     // Pause on hover
     const root = document.getElementById("vendorsSliderRoot");
-    root && root.addEventListener("mouseenter", () => clearInterval(autoTimer));
-    root && root.addEventListener("mouseleave", resetAutoplay);
+    root && root.addEventListener("mouseenter", () => {
+        isHovered = true;
+        stopAutoplay();
+    });
+    root && root.addEventListener("mouseleave", () => {
+        isHovered = false;
+        resetAutoplay();
+    });
 
     goTo(0);
+    resetAutoplay();
 }
 
 /* ─── TRENDING ITEMS + INDUSTRY CAROUSEL ─── */

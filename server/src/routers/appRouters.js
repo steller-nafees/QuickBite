@@ -1,12 +1,84 @@
 const express = require("express");
+const fs = require("fs/promises");
+const path = require("path");
 const authController = require("../controllers/authController");
 const pool = require("../config/db");
 const { generatePrefixedId } = require("../utils/idGenerator");
 
 const router = express.Router();
+const uploadsRoot = path.join(__dirname, "../../uploads/foods");
+let ensureFoodImageColumnPromise = null;
 
 function mapRole(role) {
   return String(role || "").toLowerCase();
+}
+
+function normalizeOrderStatus(status) {
+  const normalized = String(status || "pending").toLowerCase();
+  if (normalized === "ready" || normalized === "delivered") return "completed";
+  if (["pending", "preparing", "completed"].includes(normalized)) return normalized;
+  return "pending";
+}
+
+function buildAbsoluteUrl(req, relativePath) {
+  if (!relativePath) return "";
+  if (/^https?:\/\//i.test(relativePath)) return relativePath;
+  if (!req) return relativePath;
+  return `${req.protocol}://${req.get("host")}${relativePath}`;
+}
+
+function resolveFoodImage(req, imagePath, fallbackUrl) {
+  return imagePath ? buildAbsoluteUrl(req, imagePath) : fallbackUrl;
+}
+
+async function ensureFoodImageColumn() {
+  if (!ensureFoodImageColumnPromise) {
+    ensureFoodImageColumnPromise = (async () => {
+      const [columns] = await pool.query("SHOW COLUMNS FROM food LIKE 'image_url'");
+      if (!columns.length) {
+        await pool.query("ALTER TABLE food ADD COLUMN image_url VARCHAR(1024) NULL AFTER description");
+      }
+    })().catch((error) => {
+      ensureFoodImageColumnPromise = null;
+      throw error;
+    });
+  }
+
+  return ensureFoodImageColumnPromise;
+}
+
+async function saveFoodImageFromDataUrl(foodId, imageDataUrl) {
+  const raw = String(imageDataUrl || "").trim();
+  if (!raw) return "";
+
+  const match = raw.match(/^data:(image\/(?:png|jpeg|jpg|webp|gif));base64,(.+)$/i);
+  if (!match) {
+    throw new Error("Invalid food image format");
+  }
+
+  const mimeType = match[1].toLowerCase();
+  const base64Payload = match[2];
+  const extensionMap = {
+    "image/jpeg": ".jpg",
+    "image/jpg": ".jpg",
+    "image/png": ".png",
+    "image/webp": ".webp",
+    "image/gif": ".gif",
+  };
+  const extension = extensionMap[mimeType];
+  if (!extension) {
+    throw new Error("Unsupported food image type");
+  }
+
+  const buffer = Buffer.from(base64Payload, "base64");
+  if (!buffer.length) {
+    throw new Error("Food image is empty");
+  }
+
+  await fs.mkdir(uploadsRoot, { recursive: true });
+  const fileName = `${String(foodId).replace(/[^\w-]/g, "_")}-${Date.now()}${extension}`;
+  await fs.writeFile(path.join(uploadsRoot, fileName), buffer);
+  return `/uploads/foods/${fileName}`;
 }
 
 function formatUserRow(row) {
@@ -130,7 +202,7 @@ function toVendor(row, foods, ordersByVendor) {
   };
 }
 
-function toFood(row) {
+function toFood(row, req) {
   const foodId = String(row.food_id || "");
 
   return {
@@ -144,18 +216,22 @@ function toFood(row) {
     rating: 4.8,
     badge: foodId.startsWith("QBF-") ? foodId.replace("QBF-", "") : "Food #" + foodId,
     description: row.description || "Freshly prepared for campus pickup.",
-    image:
-      "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=900&h=700&fit=crop",
+    image: resolveFoodImage(
+      req,
+      row.image_url || "",
+      "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=900&h=700&fit=crop"
+    ),
     is_available: Boolean(row.is_available),
   };
 }
 
-async function getCatalogData() {
+async function getCatalogData(req) {
+  await ensureFoodImageColumn();
   const [vendorRows] = await pool.query(
     "SELECT user_id, full_name, email, phone, role FROM user WHERE LOWER(role) = 'vendor' ORDER BY full_name ASC"
   );
   const [foodRows] = await pool.query(
-    `SELECT f.food_id, f.item_name, f.description, f.price, f.is_available,
+    `SELECT f.food_id, f.item_name, f.description, f.image_url, f.price, f.is_available,
             f.managed_by AS vendor_id, u.full_name AS vendor_name
      FROM food f
      JOIN user u ON u.user_id = f.managed_by
@@ -165,7 +241,7 @@ async function getCatalogData() {
     "SELECT order_id, vendor_id FROM `order` ORDER BY created_at DESC"
   );
 
-  const foods = foodRows.map(toFood);
+  const foods = foodRows.map((row) => toFood(row, req));
   const ordersByVendor = new Map();
   orderRows.forEach((row) => {
     const list = ordersByVendor.get(row.vendor_id) || [];
@@ -241,7 +317,7 @@ async function getOrdersForCustomer(customerId) {
     vendor_name: row.vendor_name,
     token: row.token_seq ? `QB-${Number(row.token_seq)}` : null,
     total_amount: Number(row.total_amount || 0),
-    status: row.status,
+    status: normalizeOrderStatus(row.status),
     created_at: row.created_at,
     pickup_time: row.pickup_time,
     items: itemsByOrder.get(row.order_id) || [],
@@ -249,13 +325,14 @@ async function getOrdersForCustomer(customerId) {
   }));
 }
 
-async function getDashboardDataForVendor(vendorId) {
+async function getDashboardDataForVendor(vendorId, req) {
+  await ensureFoodImageColumn();
   const [vendorRows] = await pool.query(
     "SELECT user_id, full_name, email, phone, role FROM user WHERE user_id = ? AND LOWER(role) = 'vendor'",
     [vendorId]
   );
   const [foodRows] = await pool.query(
-    `SELECT food_id, item_name, description, price, is_available, managed_by
+    `SELECT food_id, item_name, description, image_url, price, is_available, managed_by
      FROM food
      WHERE managed_by = ?
      ORDER BY created_at DESC`,
@@ -333,7 +410,7 @@ async function getDashboardDataForVendor(vendorId) {
       price: Number(row.price || 0),
       is_available: Boolean(row.is_available),
       description: row.description || "",
-      image: "",
+      image: resolveFoodImage(req, row.image_url || "", ""),
     })),
     orders: orderRows.map((row) => ({
       order_id: row.order_id,
@@ -342,7 +419,7 @@ async function getDashboardDataForVendor(vendorId) {
       customer_name: row.customer_name,
       vendor_name: row.vendor_name,
       total_amount: Number(row.total_amount || 0),
-      status: row.status,
+      status: normalizeOrderStatus(row.status),
       created_at: row.created_at,
       pickup_time: row.pickup_time,
       items: itemsByOrder.get(row.order_id) || [],
@@ -354,7 +431,7 @@ async function getDashboardDataForVendor(vendorId) {
 
 router.get("/catalog", async (req, res) => {
   try {
-    const data = await getCatalogData();
+    const data = await getCatalogData(req);
     res.json({ ok: true, ...data });
   } catch (error) {
     res.status(500).json({ ok: false, message: error.message || "Failed to load catalog" });
@@ -363,7 +440,7 @@ router.get("/catalog", async (req, res) => {
 
 router.get("/vendors/:id", async (req, res) => {
   try {
-    const { vendors, foods } = await getCatalogData();
+    const { vendors, foods } = await getCatalogData(req);
     const vendor = vendors.find((entry) => String(entry.id) === String(req.params.id));
 
     if (!vendor) {
@@ -382,8 +459,8 @@ router.use(authController.protect);
 router.get("/me/orders", async (req, res) => {
   try {
     const orders = await getOrdersForCustomer(req.user.user_id);
-    const currentOrders = orders.filter((order) => ["pending", "preparing", "ready"].includes(order.status));
-    const pastOrders = orders.filter((order) => !["pending", "preparing", "ready"].includes(order.status));
+    const currentOrders = orders.filter((order) => ["pending", "preparing"].includes(order.status));
+    const pastOrders = orders.filter((order) => order.status === "completed");
     res.json({ ok: true, currentOrders, pastOrders });
   } catch (error) {
     res.status(500).json({ ok: false, message: error.message || "Failed to load orders" });
@@ -463,7 +540,7 @@ router.get("/orders/heartbeat/:id", async (req, res) => {
       data: {
         order_id: order.order_id,
         token: order.token_seq ? `QB-${Number(order.token_seq)}` : null,
-        status: order.status,
+        status: normalizeOrderStatus(order.status),
         vendor_name: order.vendor_name,
         total_amount: Number(order.total_amount || 0),
         created_at: order.created_at,
@@ -696,7 +773,7 @@ router.get("/admin/dashboard", async (req, res) => {
     }
 
     const vendorId = role === "vendor" ? req.user.user_id : String(req.query.vendorId || req.user.user_id);
-    const data = await getDashboardDataForVendor(vendorId);
+    const data = await getDashboardDataForVendor(vendorId, req);
     res.json({ ok: true, ...data });
   } catch (error) {
     res.status(500).json({ ok: false, message: error.message || "Failed to load dashboard" });
@@ -705,6 +782,7 @@ router.get("/admin/dashboard", async (req, res) => {
 
 router.post("/admin/foods", async (req, res) => {
   try {
+    await ensureFoodImageColumn();
     const role = mapRole(req.user.role);
     if (role !== "vendor" && role !== "admin") {
       return res.status(403).json({ ok: false, message: "Unauthorized" });
@@ -713,6 +791,7 @@ router.post("/admin/foods", async (req, res) => {
     const vendorId = role === "vendor" ? req.user.user_id : String(req.body?.vendor_id || "");
     const itemName = String(req.body?.name || req.body?.item_name || "").trim();
     const description = String(req.body?.description || "").trim();
+    const imageData = String(req.body?.image_data || "").trim();
     const price = Number(req.body?.price || 0);
     const isAvailable = req.body?.is_available !== false;
 
@@ -721,19 +800,21 @@ router.post("/admin/foods", async (req, res) => {
     }
 
     const foodId = await generatePrefixedId(pool, "food", "food_id", "QBF");
+    const storedImagePath = imageData ? await saveFoodImageFromDataUrl(foodId, imageData) : null;
     await pool.query(
-      "INSERT INTO food (food_id, item_name, description, price, is_available, managed_by) VALUES (?, ?, ?, ?, ?, ?)",
+      "INSERT INTO food (food_id, item_name, description, image_url, price, is_available, managed_by) VALUES (?, ?, ?, ?, ?, ?, ?)",
       [
         foodId,
         itemName,
         description || null,
+        storedImagePath,
         price,
         isAvailable ? 1 : 0,
         vendorId,
       ]
     );
     const [rows] = await pool.query(
-      `SELECT food_id, item_name, description, price, is_available, managed_by
+      `SELECT food_id, item_name, description, image_url, price, is_available, managed_by
        FROM food WHERE food_id = ? LIMIT 1`,
       [foodId]
     );
@@ -748,7 +829,7 @@ router.post("/admin/foods", async (req, res) => {
         price: Number(food.price || 0),
         is_available: Boolean(food.is_available),
         description: food.description || "",
-        image: "",
+        image: resolveFoodImage(req, food.image_url || "", ""),
       },
     });
   } catch (error) {
@@ -758,8 +839,9 @@ router.post("/admin/foods", async (req, res) => {
 
 router.patch("/admin/foods/:id", async (req, res) => {
   try {
+    await ensureFoodImageColumn();
     const role = mapRole(req.user.role);
-    const [rows] = await pool.query("SELECT managed_by FROM food WHERE food_id = ?", [req.params.id]);
+    const [rows] = await pool.query("SELECT managed_by, image_url FROM food WHERE food_id = ?", [req.params.id]);
     const food = rows[0];
     if (!food) {
       return res.status(404).json({ ok: false, message: "Food not found" });
@@ -768,20 +850,46 @@ router.patch("/admin/foods/:id", async (req, res) => {
       return res.status(403).json({ ok: false, message: "Unauthorized" });
     }
 
+    let storedImagePath = food.image_url || null;
+    const imageData = String(req.body?.image_data || "").trim();
+    if (imageData) {
+      storedImagePath = await saveFoodImageFromDataUrl(req.params.id, imageData);
+    }
+
     await pool.query(
       `UPDATE food
-       SET item_name = ?, description = ?, price = ?, is_available = ?
+       SET item_name = ?, description = ?, image_url = ?, price = ?, is_available = ?
        WHERE food_id = ?`,
       [
         String(req.body?.name || req.body?.item_name || "").trim(),
         String(req.body?.description || "").trim() || null,
+        storedImagePath,
         Number(req.body?.price || 0),
         req.body?.is_available !== false ? 1 : 0,
         req.params.id,
       ]
     );
 
-    res.json({ ok: true });
+    const [updatedRows] = await pool.query(
+      `SELECT food_id, item_name, description, image_url, price, is_available, managed_by
+       FROM food WHERE food_id = ? LIMIT 1`,
+      [req.params.id]
+    );
+    const updatedFood = updatedRows[0];
+
+    res.json({
+      ok: true,
+      food: {
+        food_id: updatedFood.food_id,
+        vendor_id: updatedFood.managed_by,
+        name: updatedFood.item_name,
+        category: "Menu",
+        price: Number(updatedFood.price || 0),
+        is_available: Boolean(updatedFood.is_available),
+        description: updatedFood.description || "",
+        image: resolveFoodImage(req, updatedFood.image_url || "", ""),
+      },
+    });
   } catch (error) {
     res.status(400).json({ ok: false, message: error.message || "Failed to update food" });
   }
@@ -809,8 +917,8 @@ router.delete("/admin/foods/:id", async (req, res) => {
 router.patch("/admin/orders/:id/status", async (req, res) => {
   try {
     const role = mapRole(req.user.role);
-    const status = String(req.body?.status || "").toLowerCase();
-    const valid = ["pending", "preparing", "ready", "completed", "delivered"];
+    const status = normalizeOrderStatus(req.body?.status);
+    const valid = ["pending", "preparing", "completed"];
     if (!valid.includes(status)) {
       return res.status(400).json({ ok: false, message: "Invalid status" });
     }
@@ -825,7 +933,7 @@ router.patch("/admin/orders/:id/status", async (req, res) => {
     }
 
     await pool.query("UPDATE `order` SET status = ? WHERE order_id = ?", [status, req.params.id]);
-    if (status === "completed" || status === "delivered") {
+    if (status === "completed") {
       await pool.query(
         "UPDATE payment SET status = 'completed', paid_at = COALESCE(paid_at, NOW()) WHERE order_id = ?",
         [req.params.id]

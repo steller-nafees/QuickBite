@@ -2631,6 +2631,10 @@ section {
 .food-preview-overlay.is-open .food-preview-modal {
     transform: translateY(0);
 }
+.modal-name,
+.modal-price {
+    margin-top: 40px;
+}
 
 @media (min-width: 640px) {
     .food-preview-modal {
@@ -2880,7 +2884,6 @@ section {
     letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--color-red-soft);
-    opacity: 0.65;
     margin-bottom: 0.35rem;
 }
 

@@ -76,7 +76,7 @@ function updateHeaderUserState() {
         const fullName = user.fullName || user.name || user.email.split("@")[0];
         const firstName = fullName.split(' ')[0];
         const initial = firstName.charAt(0).toUpperCase();
-        
+
         btn.className = "btn user-btn signed-in btn-user-signed";
         btn.setAttribute("aria-label", `${fullName}`);
         btn.innerHTML = `
@@ -89,7 +89,7 @@ function updateHeaderUserState() {
                 <a href="#" class="dropdown-item" id="dropdownLogout"><i class="fas fa-sign-out-alt"></i> Log Out</a>
             </div>
         `;
-        
+
         // Add click handler for dropdown toggle
         btn.onclick = function (e) {
             e.stopPropagation();
@@ -101,7 +101,7 @@ function updateHeaderUserState() {
         };
 
         setUserDropdownOpenState(false);
-        
+
         // Add click handler for Notifications in dropdown
         const notifLink = document.getElementById("dropdownNotif");
         if (notifLink) {
@@ -112,7 +112,7 @@ function updateHeaderUserState() {
                 setUserDropdownOpenState(false);
             };
         }
-        
+
         // Add click handler for Logout in dropdown
         const logoutLink = document.getElementById("dropdownLogout");
         if (logoutLink) {
@@ -208,7 +208,7 @@ function getGlobalHeaderMarkup() {
                     </span>
                     <span class="brand-copy">
                         <strong>QuickBite</strong>
-                        <small>Pre-Order. Pick Up. Bite .</small>
+                        <small>Pre-Order. Pick Up. Bite.</small>
                     </span>
                 </a>
                 <div class="location-picker-wrap" id="locationPicker">
@@ -328,8 +328,18 @@ function getGlobalFooterMarkup() {
                     </div>
                 </div>
                 <div class="footer-bottom">
-                    © 2026 QuickBite. Developed By H M Nafees N Islam & Hasan Md. Turabi Rahman.
+                    © 2026 QuickBite. Developed By&nbsp <a href="https://github.com/steller-nafees" target="_blank"> H M Nafees N Islam</a>&nbsp & &nbsp <a href="https://github.com/TurabiRahman" target="_blank" >Hasan Md. Turabi Rahman</a>.
                 </div>
+                <style>
+                    .footer-bottom {
+                        display: flex;
+                        justify-content: center;
+                    }
+                    .footer-bottom a {
+                        color: var(--color-cream-light);
+                        text-decoration: None;
+                    }
+                </style>
             </div>
         </footer>
     `;
@@ -366,6 +376,18 @@ function renderGlobalLayout() {
     updateGlobalCartCount();
     // Ensure header shows correct user state after rendering
     updateHeaderUserState();
+}
+
+function refreshAuthUi() {
+    const orderPillMount = document.getElementById("globalOrderPill");
+
+    updateHeaderUserState();
+
+    if (orderPillMount) {
+        orderPillMount.innerHTML = getGlobalOrderPillMarkup();
+    }
+
+    initializeSharedOrderPill();
 }
 
 // Move location picker into nav menu for smaller screens and restore on larger screens
@@ -524,12 +546,92 @@ function initializeUserDropdown() {
 /* ============================================================
    NOTIFICATIONS
    ============================================================ */
+var QUICKBITE_NOTIFICATION_KEY = "quickbite-panel-notifications";
+
+function readStoredNotifications() {
+    try {
+        var raw = localStorage.getItem(QUICKBITE_NOTIFICATION_KEY);
+        var parsed = raw ? JSON.parse(raw) : [];
+        return Array.isArray(parsed) ? parsed : [];
+    } catch (error) {
+        return [];
+    }
+}
+
+function writeStoredNotifications(notifications) {
+    try {
+        localStorage.setItem(QUICKBITE_NOTIFICATION_KEY, JSON.stringify(Array.isArray(notifications) ? notifications : []));
+    } catch (error) {
+        // ignore
+    }
+}
+
+function createNotificationCenter() {
+    function isVisibleToCurrentUser(notification) {
+        var user = getAuthUserFromStorage();
+        if (!user) return false;
+
+        var role = String(user.role || "customer").toLowerCase();
+        var userId = String(user.user_id || user.userId || user.id || "");
+        var audience = notification && notification.audience ? notification.audience : null;
+        if (!audience) return true;
+
+        if (Array.isArray(audience.userIds) && audience.userIds.map(String).includes(userId)) {
+            return true;
+        }
+
+        if (Array.isArray(audience.roles) && audience.roles.map(function (item) { return String(item).toLowerCase(); }).includes(role)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    function list() {
+        return readStoredNotifications().filter(isVisibleToCurrentUser).sort(function (a, b) {
+            return Number(b.time || 0) - Number(a.time || 0);
+        });
+    }
+
+    function update(nextNotifications) {
+        writeStoredNotifications(nextNotifications);
+        document.dispatchEvent(new CustomEvent("quickbite:notifications-updated"));
+    }
+
+    return {
+        list: list,
+        add: function (notification) {
+            var entry = Object.assign({
+                id: "notif_" + Date.now() + "_" + Math.random().toString(16).slice(2),
+                type: "info",
+                title: "Notification",
+                desc: "",
+                time: Date.now(),
+                read: false,
+            }, notification || {});
+
+            var notifications = list();
+            notifications.unshift(entry);
+            update(notifications.slice(0, 50));
+            return entry;
+        },
+        clear: function () {
+            update([]);
+        },
+        markAllRead: function () {
+            var notifications = list().map(function (item) {
+                return Object.assign({}, item, { read: true });
+            });
+            update(notifications);
+        },
+        replaceAll: function (notifications) {
+            update(Array.isArray(notifications) ? notifications : []);
+        }
+    };
+}
+
 function initializeNotifications() {
-    var notifications = [
-        { id: 1, type: 'success', title: 'Welcome to QuickBite', desc: 'Your account has been created successfully', time: Date.now() - 300000, read: false },
-        { id: 2, type: 'order', title: 'Browse Menu', desc: 'Check out our trending items and place your first order', time: Date.now() - 900000, read: false },
-        { id: 3, type: 'warning', title: 'Campus Hours', desc: 'All vendors are open from 10 AM to 8 PM', time: Date.now() - 1800000, read: true }
-    ];
+    var center = window.QuickBiteNotificationCenter || (window.QuickBiteNotificationCenter = createNotificationCenter());
 
     function timeAgo(ms) {
         var d = Date.now() - ms;
@@ -543,12 +645,13 @@ function initializeNotifications() {
         var list = document.getElementById('notifList');
         if (!list) return; // guard: some pages don't include the notification panel
 
+        var notifications = center.list();
         if (!notifications.length) {
             list.innerHTML = '<div class="notif-empty"><i class="fas fa-bell-slash"></i>No notifications yet</div>';
             return;
         }
 
-        list.innerHTML = notifications.map(function(n) {
+        list.innerHTML = notifications.map(function (n) {
             var iconClass = n.type === 'order' ? 'receipt' : n.type === 'success' ? 'check' : 'exclamation-triangle';
             return '<div class="notif-item ' + (n.read ? '' : 'unread') + '" data-notif-id="' + n.id + '">' +
                 '<div class="notif-icon ' + n.type + '">' +
@@ -569,22 +672,21 @@ function initializeNotifications() {
 
         var willOpen = !panel.classList.contains('open');
         panel.classList.toggle('open', willOpen);
-        
+
         // Mark all as read when opened
         if (willOpen) {
-            notifications.forEach(function(n) { n.read = true; });
+            center.markAllRead();
             renderNotifications();
         }
     }
 
     function clearAllNotifications() {
-        notifications = [];
-        renderNotifications();
+        center.clear();
     }
 
     var notifBtn = document.getElementById('notifBtn');
     if (notifBtn) {
-        notifBtn.addEventListener('click', function(e) {
+        notifBtn.addEventListener('click', function (e) {
             e.stopPropagation();
             toggleNotifications();
         });
@@ -596,7 +698,7 @@ function initializeNotifications() {
     }
 
     // Close notifications when clicking outside
-    document.addEventListener('click', function(e) {
+    document.addEventListener('click', function (e) {
         var panel = document.getElementById('notifPanel');
         var notifBtn = document.getElementById('notifBtn');
         var dropdownNotif = document.getElementById('dropdownNotif');
@@ -613,6 +715,7 @@ function initializeNotifications() {
 
     // Make toggleNotifications available globally for dropdown link
     window.toggleNotifications = toggleNotifications;
+    document.addEventListener("quickbite:notifications-updated", renderNotifications);
 
     // Initial render
     renderNotifications();
@@ -885,6 +988,7 @@ initializeSharedOrderPill();
 
 window.QuickBiteLayout = {
     renderGlobalLayout: renderGlobalLayout,
+    refreshAuthUi: refreshAuthUi,
     updateCartCount: updateGlobalCartCount,
     getSelectedLocation: getSelectedLocation
 };

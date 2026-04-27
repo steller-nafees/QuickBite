@@ -8,9 +8,25 @@
 const $ = (id) => document.getElementById(id);
 const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
-const ORDER_STATUSES = ["pending", "preparing", "ready", "completed", "delivered"];
+const ORDER_STATUSES = ["pending", "preparing", "completed"];
 const PAYMENT_METHODS = ["card", "wallet", "cash"];
 const PAYMENT_STATUSES = ["pending", "completed", "failed"];
+const DASHBOARD_POLL_MS = 15000;
+const VENDOR_ORDER_CACHE_KEY = "quickbite-vendor-order-cache";
+
+function notify(message, type) {
+  if (typeof window.showToast === "function") {
+    window.showToast(message, type === "err" ? "error" : type === "success" ? "success" : "info");
+    return;
+  }
+  window.alert(message);
+}
+
+function addPanelNotification(notification) {
+  if (window.QuickBiteNotificationCenter && typeof window.QuickBiteNotificationCenter.add === "function") {
+    window.QuickBiteNotificationCenter.add(notification);
+  }
+}
 
 function uid(prefix) {
   return `${prefix}_${Math.random().toString(16).slice(2)}_${Date.now().toString(16)}`;
@@ -43,6 +59,73 @@ function escapeHtml(s) {
     .replaceAll("'", "&#39;");
 }
 
+function readStoredVendorOrderCache() {
+  try {
+    const raw = localStorage.getItem(VENDOR_ORDER_CACHE_KEY);
+    const parsed = raw ? JSON.parse(raw) : {};
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch (error) {
+    return {};
+  }
+}
+
+function writeStoredVendorOrderCache(cache) {
+  try {
+    localStorage.setItem(VENDOR_ORDER_CACHE_KEY, JSON.stringify(cache || {}));
+  } catch (error) {
+    // ignore
+  }
+}
+
+function getVendorCacheScope() {
+  return state.isVendorSession && state.sessionVendorId ? String(state.sessionVendorId) : "admin";
+}
+
+function toScopedOrderSnapshot(orders) {
+  return (orders || []).reduce((map, order) => {
+    if (!order || !order.order_id) return map;
+    map[order.order_id] = {
+      order_id: order.order_id,
+      vendor_id: order.vendor_id || "",
+      customer_name: order.customer_name || "",
+      total_amount: Number(order.total_amount || 0),
+      status: String(order.status || "").toLowerCase(),
+    };
+    return map;
+  }, {});
+}
+
+function formatNewOrderMessage(order) {
+  const customerLabel = order.customer_name ? ` from ${order.customer_name}` : "";
+  return `New order ${order.order_id}${customerLabel} for ${money(order.total_amount)}.`;
+}
+
+function formatCustomerStatusMessage(order, status) {
+  const orderLabel = order.token || order.order_id || "Your order";
+  const vendorName = order.vendor_name ? ` from ${order.vendor_name}` : "";
+  if (status === "preparing") return `${orderLabel}${vendorName} is now being prepared.`;
+  if (status === "completed") return `${orderLabel}${vendorName} has been completed.`;
+  if (status === "pending") return `${orderLabel}${vendorName} has been received.`;
+  return `${orderLabel}${vendorName} was updated to ${status}.`;
+}
+
+function normalizeOrderStatus(status) {
+  const normalized = String(status || "pending").toLowerCase();
+  if (normalized === "ready" || normalized === "delivered") return "completed";
+  const all = [...ORDER_STATUSES, "cancelled"];
+  return all.includes(normalized) ? normalized : "pending";
+}
+
+function updateAdminProfileMenu() {
+  const user = state.sessionUser || {};
+  const fullName = String(user.fullName || user.name || (state.isVendorSession ? userName(state.sessionVendorId) : "Admin") || "Admin").trim();
+  const firstName = fullName.split(/\s+/)[0] || fullName;
+  const avatar = fullName.charAt(0).toUpperCase() || "A";
+  if ($("adminProfileFirstName")) $("adminProfileFirstName").textContent = firstName;
+  if ($("adminProfileAvatar")) $("adminProfileAvatar").textContent = avatar;
+  if ($("adminProfileBtn")) $("adminProfileBtn").setAttribute("aria-label", fullName);
+}
+
 function seedData() {
   const users = [
     { user_id: "u_admin_01", name: "Admin", role: "admin" },
@@ -67,9 +150,9 @@ function seedData() {
   const orders = [
     { order_id: "o_9001", customer_id: "u_cus_01", vendor_id: "u_ven_01", total_amount: 400, status: "pending", created_at: new Date(now - 12 * 60e3).toISOString(), pickup_time: new Date(now + 18 * 60e3).toISOString() },
     { order_id: "o_9002", customer_id: "u_cus_02", vendor_id: "u_ven_02", total_amount: 250, status: "preparing", created_at: new Date(now - 30 * 60e3).toISOString(), pickup_time: new Date(now + 10 * 60e3).toISOString() },
-    { order_id: "o_9003", customer_id: "u_cus_03", vendor_id: "u_ven_03", total_amount: 600, status: "ready", created_at: new Date(now - 45 * 60e3).toISOString(), pickup_time: new Date(now + 5 * 60e3).toISOString() },
+    { order_id: "o_9003", customer_id: "u_cus_03", vendor_id: "u_ven_03", total_amount: 600, status: "preparing", created_at: new Date(now - 45 * 60e3).toISOString(), pickup_time: new Date(now + 5 * 60e3).toISOString() },
     { order_id: "o_9004", customer_id: "u_cus_01", vendor_id: "u_ven_03", total_amount: 280, status: "completed", created_at: new Date(now - 2.8 * 3600e3).toISOString(), pickup_time: new Date(now - 2.2 * 3600e3).toISOString() },
-    { order_id: "o_9005", customer_id: "u_cus_02", vendor_id: "u_ven_01", total_amount: 220, status: "delivered", created_at: new Date(now - 5.5 * 3600e3).toISOString(), pickup_time: new Date(now - 5.0 * 3600e3).toISOString() },
+    { order_id: "o_9005", customer_id: "u_cus_02", vendor_id: "u_ven_01", total_amount: 220, status: "completed", created_at: new Date(now - 5.5 * 3600e3).toISOString(), pickup_time: new Date(now - 5.0 * 3600e3).toISOString() },
   ];
 
   const orderItems = [
@@ -97,6 +180,7 @@ const state = {
   view: "overview",
   search: "",
   orderTab: "All",
+  expandedRecentOrderId: null,
   menuQuery: "",
   menuVendor: "",
   menuCategory: "",
@@ -207,9 +291,41 @@ function statCalc() {
 }
 
 function statusBadgeHtml(status) {
-  const s = String(status || "pending");
+  const s = normalizeOrderStatus(status);
   const t = s.charAt(0).toUpperCase() + s.slice(1);
   return `<span class="badge ${escapeHtml(s)}"><span class="dot"></span>${escapeHtml(t)}</span>`;
+}
+
+function statusPillsHtml(orderId, status) {
+  const currentStatus = normalizeOrderStatus(status);
+  const o = state.orders.find((x) => x.order_id === orderId);
+  const its = o ? getOrderItems(o) : [];
+  const itemCount = its.length;
+  const customer = o ? userName(o.customer_id) : "—";
+
+  return `
+    <div class="ad-overview-actions">
+      <div class="ad-overview-actions__label">Update order status</div>
+      <div class="ad-status-actions" role="group" aria-label="Update order status">
+        ${ORDER_STATUSES.map((nextStatus) => {
+          const label = nextStatus.charAt(0).toUpperCase() + nextStatus.slice(1);
+          const activeClass = nextStatus === currentStatus ? " is-active" : "";
+          return `<button class="ad-status-pill${activeClass}" type="button" data-action="setOrderStatus" data-id="${escapeHtml(orderId)}" data-status="${escapeHtml(nextStatus)}">${escapeHtml(label)}</button>`;
+        }).join("")}
+        <div class="ad-status-divider"></div>
+        <button class="ad-status-pill ad-status-pill--cancel" type="button" data-action="setOrderStatus" data-id="${escapeHtml(orderId)}" data-status="cancelled">Cancelled</button>
+      </div>
+      <div class="ad-overview-actions__footer">
+        <span class="ad-overview-actions__meta">
+          Order contains <strong>${escapeHtml(String(itemCount))}</strong> item${itemCount !== 1 ? "s" : ""} · customer <strong>${escapeHtml(customer)}</strong>
+        </span>
+        <div class="ad-overview-actions__btns">
+          <button class="ad-action-btn" type="button" data-jump="orders"><i class="fa-solid fa-eye"></i> View details</button>
+          <button class="ad-action-btn ad-action-btn--danger" type="button" data-action="setOrderStatus" data-id="${escapeHtml(orderId)}" data-status="cancelled"><i class="fa-solid fa-xmark"></i> Cancel order</button>
+        </div>
+      </div>
+    </div>
+  `;
 }
 
 function renderOverview() {
@@ -225,17 +341,24 @@ function renderOverview() {
   const rows = scopedOrders.slice(0, 8).map((o) => {
     const pay = state.payments.find((p) => p.order_id === o.order_id);
     const payText = pay ? `${pay.method} • ${pay.status}` : "—";
+    const normalizedStatus = normalizeOrderStatus(o.status);
+    const isExpanded = state.expandedRecentOrderId === o.order_id;
     return `
-      <div class="ad-row ad-row-summary ad-row--overview">
-        <div class="ad-col ad-strong">${escapeHtml(o.order_id)}</div>
-        <div class="ad-col">${escapeHtml(userName(o.customer_id))}</div>
-        <div class="ad-col">
-          <span class="ad-vendor-pill">${escapeHtml(userName(o.vendor_id))}</span>
+      <div class="ad-overview-order${isExpanded ? " is-expanded" : ""}" data-overview-order="${escapeHtml(o.order_id)}">
+        <button class="ad-row ad-row-summary ad-row--overview ad-overview-order__summary" type="button" data-action="toggleRecentOrder" data-id="${escapeHtml(o.order_id)}" aria-expanded="${isExpanded ? "true" : "false"}">
+          <div class="ad-col ad-strong">${escapeHtml(o.order_id)}</div>
+          <div class="ad-col">${escapeHtml(userName(o.customer_id))}</div>
+          <div class="ad-col">
+            <span class="ad-vendor-pill">${escapeHtml(userName(o.vendor_id))}</span>
+          </div>
+          <div class="ad-col ad-total-col">${escapeHtml(money(o.total_amount))}</div>
+          <div class="ad-col">${statusBadgeHtml(normalizedStatus)}</div>
+          <div class="ad-col">${escapeHtml(fmt(o.pickup_time))}</div>
+          <div class="ad-col">${escapeHtml(payText)}</div>
+        </button>
+        <div class="ad-overview-order__actions"${isExpanded ? "" : " hidden"}>
+          ${statusPillsHtml(o.order_id, normalizedStatus)}
         </div>
-        <div class="ad-col ad-total-col">${escapeHtml(money(o.total_amount))}</div>
-        <div class="ad-col">${statusBadgeHtml(o.status)}</div>
-        <div class="ad-col">${escapeHtml(fmt(o.pickup_time))}</div>
-        <div class="ad-col">${escapeHtml(payText)}</div>
       </div>
     `;
   }).join("");
@@ -297,7 +420,7 @@ function renderMenu() {
 }
 
 function renderOrderTabs() {
-  const tabs = ["All", "Pending", "Preparing", "Ready", "Completed", "Delivered"];
+  const tabs = ["All", "Pending", "Preparing", "Completed"];
   $("orderTabs").innerHTML = tabs.map((t) => {
     const cls = "tab" + (state.orderTab === t ? " is-active" : "");
     return `<button class="${cls}" type="button" data-tab="${escapeHtml(t)}">${escapeHtml(t)}</button>`;
@@ -306,7 +429,7 @@ function renderOrderTabs() {
 
 function matchesOrderFilter(o) {
   if (state.isVendorSession && state.sessionVendorId && o.vendor_id !== state.sessionVendorId) return false;
-  if (state.orderTab !== "All" && o.status !== state.orderTab.toLowerCase()) return false;
+  if (state.orderTab !== "All" && normalizeOrderStatus(o.status) !== state.orderTab.toLowerCase()) return false;
   const q = (state.search || "").trim().toLowerCase();
   if (!q) return true;
   const items = getOrderItems(o).map((it) => it.item_name).join(", ");
@@ -320,9 +443,9 @@ function renderOrders() {
     const its = getOrderItems(o);
     const itemsLabel = its.length ? its.map((i) => `${i.item_name} ×${i.quantity}`).join(", ") : "—";
     const pay = state.payments.find((p) => p.order_id === o.order_id);
+    const normalizedStatus = normalizeOrderStatus(o.status);
     const payStatus = pay ? pay.status : "pending";
     const payLabel = pay ? `${pay.method} • ${payStatus}` : "—";
-    const options = ORDER_STATUSES.map((s) => `<option value="${escapeHtml(s)}"${s === o.status ? " selected" : ""}>${escapeHtml(s)}</option>`).join("");
     return `
       <div class="ad-row ad-row-summary ad-row--orders">
         <div class="ad-col ad-strong">${escapeHtml(o.order_id)}</div>
@@ -330,14 +453,9 @@ function renderOrders() {
         <div class="ad-col"><span class="ad-vendor-pill">${escapeHtml(userName(o.vendor_id))}</span></div>
         <div class="ad-col">${escapeHtml(itemsLabel)}</div>
         <div class="ad-col ad-total-col">${escapeHtml(money(o.total_amount))}</div>
-        <div class="ad-col">${statusBadgeHtml(o.status)}</div>
+        <div class="ad-col">${statusBadgeHtml(normalizedStatus)}</div>
         <div class="ad-col">${escapeHtml(fmt(o.pickup_time))}</div>
         <div class="ad-col">${escapeHtml(payLabel)}</div>
-        <div class="ad-col">
-          <select data-action="setOrderStatus" data-id="${escapeHtml(o.order_id)}" aria-label="Update order status">
-            ${options}
-          </select>
-        </div>
       </div>
     `;
   }).join("");
@@ -407,6 +525,52 @@ function renderProfile() {
   if ($("profileFullName")) $("profileFullName").value = fullName;
   if ($("profileEmail")) $("profileEmail").value = email;
   if ($("profilePhone")) $("profilePhone").value = phone;
+}
+
+function syncDashboardData(result, options) {
+  const nextUsers = result.users || [];
+  const nextFoods = result.foods || [];
+  const nextOrders = (result.orders || []).map((order) => ({
+    ...order,
+    status: normalizeOrderStatus(order.status),
+  }));
+  const nextOrderItems = result.orderItems || nextOrders.flatMap((order) =>
+    Array.isArray(order.items)
+      ? order.items.map((item) => ({ ...item, order_id: item.order_id || order.order_id }))
+      : []
+  );
+  const nextPayments = result.payments || [];
+  const shouldNotify = Boolean(options && options.notifyChanges && state.isVendorSession);
+  const scopeKey = getVendorCacheScope();
+  const cache = readStoredVendorOrderCache();
+  const previousSnapshot = cache[scopeKey] || {};
+  const nextSnapshot = toScopedOrderSnapshot(nextOrders);
+
+  if (shouldNotify) {
+    nextOrders
+      .filter((order) => !previousSnapshot[order.order_id])
+      .sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
+      .forEach((order) => {
+        const message = formatNewOrderMessage(order);
+        addPanelNotification({
+          type: "order",
+          title: "New order received",
+          desc: message,
+          time: Date.now(),
+          read: false,
+        });
+        notify(message, "info");
+      });
+  }
+
+  cache[scopeKey] = nextSnapshot;
+  writeStoredVendorOrderCache(cache);
+
+  state.users = nextUsers;
+  state.foods = nextFoods;
+  state.orders = nextOrders;
+  state.orderItems = nextOrderItems;
+  state.payments = nextPayments;
 }
 
 function renderAll() {
@@ -490,19 +654,21 @@ async function saveFoodFromModal() {
   const vendor_id = $("fiVendor").value;
   const price = Number($("fiPrice").value || 0);
   const is_available = $("fiAvail").classList.contains("on");
-  const imageFile = $("fiImage").files && $("fiImage").files[0] ? $("fiImage").files[0].name : "";
+  const imageFile = $("fiImage").files && $("fiImage").files[0] ? $("fiImage").files[0] : null;
 
   if (!name || !category || !vendor_id || !(price >= 0)) return;
 
   try {
+    const image_data = imageFile ? await readFileAsDataUrl(imageFile) : "";
+
     if (!state.editingFoodId) {
-      const result = await window.QuickBiteApi.createFood({ vendor_id, name, category, price, is_available, description, image: imageFile });
+      const result = await window.QuickBiteApi.createFood({ vendor_id, name, category, price, is_available, description, image_data });
       state.foods.unshift(result.food);
     } else {
-      await window.QuickBiteApi.updateFood(state.editingFoodId, { vendor_id, name, category, price, is_available, description, image: imageFile });
+      const result = await window.QuickBiteApi.updateFood(state.editingFoodId, { vendor_id, name, category, price, is_available, description, image_data });
       const idx = state.foods.findIndex((f) => f.food_id === state.editingFoodId);
       if (idx >= 0) {
-        state.foods[idx] = { ...state.foods[idx], vendor_id, name, category, price, is_available, description, image: imageFile || state.foods[idx].image };
+        state.foods[idx] = { ...state.foods[idx], ...result.food, category };
       }
     }
 
@@ -511,6 +677,15 @@ async function saveFoodFromModal() {
   } catch (error) {
     alert(error.message);
   }
+}
+
+function readFileAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(typeof reader.result === "string" ? reader.result : "");
+    reader.onerror = () => reject(new Error("Failed to read the selected image"));
+    reader.readAsDataURL(file);
+  });
 }
 
 async function saveProfile() {
@@ -668,29 +843,53 @@ function wireEvents() {
     }
   });
 
-  $("ordersBody").addEventListener("change", async (e) => {
-    const sel = e.target.closest("[data-action='setOrderStatus']");
-    if (!sel) return;
-    const orderId = sel.dataset.id;
-    const status = sel.value;
+  function handleOrderStatusUpdate(button) {
+    if (!button) return;
+    const orderId = button.dataset.id;
+    const status = button.dataset.status;
     if (!ORDER_STATUSES.includes(status)) return;
     const o = state.orders.find((x) => x.order_id === orderId);
     if (!o) return;
     if (state.isVendorSession && state.sessionVendorId && o.vendor_id !== state.sessionVendorId) return;
-    try {
-      await window.QuickBiteApi.updateOrderStatus(orderId, { status });
-      o.status = status;
-      if (status === "completed" || status === "delivered") {
-        const pay = state.payments.find((p) => p.order_id === orderId);
-        if (pay && pay.status !== "completed") {
-          pay.status = "completed";
-          pay.paid_at = new Date().toISOString();
+    if (normalizeOrderStatus(o.status) === status) return;
+    window.QuickBiteApi.updateOrderStatus(orderId, { status })
+      .then(() => {
+        o.status = status;
+        addPanelNotification({
+          type: status === "completed" ? "success" : "order",
+          title: "Order update",
+          desc: formatCustomerStatusMessage(o, status),
+          time: Date.now(),
+          read: false,
+          audience: {
+            userIds: [String(o.customer_id || "")]
+          }
+        });
+        if (status === "completed") {
+          const pay = state.payments.find((p) => p.order_id === orderId);
+          if (pay && pay.status !== "completed") {
+            pay.status = "completed";
+            pay.paid_at = new Date().toISOString();
+          }
         }
-      }
-      renderAll();
-    } catch (error) {
-      alert(error.message);
+        renderAll();
+      })
+      .catch((error) => {
+        alert(error.message);
+      });
+  }
+
+  $("recentOrdersBody").addEventListener("click", (e) => {
+    const statusButton = e.target.closest("[data-action='setOrderStatus']");
+    if (statusButton) {
+      handleOrderStatusUpdate(statusButton);
+      return;
     }
+    const toggleButton = e.target.closest("[data-action='toggleRecentOrder']");
+    if (!toggleButton) return;
+    const orderId = toggleButton.dataset.id || "";
+    state.expandedRecentOrderId = state.expandedRecentOrderId === orderId ? null : orderId;
+    renderOverview();
   });
 
   // Modal
@@ -713,6 +912,61 @@ function wireEvents() {
   $("confirmDeleteCancel").addEventListener("click", closeDeleteModal);
   $("confirmDeleteAction").addEventListener("click", deleteCurrentAccount);
   $("confirmDeleteModal").addEventListener("mousedown", (e) => { if (e.target === e.currentTarget) closeDeleteModal(); });
+
+  const profileBtn = $("adminProfileBtn");
+  const profileMenu = $("adminUserDropdown");
+  if (profileBtn && profileMenu) {
+    profileBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const shouldOpen = !profileMenu.classList.contains("show");
+      profileMenu.classList.toggle("show", shouldOpen);
+      profileBtn.classList.toggle("is-open", shouldOpen);
+      profileBtn.setAttribute("aria-expanded", String(shouldOpen));
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!profileMenu.contains(e.target) && !profileBtn.contains(e.target)) {
+        profileMenu.classList.remove("show");
+        profileBtn.classList.remove("is-open");
+        profileBtn.setAttribute("aria-expanded", "false");
+      }
+    });
+  }
+
+  const notifLink = $("adminDropdownNotif");
+  if (notifLink) {
+    notifLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (typeof window.toggleNotifications === "function") window.toggleNotifications();
+      if (profileMenu) profileMenu.classList.remove("show");
+      if (profileBtn) {
+        profileBtn.classList.remove("is-open");
+        profileBtn.setAttribute("aria-expanded", "false");
+      }
+    });
+  }
+
+  const logoutLink = $("adminDropdownLogout");
+  if (logoutLink) {
+    logoutLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      signOut();
+    });
+  }
+
+  $$("[data-view-link]").forEach((link) => {
+    link.addEventListener("click", (e) => {
+      e.preventDefault();
+      const nextView = link.getAttribute("data-view-link");
+      if (nextView) setView(nextView);
+      if (profileMenu) profileMenu.classList.remove("show");
+      if (profileBtn) {
+        profileBtn.classList.remove("is-open");
+        profileBtn.setAttribute("aria-expanded", "false");
+      }
+    });
+  });
 }
 
 function startLiveFeed() {
@@ -756,12 +1010,30 @@ function startLiveFeed() {
     const idx = state.orders.findIndex((o) => o.status === "pending" || o.status === "preparing");
     if (idx >= 0 && Math.random() < 0.55) {
       const s = state.orders[idx].status;
-      state.orders[idx] = { ...state.orders[idx], status: s === "pending" ? "preparing" : "ready" };
+      state.orders[idx] = { ...state.orders[idx], status: s === "pending" ? "preparing" : "completed" };
     }
 
     state.orders = state.orders.slice(0, 28);
     renderAll();
   }, 6500);
+}
+
+function startDashboardPolling() {
+  if (state.liveTimer) clearInterval(state.liveTimer);
+  state.liveTimer = setInterval(() => {
+    window.QuickBiteApi.getAdminDashboard()
+      .then((result) => {
+        syncDashboardData(result, { notifyChanges: true });
+        renderAll();
+      })
+      .catch((error) => {
+        if (!state.isVendorSession) {
+          startLiveFeed();
+        } else {
+          notify(error.message, "err");
+        }
+      });
+  }, DASHBOARD_POLL_MS);
 }
 
 function init() {
@@ -790,6 +1062,7 @@ function init() {
 
   const sidebarSubline = $("sidebarSubline");
   const sidebarUserName = $("sidebarUserName");
+  updateAdminProfileMenu();
   if (state.isVendorSession && state.sessionVendorId) {
     const vendorName = userName(state.sessionVendorId);
     if (sidebarSubline) sidebarSubline.textContent = vendorName;
@@ -806,15 +1079,7 @@ function init() {
   wireEvents();
   window.QuickBiteApi.getAdminDashboard()
     .then((result) => {
-      state.users = result.users || [];
-      state.foods = result.foods || [];
-      state.orders = result.orders || [];
-      state.orderItems = result.orderItems || state.orders.flatMap((order) =>
-        Array.isArray(order.items)
-          ? order.items.map((item) => ({ ...item, order_id: item.order_id || order.order_id }))
-          : []
-      );
-      state.payments = result.payments || [];
+      syncDashboardData(result, { notifyChanges: false });
 
       if (state.isVendorSession && state.sessionVendorId) {
         state.menuVendor = state.sessionVendorId;
@@ -831,6 +1096,7 @@ function init() {
         const avatar = document.querySelector(".avatar");
         if (avatar) avatar.textContent = String(vendorName || "V").charAt(0).toUpperCase();
       }
+      updateAdminProfileMenu();
 
       const hashView = String((window.location.hash || "").replace("#", "") || "").toLowerCase();
       if (hashView && ["overview", "menu", "orders", "sales", "profile"].includes(hashView)) {
@@ -839,6 +1105,7 @@ function init() {
       renderHeader();
       renderAll();
       setView(state.view);
+      startDashboardPolling();
     })
     .catch((error) => {
       const hashView = String((window.location.hash || "").replace("#", "") || "").toLowerCase();
@@ -848,7 +1115,7 @@ function init() {
       renderHeader();
       renderAll();
       setView(state.view);
-      alert(error.message);
+      notify(error.message, "err");
       startLiveFeed();
     });
 }

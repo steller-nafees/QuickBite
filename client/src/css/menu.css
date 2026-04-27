@@ -488,6 +488,10 @@
     max-height: min(560px, 88dvh);
     overflow: hidden;
 }
+.modal-name,
+.modal-price {
+    margin-top: 40px;
+}
 
 .menu-page .menu-modal-layout {
     display: flex;

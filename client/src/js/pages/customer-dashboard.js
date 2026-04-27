@@ -8,7 +8,10 @@
     return;
   }
 
-  const { useEffect, useMemo, useState } = React;
+  const { useEffect, useMemo, useRef, useState } = React;
+
+  const CUSTOMER_ORDER_POLL_MS = 15000;
+  const CUSTOMER_ORDER_CACHE_KEY = "quickbite-customer-order-cache";
 
   function notify(message, type) {
     if (typeof window.showToast === "function") {
@@ -16,6 +19,47 @@
       return;
     }
     window.alert(message);
+  }
+
+  function readStoredOrderCache() {
+    try {
+      const raw = localStorage.getItem(CUSTOMER_ORDER_CACHE_KEY);
+      const parsed = raw ? JSON.parse(raw) : {};
+      return parsed && typeof parsed === "object" ? parsed : {};
+    } catch (error) {
+      return {};
+    }
+  }
+
+  function writeStoredOrderCache(cache) {
+    try {
+      localStorage.setItem(CUSTOMER_ORDER_CACHE_KEY, JSON.stringify(cache || {}));
+    } catch (error) {
+      // ignore
+    }
+  }
+
+  function toOrderSnapshotMap(orders) {
+    return (orders || []).reduce(function (map, order) {
+      if (!order || !order.order_id) return map;
+      map[order.order_id] = {
+        order_id: order.order_id,
+        status: String(order.status || "").toLowerCase(),
+        vendor_name: order.vendor_name || "",
+      };
+      return map;
+    }, {});
+  }
+
+  function statusMessageForCustomer(order, nextStatus) {
+    const vendorName = order.vendor_name ? " from " + order.vendor_name : "";
+    const orderLabel = order.token || order.order_id || "your order";
+
+    if (nextStatus === "preparing") return orderLabel + vendorName + " is now being prepared.";
+    if (nextStatus === "ready") return orderLabel + vendorName + " is ready for pickup.";
+    if (nextStatus === "completed" || nextStatus === "delivered") return orderLabel + vendorName + " has been completed.";
+    if (nextStatus === "pending") return orderLabel + vendorName + " has been received.";
+    return orderLabel + vendorName + " was updated to " + nextStatus + ".";
   }
 
   function formatMoney(amount) {
@@ -169,6 +213,18 @@
       fontWeight: 700,
       cursor: "pointer",
     };
+  }
+
+  const PASSWORD_STRENGTH_LABELS = ["", "Weak", "Fair", "Good", "Strong"];
+  const PASSWORD_STRENGTH_COLORS = ["", "#d64545", "#f0a500", "#57b846", "#16a34a"];
+
+  function scorePassword(password) {
+    let score = 0;
+    if (password.length >= 8) score++;
+    if (/[A-Z]/.test(password)) score++;
+    if (/[0-9]/.test(password)) score++;
+    if (/[^A-Za-z0-9]/.test(password)) score++;
+    return score;
   }
 
   function DangerModal({ title, message, busy, onCancel, onConfirm, confirmLabel }) {
@@ -468,7 +524,15 @@
               "div",
               { className: "qb-detail-meta-block" },
               React.createElement("span", { className: "qb-detail-meta-label" }, "Pickup time"),
-              React.createElement("span", { className: "qb-detail-meta-value" }, order.pickup_time || "—")
+              React.createElement("span", { className: "qb-detail-meta-value" }, order.pickup_time ? 
+                new Date(order.pickup_time).toLocaleString("en-US" , {
+                  day : "2-digit",
+                  month : "short",
+                  year : "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  hour12 : true
+                }) : "—")
             ),
 
             React.createElement(
@@ -792,6 +856,9 @@
     const [confirmPw, setConfirmPw] = useState("");
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
     const [deleteBusy, setDeleteBusy] = useState(false);
+    const passwordScore = newPw ? scorePassword(newPw) : 0;
+    const passwordLabel = newPw ? PASSWORD_STRENGTH_LABELS[passwordScore] : "";
+    const passwordColor = newPw ? PASSWORD_STRENGTH_COLORS[passwordScore] : "";
 
     async function saveProfile() {
       try {
@@ -867,7 +934,33 @@
               "div",
               { className: "qb-form" },
               React.createElement("label", { className: "qb-field" }, React.createElement("span", { className: "qb-label" }, "Current Password"), React.createElement("input", { className: "qb-input", type: "password", value: currentPw, onChange: (e) => setCurrentPw(e.target.value), placeholder: "••••••••" })),
-              React.createElement("label", { className: "qb-field" }, React.createElement("span", { className: "qb-label" }, "New Password"), React.createElement("input", { className: "qb-input", type: "password", value: newPw, onChange: (e) => setNewPw(e.target.value), placeholder: "At least 8 characters" })),
+              React.createElement(
+                "label",
+                { className: "qb-field" },
+                React.createElement("span", { className: "qb-label" }, "New Password"),
+                React.createElement("input", { className: "qb-input", type: "password", value: newPw, onChange: (e) => setNewPw(e.target.value), placeholder: "At least 8 characters" }),
+                React.createElement(
+                  "div",
+                  { className: "pw-strength" },
+                  React.createElement(
+                    "div",
+                    { className: "strength-bar strength-" + passwordScore },
+                    React.createElement("span", { className: "seg" }),
+                    React.createElement("span", { className: "seg" }),
+                    React.createElement("span", { className: "seg" }),
+                    React.createElement("span", { className: "seg" })
+                  ),
+                  React.createElement("p", { className: "strength-label", style: { color: passwordColor } }, passwordLabel),
+                  React.createElement(
+                    "ul",
+                    { className: "pw-criteria" },
+                    React.createElement("li", { className: newPw.length >= 8 ? "met" : "" }, "At least 8 characters"),
+                    React.createElement("li", { className: /[A-Z]/.test(newPw) ? "met" : "" }, "One uppercase letter"),
+                    React.createElement("li", { className: /[0-9]/.test(newPw) ? "met" : "" }, "One number"),
+                    React.createElement("li", { className: /[^A-Za-z0-9]/.test(newPw) ? "met" : "" }, "One special character")
+                  )
+                )
+              ),
               React.createElement("label", { className: "qb-field" }, React.createElement("span", { className: "qb-label" }, "Confirm Password"), React.createElement("input", { className: "qb-input", type: "password", value: confirmPw, onChange: (e) => setConfirmPw(e.target.value), placeholder: "Repeat new password" }))
             )
           ),
@@ -876,14 +969,14 @@
             {
               className: "qb-card qb-card-pad",
               style: {
-                border: "1px solid rgba(180, 35, 24, 0.2)",
-                background: "linear-gradient(180deg, rgba(180, 35, 24, 0.05), rgba(255, 255, 255, 0.98))",
+                border: "1px solid  #8B0F08",
+                background: "#F2E8D5"
               },
             },
             React.createElement(
               "div",
-              { className: "qb-card-head" },
-              React.createElement("span", { className: "qb-card-title", style: { color: "#b42318" } }, "Delete Your Account")
+              { className: "delete-account" },
+              React.createElement("span", { className: "del-acc-title", }, "Delete Your Account")
             ),
             React.createElement(
               "div",
@@ -901,7 +994,7 @@
                   style: {
                     width: "fit-content",
                     border: "none",
-                    background: "#b42318",
+                    background: " #8B0F08",
                     color: "var(--color-white)",
                     borderRadius: 12,
                     padding: "12px 18px",
@@ -917,6 +1010,7 @@
       ),
       deleteModalOpen
         ? React.createElement(DangerModal, {
+          
           title: "Delete your account?",
           message: "This action cannot be undone. Please confirm that you want to permanently delete your QuickBite profile.",
           busy: deleteBusy,
@@ -931,6 +1025,47 @@
   function CustomerDashboardApp() {
     const [user, setUser] = useState(readAuthUser());
     const [data, setData] = useState({ currentOrders: [], pastOrders: [] });
+    const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+    const hasLoadedOrdersRef = useRef(false);
+    const pollTimerRef = useRef(null);
+    const profileMenuRef = useRef(null);
+
+    function applyOrders(result, options) {
+      const nextCurrentOrders = result.currentOrders || [];
+      const nextPastOrders = result.pastOrders || [];
+      const nextOrders = nextCurrentOrders.concat(nextPastOrders);
+      const nextSnapshot = toOrderSnapshotMap(nextOrders);
+      const previousSnapshot = readStoredOrderCache();
+      const shouldNotify = Boolean(options && options.notifyChanges && hasLoadedOrdersRef.current);
+
+      if (shouldNotify) {
+        nextOrders.forEach(function (order) {
+          const previous = previousSnapshot[order.order_id];
+          const nextStatus = String(order.status || "").toLowerCase();
+          if (!previous || !previous.status || previous.status === nextStatus) return;
+          notify(statusMessageForCustomer(order, nextStatus), nextStatus === "ready" || nextStatus === "completed" || nextStatus === "delivered" ? "success" : "info");
+        });
+      }
+
+      writeStoredOrderCache(nextSnapshot);
+      hasLoadedOrdersRef.current = true;
+      setData({
+        currentOrders: nextCurrentOrders,
+        pastOrders: nextPastOrders
+      });
+    }
+
+    useEffect(() => {
+      function onDocumentClick(event) {
+        if (!profileMenuRef.current || profileMenuRef.current.contains(event.target)) return;
+        setProfileMenuOpen(false);
+      }
+
+      document.addEventListener("click", onDocumentClick);
+      return function cleanup() {
+        document.removeEventListener("click", onDocumentClick);
+      };
+    }, []);
 
     useEffect(() => {
       const u = readAuthUser();
@@ -939,17 +1074,35 @@
       if (role === "vendor" || role === "admin") { window.location.replace("admin-dashboard.html"); return; }
       setUser(u);
 
-      window.QuickBiteApi.getMyOrders()
-        .then(function (result) {
-          setData({
-            currentOrders: result.currentOrders || [],
-            pastOrders: result.pastOrders || []
+      let cancelled = false;
+
+      function loadOrders(notifyChanges) {
+        return window.QuickBiteApi.getMyOrders()
+          .then(function (result) {
+            if (cancelled) return;
+            applyOrders(result, { notifyChanges: notifyChanges });
+          })
+          .catch(function (error) {
+            if (cancelled) return;
+            if (!hasLoadedOrdersRef.current) {
+              setData({ currentOrders: [], pastOrders: [] });
+            }
+            notify(error.message, "err");
           });
-        })
-        .catch(function (error) {
-          setData({ currentOrders: [], pastOrders: [] });
-          notify(error.message, "err");
-        });
+      }
+
+      loadOrders(false);
+      pollTimerRef.current = window.setInterval(function () {
+        loadOrders(true);
+      }, CUSTOMER_ORDER_POLL_MS);
+
+      return function cleanup() {
+        cancelled = true;
+        if (pollTimerRef.current) {
+          window.clearInterval(pollTimerRef.current);
+          pollTimerRef.current = null;
+        }
+      };
     }, []);
 
     const mostOrderedItem = useMemo(() => deriveMostOrderedItem(data.pastOrders), [data.pastOrders]);
@@ -991,9 +1144,42 @@
           React.createElement(
             "div",
             { className: "qb-nav-right" },
-            React.createElement("div", { className: "qb-user-name" }, displayName),
-            React.createElement("div", { className: "qb-avatar", "aria-hidden": "true" }, initials),
-            React.createElement("button", { type: "button", className: "qb-btn qb-btn-ghost qb-signout", onClick: signOut, style: ghostButtonStyle() }, "Sign out")
+            React.createElement(
+              "div",
+              { className: "qb-profile-menu", ref: profileMenuRef },
+              React.createElement(
+                "button",
+                {
+                  type: "button",
+                  className: "btn user-btn signed-in btn-user-signed",
+                  onClick: function (event) {
+                    event.stopPropagation();
+                    setProfileMenuOpen(function (open) { return !open; });
+                  },
+                  "aria-expanded": profileMenuOpen ? "true" : "false",
+                  "aria-label": displayName,
+                },
+                React.createElement("div", { className: "user-avatar" }, initials.charAt(0)),
+                React.createElement("span", { className: "user-greeting" }, "Hi, ", React.createElement("strong", null, displayName.split(" ")[0] || displayName)),
+                React.createElement("i", { className: "fas fa-chevron-down user-dropdown-icon" }),
+                React.createElement(
+                  "div",
+                  { className: "user-dropdown" + (profileMenuOpen ? " show" : "") },
+                  React.createElement("a", { href: "#settings", className: "dropdown-item", onClick: function () { setProfileMenuOpen(false); } }, React.createElement("i", { className: "fas fa-user-gear" }), " Profile"),
+                  React.createElement("a", {
+                    href: "#",
+                    className: "dropdown-item",
+                    onClick: function (event) {
+                      event.preventDefault();
+                      event.stopPropagation();
+                      if (typeof window.toggleNotifications === "function") window.toggleNotifications();
+                      setProfileMenuOpen(false);
+                    }
+                  }, React.createElement("i", { className: "fas fa-bell" }), " Notifications"),
+                  React.createElement("a", { href: "#", className: "dropdown-item", onClick: function (event) { event.preventDefault(); signOut(); } }, React.createElement("i", { className: "fas fa-sign-out-alt" }), " Log Out")
+                )
+              )
+            )
           )
         )
       ),
