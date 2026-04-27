@@ -181,6 +181,7 @@ const state = {
   search: "",
   orderTab: "All",
   expandedRecentOrderId: null,
+  highlightedOrderId: null,
   menuQuery: "",
   menuVendor: "",
   menuCategory: "",
@@ -312,17 +313,11 @@ function statusPillsHtml(orderId, status) {
           const activeClass = nextStatus === currentStatus ? " is-active" : "";
           return `<button class="ad-status-pill${activeClass}" type="button" data-action="setOrderStatus" data-id="${escapeHtml(orderId)}" data-status="${escapeHtml(nextStatus)}">${escapeHtml(label)}</button>`;
         }).join("")}
-        <div class="ad-status-divider"></div>
-        <button class="ad-status-pill ad-status-pill--cancel" type="button" data-action="setOrderStatus" data-id="${escapeHtml(orderId)}" data-status="cancelled">Cancelled</button>
       </div>
       <div class="ad-overview-actions__footer">
         <span class="ad-overview-actions__meta">
           Order contains <strong>${escapeHtml(String(itemCount))}</strong> item${itemCount !== 1 ? "s" : ""} · customer <strong>${escapeHtml(customer)}</strong>
         </span>
-        <div class="ad-overview-actions__btns">
-          <button class="ad-action-btn" type="button" data-jump="orders"><i class="fa-solid fa-eye"></i> View details</button>
-          <button class="ad-action-btn ad-action-btn--danger" type="button" data-action="setOrderStatus" data-id="${escapeHtml(orderId)}" data-status="cancelled"><i class="fa-solid fa-xmark"></i> Cancel order</button>
-        </div>
       </div>
     </div>
   `;
@@ -395,7 +390,6 @@ function renderMenu() {
   const rows = state.foods.filter(matchesFoodFilter).map((f) => {
     const toggleClass = f.is_available ? "toggle on" : "toggle";
     const ariaPressed = f.is_available ? "true" : "false";
-    const availLabel = f.is_available ? "Available" : "Unavailable";
     return `
       <div class="ad-row ad-row-summary ad-row--menu">
         <div class="ad-col ad-strong">${escapeHtml(f.name)}</div>
@@ -406,7 +400,6 @@ function renderMenu() {
           <button class="${toggleClass}" type="button" data-action="toggleFood" data-id="${escapeHtml(f.food_id)}" aria-pressed="${ariaPressed}" aria-label="Availability toggle">
             <span class="knob"></span>
           </button>
-          <span class="muted" style="margin-left:8px">${escapeHtml(availLabel)}</span>
         </div>
         <div class="ad-col">
           <button class="btn ghost sm" type="button" data-action="editFood" data-id="${escapeHtml(f.food_id)}"><i class="fa-solid fa-pen"></i>Edit</button>
@@ -446,8 +439,9 @@ function renderOrders() {
     const normalizedStatus = normalizeOrderStatus(o.status);
     const payStatus = pay ? pay.status : "pending";
     const payLabel = pay ? `${pay.method} • ${payStatus}` : "—";
+    const rowClass = o.order_id === state.highlightedOrderId ? " ad-row--highlighted" : "";
     return `
-      <div class="ad-row ad-row-summary ad-row--orders">
+      <div class="ad-row ad-row-summary ad-row--orders${rowClass}" data-order-row="${escapeHtml(o.order_id)}">
         <div class="ad-col ad-strong">${escapeHtml(o.order_id)}</div>
         <div class="ad-col">${escapeHtml(userName(o.customer_id))}</div>
         <div class="ad-col"><span class="ad-vendor-pill">${escapeHtml(userName(o.vendor_id))}</span></div>
@@ -461,6 +455,13 @@ function renderOrders() {
   }).join("");
 
   $("ordersBody").innerHTML = rows || `<p class="ad-empty">No orders match your filters.</p>`;
+
+  if (state.highlightedOrderId) {
+    const targetRow = document.querySelector(`[data-order-row="${CSS.escape(state.highlightedOrderId)}"]`);
+    if (targetRow) {
+      targetRow.scrollIntoView({ block: "center", behavior: "smooth" });
+    }
+  }
 }
 
 function renderSales() {

@@ -656,8 +656,26 @@ tbody tr:hover {
   grid-template-columns: 1.5fr 1fr 0.8fr 1.2fr 1.3fr 1.3fr;
 }
 
+.ad-row--menu .ad-col:nth-child(5) {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.ad-row--menu .ad-col:nth-child(6) {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 10px;
+}
+
 .ad-row--orders {
   grid-template-columns: 1fr 1fr 1fr 1.8fr 0.8fr 1fr 1.2fr 1.1fr;
+}
+
+.ad-row--orders.ad-row--highlighted {
+  border: 1px solid rgba(180, 35, 24, 0.35);
+  box-shadow: 0 0 0 2px rgba(180, 35, 24, 0.14);
 }
 
 .ad-row--payments {
@@ -736,6 +754,26 @@ tbody tr:hover {
   background: var(--color-red-soft);
   color: var(--color-cream) !important;
 }
+
+.ad-overview-order.is-expanded .ad-overview-order__summary .ad-col,
+.ad-overview-order.is-expanded .ad-overview-order__summary .ad-strong {
+  color: var(--color-cream-soft) !important;
+}
+
+.ad-overview-order.is-expanded .ad-overview-order__summary .ad-vendor-pill {
+  background: rgba(255, 255, 255, 0.16);
+  color: var(--color-cream-soft) !important;
+}
+
+.ad-overview-order.is-expanded .ad-overview-order__summary .badge {
+  background: rgba(255, 248, 234, 0.96);
+}
+
+.ad-overview-order.is-expanded .ad-overview-order__summary .badge,
+.ad-overview-order.is-expanded .ad-overview-order__summary .badge span:last-child {
+  color: var(--color-red-soft) !important;
+}
+
 .ad-row-summary:hover {
   background: var(--color-red-soft);
   transform: translateY(-2px);
@@ -754,6 +792,41 @@ tbody tr:hover {
 .ad-row-summary:hover .ad-vendor-pill {
   background: rgba(255, 255, 255, 0.18);
   color: var(--color-cream) !important;
+}
+
+.ad-row--menu:hover .ad-strong,
+.ad-row--menu:hover .ad-total-col {
+  color: var(--color-cream-soft) !important;
+}
+
+.ad-row--menu:hover .btn.ghost.sm {
+  color: var(--color-red-soft) !important;
+  border-color: rgba(255, 248, 234, 0.7);
+  background: var(--color-cream-soft);
+}
+
+.ad-row--menu:hover .btn.ghost.sm:hover {
+  color: var(--color-red-soft) !important;
+  background: var(--color-cream-soft);
+}
+
+.ad-row--menu:hover .toggle {
+  background: var(--color-cream-soft);
+  border-color: var(--red-25);
+}
+
+.ad-row--menu:hover .toggle.on {
+  background: var(--color-cream-soft);
+}
+
+.ad-row--menu .btn.ghost.sm {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 38px;
+  padding: 8px 14px;
+  border-radius: 999px;
 }
 
 .ad-col {
@@ -1464,7 +1537,7 @@ tbody tr:hover {
 .ad-overview-actions__footer {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 12px;
   padding-top: 12px;
   border-top: 1px solid rgba(242, 232, 213, 0.12);
