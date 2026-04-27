@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3307
--- Generation Time: Apr 27, 2026 at 07:32 PM
+-- Generation Time: Apr 27, 2026 at 07:36 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -304,7 +304,7 @@ INSERT INTO `user` (`user_id`, `full_name`, `email`, `password`, `role`, `passwo
 ('QBC-0004', 'Md. Shahadat Hossain', 'shahadat.hossain@gmail.com', '$2b$12$cGAq942kFCKnwFAOmLzMH.cqWF10J9sOpFFEJqFomZJxbviBA8YOm', 'Customer', NULL, NULL, '2026-04-14 08:10:00', '2026-04-14 08:10:00', '01923456789'),
 ('QBC-0005', 'Fatema Begum', 'fatema.begum@gmail.com', '$2b$12$5N4NF6.689xJ4BvRQK3kU.Dxdw2ApLxmCtKLS98oiNBpK.O4yb3E.', 'Customer', NULL, NULL, '2026-04-14 08:15:00', '2026-04-14 08:15:00', '01534567890'),
 ('QBC-0006', 'H.M. NAFEES N. ISLAM', 'nafees@gmail.com', '$2a$12$tY8I.55RUIyKyyWIwIUH9.D4MvUNQzjdSaDI.w5CU1OifHzBEK9ku', 'Customer', NULL, NULL, '2026-04-26 04:57:19', '2026-04-26 04:57:19', '+8801317850288'),
-('QBV-0001', 'Updated Vendor Name', 'xx@example.com', '$2a$12$LoFD3pPBXQpe.p/3Hq2RyOjflX4ULHz.9EAUyX7Lrt5Z3jQhB10nW', 'Vendor', NULL, NULL, '2026-04-14 05:56:28', '2026-04-14 06:27:26', NULL),
+('QBV-0001', 'Khan\'s Kitchen', 'xx@example.com', '$2a$12$LoFD3pPBXQpe.p/3Hq2RyOjflX4ULHz.9EAUyX7Lrt5Z3jQhB10nW', 'Vendor', NULL, NULL, '2026-04-14 05:56:28', '2026-04-27 17:36:18', NULL),
 ('QBV-0002', 'The Kitchen', 'jane@example.com', '$2a$12$.iTZyld6MRmlw9KinNrmR.XgU.mJrmZu7E/9M7Ni5DbruSn/qCITW', 'Vendor', NULL, NULL, '2026-04-14 06:14:58', '2026-04-15 05:53:57', NULL),
 ('QBV-0003', 'Sarah Cloud Kitchen', 'karim.mia@gmail.com', '$2b$12$GH.5u7XnFhLmV4gIlQcbIeGAXNZkNFeB4u4u3XDGC9ql7W83IHIqO', 'Vendor', NULL, NULL, '2026-04-14 08:20:00', '2026-04-15 05:54:21', '01645678901'),
 ('QBV-0004', 'Wellfood Online', 'wellfood@gmail.com', '$2a$12$LuzhdPzNR0zrqKTxltNX4.eDUpFM79DV6HovRfATya3Dj8NYA8TI2', 'Vendor', NULL, NULL, '2026-04-26 14:47:04', '2026-04-26 14:57:26', '+8801317850288');
