@@ -945,4 +945,47 @@ router.patch("/admin/orders/:id/status", async (req, res) => {
   }
 });
 
+router.delete("/admin/orders/:id", async (req, res) => {
+  const connection = await pool.getConnection();
+  try {
+    const role = mapRole(req.user.role);
+    if (role !== "vendor" && role !== "admin") {
+      return res.status(403).json({ ok: false, message: "Unauthorized" });
+    }
+
+    const [rows] = await connection.query(
+      "SELECT order_id, vendor_id FROM `order` WHERE order_id = ?",
+      [req.params.id]
+    );
+    const order = rows[0];
+    if (!order) {
+      return res.status(404).json({ ok: false, message: "Order not found" });
+    }
+    if (role === "vendor" && order.vendor_id !== req.user.user_id) {
+      return res.status(403).json({ ok: false, message: "Unauthorized" });
+    }
+
+    await connection.beginTransaction();
+    await connection.query("DELETE FROM payment WHERE order_id = ?", [req.params.id]);
+    const [tokenTables] = await connection.query("SHOW TABLES LIKE 'order_token'");
+    if (Array.isArray(tokenTables) && tokenTables.length) {
+      await connection.query("DELETE FROM order_token WHERE order_id = ?", [req.params.id]);
+    }
+    await connection.query("DELETE FROM order_item WHERE order_id = ?", [req.params.id]);
+    await connection.query("DELETE FROM `order` WHERE order_id = ?", [req.params.id]);
+    await connection.commit();
+
+    res.json({ ok: true, deletedOrderId: req.params.id });
+  } catch (error) {
+    try {
+      await connection.rollback();
+    } catch (rollbackError) {
+      // ignore
+    }
+    res.status(400).json({ ok: false, message: error.message || "Failed to cancel order" });
+  } finally {
+    connection.release();
+  }
+});
+
 module.exports = router;
