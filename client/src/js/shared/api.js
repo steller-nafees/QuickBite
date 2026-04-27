@@ -110,6 +110,11 @@
                 method: "PATCH",
                 body: JSON.stringify(payload)
             });
+        },
+        deleteAdminOrder: function (id) {
+            return request("/admin/orders/" + encodeURIComponent(id), {
+                method: "DELETE"
+            });
         }
     };
 })();
