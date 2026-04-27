@@ -637,6 +637,21 @@
             orders.unshift(order);
             localStorage.setItem(ORDERS_KEY, JSON.stringify(orders));
 
+            if (window.QuickBiteNotificationCenter && typeof window.QuickBiteNotificationCenter.add === 'function') {
+                const vendorName = String(order.vendor_name || 'a vendor');
+                window.QuickBiteNotificationCenter.add({
+                    type: 'order',
+                    title: 'New order received',
+                    desc: `A new order ${order.order_id} has been placed for ${vendorName}.`,
+                    time: Date.now(),
+                    read: false,
+                    audience: {
+                        userIds: [String(order.vendor_id || '')],
+                        roles: ['admin']
+                    }
+                });
+            }
+
             clearCart();
             closeCheckout();
             openPaymentSuccess(order);

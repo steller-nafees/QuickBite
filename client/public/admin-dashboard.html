@@ -74,6 +74,18 @@
           <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
           <input id="globalSearch" placeholder="Search orders, items, users…" aria-label="Search dashboard" />
         </div>
+        <div class="admin-top-user" id="adminTopUser">
+          <button class="btn user-btn signed-in btn-user-signed" id="adminProfileBtn" type="button" aria-expanded="false" aria-label="Profile menu">
+            <div class="user-avatar" id="adminProfileAvatar">A</div>
+            <span class="user-greeting">Hi, <strong id="adminProfileFirstName">Admin</strong></span>
+            <i class="fas fa-chevron-down user-dropdown-icon"></i>
+          </button>
+          <div class="user-dropdown" id="adminUserDropdown">
+            <a href="#profile" class="dropdown-item" data-view-link="profile"><i class="fas fa-user-gear"></i> Profile</a>
+            <a href="#" class="dropdown-item" id="adminDropdownNotif"><i class="fas fa-bell"></i> Notifications</a>
+            <a href="#" class="dropdown-item" id="adminDropdownLogout"><i class="fas fa-sign-out-alt"></i> Log Out</a>
+          </div>
+        </div>
       </header>
 
       <!-- OVERVIEW -->
@@ -194,7 +206,6 @@
                 <div class="ad-col ad-col-header">Status</div>
                 <div class="ad-col ad-col-header">Pickup Time</div>
                 <div class="ad-col ad-col-header">Payment Status</div>
-                <div class="ad-col ad-col-header">Actions</div>
               </div>
               <div class="ad-table-modern ad-table-modern--orders" id="ordersBody">
               </div>
@@ -488,6 +499,14 @@
           Account</button>
       </div>
     </div>
+  </div>
+
+  <div class="notif-panel" id="notifPanel">
+    <div class="notif-header">
+      <h3>Notifications</h3>
+      <button class="notif-clear-btn" id="notifClearAll">Clear All</button>
+    </div>
+    <div class="notif-list" id="notifList"></div>
   </div>
 
   <script src="js/quickbite-config.js"></script>

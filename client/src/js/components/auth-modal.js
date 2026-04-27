@@ -336,6 +336,20 @@ document.addEventListener('DOMContentLoaded', function () {
                     // ignore
                 }
 
+                if (window.QuickBiteLayout && typeof window.QuickBiteLayout.refreshAuthUi === 'function') {
+                    try {
+                        window.QuickBiteLayout.refreshAuthUi();
+                    } catch (error) {
+                        // ignore
+                    }
+                } else if (typeof window.updateHeaderUserState === 'function') {
+                    try {
+                        window.updateHeaderUserState();
+                    } catch (error) {
+                        // ignore
+                    }
+                }
+
                 closeModal();
 
                 // Stay on home after auth

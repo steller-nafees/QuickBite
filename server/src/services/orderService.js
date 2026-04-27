@@ -1,6 +1,14 @@
 const orderRepo = require("../repositories/orderRepository");
 const foodRepo = require("../repositories/foodRepository");
 
+function normalizeOrderStatus(status) {
+  const normalized = String(status || "pending").toLowerCase();
+  if (normalized === "ready" || normalized === "delivered") {
+    return "completed";
+  }
+  return normalized;
+}
+
 // Get customer's orders
 exports.getCustomerOrders = async (customerId) => {
   try {
@@ -119,14 +127,15 @@ exports.updateOrderStatus = async (orderId, vendorId, newStatus) => {
       throw new Error("Invalid vendor ID");
     }
 
-    const validStatuses = ["pending", "preparing", "ready", "completed", "delivered"];
-    if (!validStatuses.includes(newStatus)) {
+    const normalizedStatus = normalizeOrderStatus(newStatus);
+    const validStatuses = ["pending", "preparing", "completed"];
+    if (!validStatuses.includes(normalizedStatus)) {
       throw new Error(
         `Invalid status. Must be one of: ${validStatuses.join(", ")}`
       );
     }
 
-    return await orderRepo.updateOrderStatus(orderId, vendorId, newStatus);
+    return await orderRepo.updateOrderStatus(orderId, vendorId, normalizedStatus);
   } catch (error) {
     throw new Error(`Failed to update order status: ${error.message}`);
   }

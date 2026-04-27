@@ -2,6 +2,7 @@ require("dotenv").config({ path: "../.env" });
 
 // Import Module and Packages
 const express = require("express");
+const path = require("path");
 const cookieParser = require("cookie-parser");
 const { connectDB } = require("./config/db");
 const authController = require("./controllers/authController");
@@ -15,8 +16,9 @@ const orderRouters = require("./routers/orderRouters");
 const app = express();
 
 // Middlewares
-app.use(express.json());
+app.use(express.json({ limit: "10mb" }));
 app.use(cookieParser());
+app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", req.headers.origin || "*");
   res.header("Vary", "Origin");
