@@ -724,7 +724,7 @@ tbody tr:hover {
   padding: 0 16px 16px;
   margin-top: -6px;
   background: var(--color-cream-soft);
-  border-radius: 0 0 14px 14px;
+  border-radius: 0 0 16px 16px;
   border-bottom: 2px solid var(--color-red-soft);
 
 }
